@@ -3,6 +3,7 @@
 // all pages through the use of the <BaseHead /> component.
 import "../styles/global.css";
 import { SITE_TITLE } from "../consts";
+import { getImage } from "astro:assets";
 
 interface Props {
   title: string;
@@ -13,6 +14,13 @@ interface Props {
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
 const { title, description, image = "/blog-placeholder-1.jpg" } = Astro.props;
+
+const optimizedImage = await getImage({
+  src: image,
+  format: "png",
+  width: 1200,
+  height: 630,
+});
 ---
 
 <!-- Global Metadata -->
@@ -57,11 +65,11 @@ const { title, description, image = "/blog-placeholder-1.jpg" } = Astro.props;
 <meta property="og:url" content={Astro.url} />
 <meta property="og:title" content={title} />
 <meta property="og:description" content={description} />
-<meta property="og:image" content={new URL(image, Astro.url)} />
+<meta property="og:image" content={optimizedImage.src} />
 
 <!-- Twitter -->
 <meta property="twitter:card" content="summary_large_image" />
 <meta property="twitter:url" content={Astro.url} />
 <meta property="twitter:title" content={title} />
 <meta property="twitter:description" content={description} />
-<meta property="twitter:image" content={new URL(image, Astro.url)} />
+<meta property="twitter:image" content={optimizedImage.src} />
