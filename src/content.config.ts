@@ -13,6 +13,8 @@ const events = defineCollection({
       eventDate: z.coerce.date(),
       updatedDate: z.coerce.date().optional(),
       heroImage: image(),
+      rsvpButtonUrl: z.string().url().optional(),
+      rsvpButtonText: z.string().optional(),
     }),
 });
 
