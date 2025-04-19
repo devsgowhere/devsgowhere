@@ -1,0 +1,21 @@
+---
+import { render } from "astro:content";
+import OrgPage from "../../layouts/OrgPage.astro";
+import { type CollectionEntry, getCollection } from "astro:content";
+export async function getStaticPaths() {
+  const orgs = await getCollection("orgs");
+
+  return orgs.map((org) => ({
+    params: { slug: org.id },
+    props: org,
+  }));
+}
+type Props = CollectionEntry<"orgs">;
+
+const post = Astro.props;
+const { Content } = await render(post);
+---
+
+<OrgPage {...post.data}>
+  <Content />
+</OrgPage>
