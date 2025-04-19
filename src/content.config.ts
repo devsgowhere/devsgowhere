@@ -1,5 +1,5 @@
 import { glob } from "astro/loaders";
-import { defineCollection, z } from "astro:content";
+import { defineCollection, reference, z } from "astro:content";
 
 const events = defineCollection({
   loader: glob({ base: "./src/content/events", pattern: "**/*.{md,mdx}" }),
@@ -16,6 +16,7 @@ const events = defineCollection({
       rsvpButtonUrl: z.string().url().optional(),
       rsvpButtonText: z.string().optional(),
       tags: z.array(z.string()).optional(),
+      org: reference("orgs"),
     }),
 });
 
