@@ -1,6 +1,7 @@
 ---
 import type { CollectionEntry } from "astro:content";
 import { Image } from "astro:assets";
+import { getEntry } from "astro:content";
 import BaseHead from "../components/BaseHead.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
@@ -18,7 +19,10 @@ const {
   heroImage,
   rsvpButtonUrl,
   rsvpButtonText,
+  org,
 } = Astro.props;
+
+const orgData = await getEntry(org);
 ---
 
 <html lang="en">
@@ -62,6 +66,10 @@ const {
       .last-updated-on {
         font-style: italic;
       }
+      .org-name {
+        margin-bottom: 0.5em;
+        color: rgb(var(--gray));
+      }
       .rsvp-button {
         display: inline-block;
         padding: 0.8em 1.6em;
@@ -94,6 +102,7 @@ const {
         <div class="prose">
           <div class="title">
             <h1>{title}</h1>
+            {org && <h4 class="org-name">{orgData.data.title}</h4>}
             <h4 class="date">
               <FormattedEventDate
                 startDate={startDate}
