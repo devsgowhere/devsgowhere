@@ -8,7 +8,15 @@ import FormattedDate from "../components/FormattedDate.astro";
 
 type Props = CollectionEntry<"events">["data"];
 
-const { title, description, eventDate, updatedDate, heroImage } = Astro.props;
+const {
+  title,
+  description,
+  eventDate,
+  updatedDate,
+  heroImage,
+  rsvpButtonUrl,
+  rsvpButtonText,
+} = Astro.props;
 ---
 
 <html lang="en">
@@ -52,6 +60,21 @@ const { title, description, eventDate, updatedDate, heroImage } = Astro.props;
       .last-updated-on {
         font-style: italic;
       }
+      .rsvp-button {
+        display: inline-block;
+        padding: 0.8em 1.6em;
+        margin: 1em 0;
+        background-color: var(--accent);
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+        font-weight: bold;
+        transition: background-color 0.2s ease;
+      }
+      .rsvp-button:hover {
+        background-color: var(--accent-dark);
+        color: white;
+      }
     </style>
   </head>
 
@@ -79,6 +102,18 @@ const { title, description, eventDate, updatedDate, heroImage } = Astro.props;
               }
             </div>
             <h1>{title}</h1>
+            {
+              rsvpButtonUrl && (
+                <a
+                  href={rsvpButtonUrl}
+                  class="rsvp-button"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {rsvpButtonText ?? "Link"}
+                </a>
+              )
+            }
             <hr />
           </div>
           <slot />
