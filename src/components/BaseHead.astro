@@ -4,16 +4,21 @@
 import "../styles/global.css";
 import { SITE_TITLE } from "../consts";
 import { getImage } from "astro:assets";
+import type { ImageMetadata } from "astro";
 
 interface Props {
   title: string;
   description: string;
-  image?: string;
+  image?: ImageMetadata | string;
 }
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
-const { title, description, image = "/blog-placeholder-1.jpg" } = Astro.props;
+const {
+  title,
+  description,
+  image = "/blog-placeholder-about.jpg",
+} = Astro.props;
 
 const optimizedImage = await getImage({
   src: image,
