@@ -5,7 +5,7 @@ import Footer from "../../components/Footer.astro";
 import { SITE_TITLE, SITE_DESCRIPTION } from "../../consts";
 import { getCollection } from "astro:content";
 import { Image } from "astro:assets";
-import FormattedDate from "../../components/FormattedDate.astro";
+import FormattedEventDate from "../../components/FormattedEventDate.astro";
 
 const events = (await getCollection("events")).sort(
   (a, b) => b.data.startDate.valueOf() - a.data.startDate.valueOf()
@@ -103,9 +103,11 @@ const events = (await getCollection("events")).sort(
                   />
                   <h4 class="title">{event.data.title}</h4>
                   <p class="date">
-                    <FormattedDate
-                      date={event.data.startDate}
-                      time={event.data.startTime}
+                    <FormattedEventDate
+                      startDate={event.data.startDate}
+                      startTime={event.data.startTime}
+                      endDate={event.data.endDate}
+                      endTime={event.data.endTime}
                     />
                   </p>
                 </a>
