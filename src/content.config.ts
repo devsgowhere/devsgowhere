@@ -7,7 +7,10 @@ const events = defineCollection({
     z.object({
       title: z.string(),
       description: z.string(),
-      eventDate: z.coerce.date(),
+      startDate: z.coerce.date(),
+      startTime: z.string(),
+      endDate: z.coerce.date().optional(),
+      endTime: z.string().optional(),
       updatedDate: z.coerce.date().optional(),
       heroImage: image(),
       rsvpButtonUrl: z.string().url().optional(),
