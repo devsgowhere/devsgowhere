@@ -5,6 +5,8 @@ venue: "NUS Enterprise@Blk71"
 eventDate: "24 April 2025"
 heroImage: "./highres_527198290.avif"
 tags: ["coding", "ios"]
+rsvpButtonUrl: "https://www.meetup.com/iosdevscout/events/307136645"
+rsvpButtonText: "RSVP on Meetup"
 ---
 
 Hello, fellow Apple fans and devs!
