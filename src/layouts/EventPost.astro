@@ -11,12 +11,17 @@ type Props = CollectionEntry<"events">["data"];
 const {
   title,
   description,
-  eventDate,
-  updatedDate,
+  startDate,
+  startTime,
+  endDate,
+  endTime,
   heroImage,
   rsvpButtonUrl,
   rsvpButtonText,
 } = Astro.props;
+
+const isSingleDayEvent =
+  !endDate || startDate.toISOString() === endDate?.toISOString();
 ---
 
 <html lang="en">
@@ -91,17 +96,21 @@ const {
         </div>
         <div class="prose">
           <div class="title">
-            <div class="date">
-              <FormattedDate date={eventDate} />
+            <h1>{title}</h1>
+            <h4 class="date">
+              <FormattedDate date={startDate} time={startTime} />
+
+              {(!isSingleDayEvent || endTime) && "-"}
+
               {
-                updatedDate && (
-                  <div class="last-updated-on">
-                    Last updated on <FormattedDate date={updatedDate} />
-                  </div>
+                !isSingleDayEvent && (
+                  <FormattedDate date={endDate} time={endTime} />
                 )
               }
-            </div>
-            <h1>{title}</h1>
+
+              {isSingleDayEvent && endTime && <FormattedDate time={endTime} />}
+            </h4>
+
             {
               rsvpButtonUrl && (
                 <a
