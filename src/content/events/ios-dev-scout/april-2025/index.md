@@ -1,6 +1,6 @@
 ---
 title: "iOS Dev Scout Meetup April 2025: Fresh Learnings for Spring 🌸"
-description: "Meow"
+description: "Hello, fellow Apple fans and devs! As sakura petals drift through the breeze in Japan, here in sunny Singapore, our community is blooming too! 🌞🌸. Whether you're a regular at our meetups or it's your first time joining, this is your sign to come out of hibernation and reconnect with fellow iOS folks over good convos and even better vibes."
 venue: "NUS Enterprise@Blk71"
 eventDate: "24 April 2025"
 heroImage: "./highres_527198290.avif"
