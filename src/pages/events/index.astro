@@ -8,7 +8,7 @@ import { Image } from "astro:assets";
 import FormattedDate from "../../components/FormattedDate.astro";
 
 const events = (await getCollection("events")).sort(
-  (a, b) => b.data.eventDate.valueOf() - a.data.eventDate.valueOf()
+  (a, b) => b.data.startDate.valueOf() - a.data.startDate.valueOf()
 );
 ---
 
@@ -103,7 +103,10 @@ const events = (await getCollection("events")).sort(
                   />
                   <h4 class="title">{event.data.title}</h4>
                   <p class="date">
-                    <FormattedDate date={event.data.eventDate} />
+                    <FormattedDate
+                      date={event.data.startDate}
+                      time={event.data.startTime}
+                    />
                   </p>
                 </a>
               </li>

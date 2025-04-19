@@ -2,7 +2,10 @@
 title: "Developer's Gym - Coding Dojo (Let's Practice TDD)"
 description: "A Coding Dojo is a meeting where a bunch of coders get together to work on a programming challenge. They are there to have fun and to engage in Deliberate Practice in order to improve their skills."
 venue: "Open Government Products"
-eventDate: "26 April 2025"
+startDate: "26 April 2025"
+startTime: "10am"
+endDate: "26 April 2025"
+endTime: "1pm"
 heroImage: "./600_482666709.avif"
 tags: ["junior-devs", "coding-dojo", "tdd"]
 rsvpButtonUrl: "https://www.meetup.com/junior-developers-singapore/events/307083061"
