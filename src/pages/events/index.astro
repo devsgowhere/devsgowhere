@@ -7,6 +7,8 @@ import { getCollection } from "astro:content";
 import { Image } from "astro:assets";
 import FormattedEventDate from "../../components/FormattedEventDate.astro";
 
+const orgs = await getCollection("orgs");
+
 const events = (await getCollection("events")).sort(
   (a, b) => b.data.startDate.valueOf() - a.data.startDate.valueOf()
 );
@@ -58,11 +60,16 @@ const events = (await getCollection("events")).sort(
         color: rgb(var(--black));
         line-height: 1;
       }
+      .org-name {
+        margin: 0;
+        color: rgb(var(--gray));
+      }
       .date {
         margin: 0;
         color: rgb(var(--gray));
       }
       ul li a:hover h4,
+      ul li a:hover .org-name,
       ul li a:hover .date {
         color: rgb(var(--accent));
       }
@@ -102,6 +109,12 @@ const events = (await getCollection("events")).sort(
                     alt=""
                   />
                   <h4 class="title">{event.data.title}</h4>
+                  <p class="org-name">
+                    {
+                      orgs.find((org) => org.id === event.data.org.id)?.data
+                        .title
+                    }
+                  </p>
                   <p class="date">
                     <FormattedEventDate
                       startDate={event.data.startDate}

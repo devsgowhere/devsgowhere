@@ -1,6 +1,7 @@
 ---
 title: "Developer's Gym - Coding Dojo (Let's Practice TDD)"
 description: "A Coding Dojo is a meeting where a bunch of coders get together to work on a programming challenge. They are there to have fun and to engage in Deliberate Practice in order to improve their skills."
+org: "juniordevsg"
 venue: "Open Government Products"
 startDate: "26 April 2025"
 startTime: "10am"
