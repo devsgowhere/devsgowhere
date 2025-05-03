@@ -39,6 +39,23 @@ import "../styles/fontawesome/scss/solid.scss";
 		--base-color: #eeeeee;
 	}
 
+	// grays from gray-1 to gray-7
+	$grays: (
+		"1": #dfdfdf,
+		"2": #bfbfbf,
+		"3": #a0a0a0,
+		"4": #808080,
+		"5": #606060,
+		"6": #404040,
+		"7": #202020,
+	);
+	
+	:root {
+		@each $key, $value in $grays {
+			--gray-#{$key}: #{$value};
+		}
+	}
+
 	html {
 		background-color: var(--base-color);
 	}
@@ -82,6 +99,13 @@ import "../styles/fontawesome/scss/solid.scss";
 
 	.text-code {
 		font-family: var(--font-family-code) !important;
+	}
+
+	// text colors from text-gray-1 to text-gray-7
+	@each $key, $value in $grays {
+		.text-gray-#{$key} {
+			color: var(--gray-#{$key}) !important;
+		}
 	}
 
 	// text sizes from text-2xs to text-3xl
