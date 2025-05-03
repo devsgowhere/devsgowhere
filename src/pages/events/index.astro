@@ -1,7 +1,9 @@
 ---
 import BaseHead from "../../components/BaseHead.astro";
 import Header from "../../components/Header.astro";
+import Theme from "../../layouts/Theme.astro";
 import Footer from "../../components/Footer.astro";
+
 import { SITE_TITLE, SITE_DESCRIPTION } from "../../consts";
 import { getCollection } from "astro:content";
 import { Image } from "astro:assets";
@@ -23,9 +25,12 @@ const events = (await getCollection("events"))
   <head>
     <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
   </head>
-  <body>
+  <Theme>
     <Header />
-    <main class="events-list-page">
+    <main class="events-list-page pt-xl pb-3xl">
+      <h1 class="text-3xl text-bold text-accent mb-xl">
+        Upcoming Events
+      </h1>
       <div class="container">
         <section>
           <ul class="event-list">
@@ -75,7 +80,7 @@ const events = (await getCollection("events"))
       </div>
     </main>
     <Footer />
-  </body>
+  </Theme>
 </html>
 
 <style lang="scss">
