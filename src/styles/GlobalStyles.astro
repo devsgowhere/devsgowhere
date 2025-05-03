@@ -39,17 +39,21 @@ import "../styles/fontawesome/scss/solid.scss";
 		--base-color: #eeeeee;
 	}
 
-	// grays from gray-1 to gray-7
+	//
+	// Define grays from gray-1 to gray-8
+	//
+
 	$grays: (
-		"1": #dfdfdf,
-		"2": #bfbfbf,
-		"3": #a0a0a0,
-		"4": #808080,
-		"5": #606060,
-		"6": #404040,
-		"7": #202020,
+		"1": #ededed,
+		"2": #dfdfdf,
+		"3": #bfbfbf,
+		"4": #a0a0a0,
+		"5": #808080,
+		"6": #606060,
+		"7": #404040,
+		"8": #202020,
 	);
-	
+
 	:root {
 		@each $key, $value in $grays {
 			--gray-#{$key}: #{$value};
@@ -139,6 +143,79 @@ import "../styles/fontawesome/scss/solid.scss";
 	}
 
 	//
+	//
+	// Margins and paddings
+	//
+	//
+
+	// Define spaces from 3xs to 4xl
+	$spaces: (
+		"0": 0,
+		"3xs": 0.125rem,
+		"2xs": 0.25rem,
+		"xs": 0.5rem,
+		"s": 0.75rem,
+		"base": 1rem,
+		"m": 1rem,
+		"l": 1.25rem,
+		"xl": 1.5rem,
+		"2xl": 2rem,
+		"3xl": 4rem,
+		"4xl": 8rem
+	);
+
+	@each $space, $value in $spaces {
+
+		.m-#{$space} {
+			margin: $value !important;
+		}
+		.mt-#{$space} {
+			margin-top: $value !important;
+		}
+		.mb-#{$space} {
+			margin-bottom: $value !important;
+		}
+		.ml-#{$space} {
+			margin-left: $value !important;
+		}
+		.mr-#{$space} {
+			margin-right: $value !important;
+		}
+		.my-#{$space} {
+			margin-top: $value !important;
+			margin-bottom: $value !important;
+		}
+		.mx-#{$space} {
+			margin-left: $value !important;
+			margin-right: $value !important;
+		}
+
+		.p-#{$space} {
+			padding: $value !important;
+		}
+		.pt-#{$space} {
+			padding-top: $value !important;
+		}
+		.pb-#{$space} {
+			padding-bottom: $value !important;
+		}
+		.pl-#{$space} {
+			padding-left: $value !important;
+		}
+		.pr-#{$space} {
+			padding-right: $value !important;
+		}
+		.py-#{$space} {
+			padding-top: $value !important;
+			padding-bottom: $value !important;
+		}
+		.px-#{$space} {
+			padding-left: $value !important;
+			padding-right: $value !important;
+		}
+	}
+
+	//
 	// 
 	// Layout
 	//
@@ -149,6 +226,34 @@ import "../styles/fontawesome/scss/solid.scss";
 		margin: 0 auto;
 	}
 
+	//
+	// 
+	// Tags
+	//
+	//
+
+	.tag-list{
+
+		list-style-type: none;
+		display: inline-flex;
+		gap: .25em;
+		flex-wrap: wrap;
+		padding: 0;
+
+	}
+
+	.tag {
+
+		display: inline-block;
+		
+		background-color: rgb(222, 241, 254);
+		color: rgb(0, 128, 255);
+
+		border-radius: 2em;
+		padding: .125em .5em;
+		font-size: .875em;
+
+	}
 
 </style>
 <!-- End: Global styles -->
