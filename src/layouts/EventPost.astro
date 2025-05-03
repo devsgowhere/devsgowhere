@@ -5,6 +5,7 @@ import { getEntry } from "astro:content";
 import BaseHead from "../components/BaseHead.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
+import SummaryCard from "../components/SummaryCard.astro";
 import FormattedEventDate from "../components/FormattedEventDate.astro";
 
 type Props = CollectionEntry<"events">["data"];
@@ -20,6 +21,8 @@ const {
   rsvpButtonUrl,
   rsvpButtonText,
   org,
+  venue,
+  venueAddress,
 } = Astro.props;
 
 const orgData = await getEntry(org);
@@ -90,9 +93,9 @@ const orgData = await getEntry(org);
 
   <body>
     <Header />
-    <main>
+    <main style="display: flex; gap: 2em; justify-content: center;">
       <div class="container">
-        <article>
+        <article style="flex: 7;">
           <div class="hero-image">
             {
               heroImage && (
@@ -130,6 +133,21 @@ const orgData = await getEntry(org);
             <slot />
           </div>
         </article>
+        <aside style="flex: 3; position: sticky; top: 1em; align-self: start;">
+          <SummaryCard
+            title={title}
+            description={description}
+            startDate={startDate}
+            startTime={startTime}
+            endDate={endDate}
+            endTime={endTime}
+            venue={venue}
+            venueAddress={venueAddress}
+            org={org && orgData.data.title}
+            rsvpButtonUrl={rsvpButtonUrl}
+            rsvpButtonText={rsvpButtonText}
+          />
+        </aside>
       </div>
     </main>
     <Footer />

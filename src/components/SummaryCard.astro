@@ -1,0 +1,137 @@
+---
+import FormattedEventDate from "../components/FormattedEventDate.astro";
+import AddToCalendarButton from "../components/AddToCalendarButton.tsx";
+
+// Props for the SummaryCard component
+export interface Props {
+  title: string;
+  description: string;
+  startDate: string;
+  endDate: string;
+  startTime: string;
+  endTime: string;
+  venue: string;
+  org: string;
+  venueAddress: string;
+  rsvpButtonUrl: string;
+  rsvpButtonText: string;
+}
+
+const {
+  title,
+  description,
+  startDate,
+  endDate,
+  startTime,
+  endTime,
+  venue,
+  org,
+  venueAddress,
+  rsvpButtonUrl,
+  rsvpButtonText,
+} = Astro.props;
+---
+
+<div class="summary-card">
+  <h2 class="summary-card__title">{title}</h2>
+  <div class="summary-card__details">
+    <div class="event-date">
+      <span class="icon">📅</span>
+      <FormattedEventDate
+        startDate={startDate}
+        startTime={startTime}
+        endDate={endDate}
+        endTime={endTime}
+      />
+    </div>
+    <div class="event-location">
+      <div style="display: flex; align-items: top;">
+        <span
+          class="icon"
+          style="display: inline-block; vertical-align: middle; margin-right: 8px;"
+          >📍</span
+        >
+        <div
+          style="display: flex; flex-direction: column; align-items: flex-start;"
+        >
+          <p style="margin: 0; font-weight: bold;">{venue}</p>
+          <p style="margin: 0; color: #888;">{venueAddress}</p>
+        </div>
+      </div>
+    </div>
+    <div
+      style="display: flex; flex-direction: column; align-items: center; gap: 8px;"
+    >
+      {
+        rsvpButtonUrl && (
+          <a
+            href={rsvpButtonUrl}
+            class="rsvp-button"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {rsvpButtonText ?? "RSVP"}
+          </a>
+        )
+      }
+      <AddToCalendarButton
+        client:only="react"
+        label="Add to Calendar"
+        name={title}
+        options="'Apple','Google'"
+        location={venue}
+        startDate={new Date(startDate).toISOString().split("T")[0]}
+        endDate={new Date(endDate).toISOString().split("T")[0]}
+        timeZone="Singapore"
+      />
+    </div>
+  </div>
+
+  <style>
+    .summary-card {
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 16px;
+      max-width: 300px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    .summary-card__image {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+
+    .summary-card__title {
+      font-size: 1.5rem;
+      margin-bottom: 8px;
+    }
+
+    .summary-card__details {
+      color: #555;
+      text-align: left;
+    }
+
+    .summary-card__details p {
+      margin: 4px 0;
+    }
+
+    .rsvp-button {
+      display: inline-block;
+      padding: 0.4em 0.8em;
+      margin: 0.5em 0;
+      background-color: var(--accent);
+      color: white;
+      text-decoration: none;
+      border-radius: 4px;
+      font-weight: bold;
+      transition: background-color 0.2s ease;
+    }
+    .rsvp-button:hover {
+      background-color: var(--accent-dark);
+      color: white;
+    }
+  </style>
+</div>
