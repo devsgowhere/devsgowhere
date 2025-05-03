@@ -91,44 +91,46 @@ const orgData = await getEntry(org);
   <body>
     <Header />
     <main>
-      <article>
-        <div class="hero-image">
-          {
-            heroImage && (
-              <Image width={1020} height={510} src={heroImage} alt="" />
-            )
-          }
-        </div>
-        <div class="prose">
-          <div class="title">
-            <h1>{title}</h1>
-            {org && <h4 class="org-name">{orgData.data.title}</h4>}
-            <h4 class="date">
-              <FormattedEventDate
-                startDate={startDate}
-                startTime={startTime}
-                endDate={endDate}
-                endTime={endTime}
-              />
-            </h4>
-
+      <div class="container">
+        <article>
+          <div class="hero-image">
             {
-              rsvpButtonUrl && (
-                <a
-                  href={rsvpButtonUrl}
-                  class="rsvp-button"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {rsvpButtonText ?? "Link"}
-                </a>
+              heroImage && (
+                <Image width={1020} height={510} src={heroImage} alt="" />
               )
             }
-            <hr />
           </div>
-          <slot />
-        </div>
-      </article>
+          <div class="prose">
+            <div class="title">
+              <h1>{title}</h1>
+              {org && <h4 class="org-name">{orgData.data.title}</h4>}
+              <h4 class="date">
+                <FormattedEventDate
+                  startDate={startDate}
+                  startTime={startTime}
+                  endDate={endDate}
+                  endTime={endTime}
+                />
+              </h4>
+
+              {
+                rsvpButtonUrl && (
+                  <a
+                    href={rsvpButtonUrl}
+                    class="rsvp-button"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {rsvpButtonText ?? "Link"}
+                  </a>
+                )
+              }
+              <hr />
+            </div>
+            <slot />
+          </div>
+        </article>
+      </div>
     </main>
     <Footer />
   </body>
