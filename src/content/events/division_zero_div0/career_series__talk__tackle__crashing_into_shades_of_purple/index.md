@@ -5,9 +5,8 @@ description: "Career Series: Talk & Tackle is a dynamic initiative designed to e
 venue: "CyberSG TIG Collaboration Centre"
 venueAddress: "71 Ayer Rajah Crescent, Singapore"
 startDate: "14 May 2025"
-startTime: "6:30pm"
+startTime: "18:30:00"
 endDate: "14 May 2025"
-endTime: ""
 heroImage: "./highres_527498373.avif"
 tags: ["Events in Singapore, SG", "Computer Security", "Hacking", "Cybersecurity", "Ethical Hacking", "Information Security"]
 rsvpButtonUrl: "https://www.meetup.com/div0_sg/events/307398335"

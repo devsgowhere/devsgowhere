@@ -3,8 +3,10 @@
 read -p "Which org is this for (use the org code): " org_name
 read -p "Enter the event name: " event_name
 read -p "Enter the event summary: " event_summary
-read -p "Enter the event date (Format: d-MMM-YYYY): " event_date
-read -p "Enter the event start time: " event_start_time
+read -p "Enter the event start date (Format: d-MMM-YYYY): " event_start_date
+read -p "Enter the event start time (Format: HH:MM:SS): " event_start_time
+read -p "Enter the event end date (Format: d-MMM-YYYY): " event_end_date
+read -p "Enter the event end time (Format: HH:MM:SS): " event_end_time
 read -p "Enter the event venue name: " event_venue_name
 read -p "Enter the event venue address: " event_venue_address
 read -p "Enter the event URL: " event_url
@@ -21,7 +23,7 @@ if [[ ! -f "$template_file" ]]; then
 fi
 
 
-export org_name event_name event_summary event_date event_start_time event_venue_name event_venue_address event_url
+export org_name event_name event_summary event_start_date event_start_time event_end_date event_end_time event_venue_name event_venue_address event_url
 
 envsubst < "$template_file" > "$event_folder_name/index.md"
 

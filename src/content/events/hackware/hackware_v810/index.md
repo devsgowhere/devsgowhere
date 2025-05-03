@@ -5,9 +5,9 @@ description: "Hackware is a monthly meetup for developers and enthusiasts to sha
 venue: "TBA"
 venueAddress: ""
 startDate: "8 May 2025"
-startTime: "7:30pm"
+startTime: "19:30:00"
 endDate: "8 May 2025"
-endTime: "9:30pm"
+endTime: "21:30:00"
 heroImage: "./highres_510187762.avif"
 tags: [ "Events in Singapore, SG", "Electronics", "Hardware", "Embedded Systems", "Hardware Engineering", "Makers"]
 rsvpButtonUrl: "https://www.meetup.com/hackware/events/307380543/?eventOrigin=home_page_upcoming_events%24all"

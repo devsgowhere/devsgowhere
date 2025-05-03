@@ -5,9 +5,8 @@ description: "Join Isha Tripathi — experienced conference speaker and seasoned
 venue: "Credit Agricole CIB – Polymorphic Room"
 venueAddress: "Mapletree Business City II, 80 Pasir Panjang Road #23, Singapore"
 startDate: "10 May 2025"
-startTime: "2pm"
+startTime: "14:00:00"
 endDate: "10 May 2025"
-endTime: ""
 heroImage: "./highres_527516549.avif"
 tags: [ "Events in Singapore, SG", "Public Speaking", "Technology", "Confidence and Self-Esteem", "Women in Technology", "Facilitation" ]
 rsvpButtonUrl: "https://www.meetup.com/women-devs-sg/events/307194104"
