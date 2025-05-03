@@ -3,6 +3,19 @@ title: "Junior Developers Singapore"
 description: "Are you a Junior Developer or newbie in the Tech industry? Do you sometimes feel anxious about work or question your own abilities? Are you excited to be starting your career and want to celebrate your accomplishments with others? You are not alone!"
 heroImage: "./hero.avif"
 tags: ["coding", "ios"]
+links:
+  - title: "LinkTree"
+    url: "https://linktr.ee/juniordevsg"
+  - title: "Meetup.com"
+    url: "https://www.meetup.com/Junior-Developers-Singapore/"
+  - title: "Instagram"
+    url: "https://www.instagram.com/juniordevsingapore"
+  - title: "Twitter / X"
+    url: "https://twitter.com/juniordevsg"
+  - title: "Facebook"
+    url: "https://www.facebook.com/groups/juniorDevSG/"
+  - title: "Videos"
+    url: "https://engineers.sg/organization/juniordevsg"
 ---
 
 Are you a Junior Developer or newbie in the Tech industry? Do you sometimes feel anxious about work or question your own abilities? Are you excited to be starting your career and want to celebrate your accomplishments with others? You are not alone!
