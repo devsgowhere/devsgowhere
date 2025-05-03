@@ -1,7 +1,7 @@
 ---
 title: "$org_name"
 description: "$%org_description"
-heroImage: "blog-placeholder-about.jpg"
+heroImage: "https://placecats.com/300/200?fit=contain&position=top"
 tags: ["coding", "singapore"]
 ---
 
