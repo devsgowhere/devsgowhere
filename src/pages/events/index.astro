@@ -9,9 +9,13 @@ import FormattedEventDate from "../../components/FormattedEventDate.astro";
 
 const orgs = await getCollection("orgs");
 
-const events = (await getCollection("events")).sort(
-  (a, b) => b.data.startDate.valueOf() - a.data.startDate.valueOf()
-);
+const now = new Date();
+const events = (await getCollection("events"))
+  .filter((event) => {
+    const startDate = new Date(event.data.startDate);
+    return startDate >= now;
+  })
+  .sort((a, b) => a.data.startDate.valueOf() - b.data.startDate.valueOf());
 ---
 
 <!doctype html>

@@ -1,8 +1,8 @@
 ---
-title: "Org name"
-description: "Some description"
-heroImage: "./path_to_image.png"
+title: "$org_name"
+description: "$%org_description"
+heroImage: "https://placecats.com/300/200?fit=contain&position=top"
 tags: ["coding", "singapore"]
 ---
 
-Some Markdown description here.
+$org_description
