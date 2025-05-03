@@ -1,68 +1,53 @@
-# devsgowhere
+# DevsGoWhere
 
-```sh
-npm create astro@latest -- --template blog
-```
+Discover events for engineers in Singapore!
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/withastro/astro/tree/latest/examples/blog)
-[![Open with CodeSandbox](https://assets.codesandbox.io/github/button-edit-lime.svg)](https://codesandbox.io/p/sandbox/github/withastro/astro/tree/latest/examples/blog)
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/withastro/astro?devcontainer_path=.devcontainer/blog/devcontainer.json)
+## To make changes
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+1. Fork this GitHub repository.
+2. Make the changes you need in a new branch.
+3. Make a Pull Request to this repo.
+4. Once your Pull Request has been merged, you will see the event on the website.
 
-![blog](https://github.com/withastro/astro/assets/2244813/ff10799f-a816-4703-b967-c78997e8323d)
+## To Add an Organisation
 
-Features:
+1. Create a new folder for your org. Use underscore ("_") instad of spaces (" ").
 
-- ✅ Minimal styling (make it your own!)
-- ✅ 100/100 Lighthouse performance
-- ✅ SEO-friendly with canonical URLs and OpenGraph data
-- ✅ Sitemap support
-- ✅ RSS Feed support
-- ✅ Markdown & MDX support
+    ```bash
+    mkdir src/content/orgs/<name_of_org>
+    ```
 
-## 🚀 Project Structure
+2. Copy the template into the new folder.
 
-Inside of your Astro project, you'll see the following folders and files:
+    ```bash
+    cp docs/org_template.md src/content/orgs/<name_of_org>/index.md
+    ```
 
-```text
-├── public/
-├── src/
-│   ├── components/
-│   ├── content/
-│   ├── layouts/
-│   └── pages/
-├── astro.config.mjs
-├── README.md
-├── package.json
-└── tsconfig.json
-```
+3. Edit the new markdown file with your content.
+4. You can also put the image files in your org folder.
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+## To Add an Event
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+1. Create a new folder for your org in the events folder. Use underscore ("_") instad of spaces (" ").
 
-The `src/content/` directory contains "collections" of related Markdown and MDX documents. Use `getCollection()` to retrieve posts from `src/content/blog/`, and type-check your frontmatter using an optional schema. See [Astro's Content Collections docs](https://docs.astro.build/en/guides/content-collections/) to learn more.
+    ```bash
+    mkdir src/content/events/<name_of_org>
+    ```
 
-Any static assets, like images, can be placed in the `public/` directory.
+    > **Important**: Use the same folder name as your org.
 
-## 🧞 Commands
+2. Create a new event folder with the event name. Use underscore ("_") instad of spaces (" ").
 
-All commands are run from the root of the project, from a terminal:
+    ```bash
+    mkdir src/content/events/<name_of_org>/<event_name>
+    ```
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+3. Copy the template into the new folder.
 
-## 👀 Want to learn more?
+    ```bash
+    cp docs/event_template.md src/content/events/<name_of_org>/<event_name>/index.md
+    ```
 
-Check out [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+4. Edit the new markdown file with your event details.
+5. You can also put the image files in your event folder.
 
-## Credit
-
-This theme is based off of the lovely [Bear Blog](https://github.com/HermanMartinus/bearblog/).
