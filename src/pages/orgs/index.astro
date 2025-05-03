@@ -125,8 +125,6 @@ const orgs = (await getCollection("orgs")).sort((a, b) =>
         color: inherit;
       }
 
-    
-
       // constrain the image to the tile
       img {
         width: 100%;
@@ -143,6 +141,11 @@ const orgs = (await getCollection("orgs")).sort((a, b) =>
         flex-direction: column;
         justify-content: space-between;
 
+      }
+
+      &:hover .org-name {
+        text-decoration: underline;
+        text-decoration-thickness: 2px;
       }
 
     }
