@@ -68,12 +68,50 @@ import "../styles/fontawesome/scss/solid.scss";
 		font-family: var(--font-family-header);
 	}
 
+	.text-header {
+		font-family: var(--font-family-header) !important;
+	}
+
 	h1, h2, h3, h4 {
 		font-weight: 400;
 	}
 
 	code {
 		font-family: var(--font-family-code);
+	}
+
+	.text-code {
+		font-family: var(--font-family-code) !important;
+	}
+
+	// text sizes from text-2xs to text-3xl
+	$text-sizes: (
+		"2xs": 0.5rem,
+		"xs": 0.75rem,
+		"s": 0.875rem,
+		"base": 1rem,
+		"l": 1.125rem,
+		"xl": 1.25rem,
+		"2xl": 1.5rem,
+		"3xl": 1.875rem,
+	);
+
+	@each $size, $value in $text-sizes {
+		.text-#{$size} {
+			font-size: $value !important;
+		}
+	}
+
+	.text-bold {
+		font-weight: 700 !important;
+	}
+
+	.text-italic {
+		font-style: italic !important;
+	}
+
+	.text-underline {
+		text-decoration: underline !important;
 	}
 
 	//
