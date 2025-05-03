@@ -29,6 +29,10 @@ const orgs = defineCollection({
       title: z.string(),
       description: z.string().optional().nullable(),
       heroImage: image(),
+      links: z.array(z.object({
+        title: z.string(),
+        url: z.string().url(),
+      })).optional(),
       tags: z.array(z.string()).optional(),
     }),
 });

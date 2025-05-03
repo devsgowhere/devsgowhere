@@ -7,7 +7,7 @@ import Footer from "../components/Footer.astro";
 
 type Props = CollectionEntry<"orgs">["data"];
 
-const { title, description, heroImage } = Astro.props;
+const { title, description, links, heroImage } = Astro.props;
 ---
 
 <html lang="en">
@@ -64,7 +64,32 @@ const { title, description, heroImage } = Astro.props;
             <hr />
           </div>
           <slot />
+          <hr />
         </div>
+        {
+          links && (
+            <div class="sidebar">
+              <h2>Links</h2>
+              <ul>
+                {links?.map((link) => {
+                  const { url, title } = link;
+                  return (
+                    <li>
+                      <a
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="text-blue-500 hover:underline"
+                      >
+                        {title}
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )
+        }
       </article>
     </main>
     <Footer />
