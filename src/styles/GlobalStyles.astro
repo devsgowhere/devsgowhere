@@ -5,8 +5,41 @@
 
 <!-- Global styles -->
 <style lang="scss" is:global>
-	
-	// typography
+
+	// 
+	//
+	// Reset styles
+	//
+	//
+	* {
+		margin: 0;
+		padding: 0;
+		box-sizing: border-box;
+	}
+	*::before,
+	*::after {
+		box-sizing: border-box;
+	}
+
+	//
+	//
+	// Colors
+	//
+	//
+
+	:root {
+		--base-color: #eeeeee;
+	}
+
+	html {
+		background-color: var(--base-color);
+	}
+
+	//
+	//
+	// Typography
+	//
+	//
 	:root {
 
 		// body
@@ -35,6 +68,16 @@
 		font-family: var(--font-family-code);
 	}
 
+	//
+	// 
+	// Layout
+	//
+	//
+
+	.container {
+		max-width: 1200px;
+		margin: 0 auto;
+	}
 
 
 </style>
