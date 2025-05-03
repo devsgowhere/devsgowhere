@@ -6,7 +6,7 @@ import { SITE_TITLE } from "../consts";
 <header>
   <nav>
     <h2><a href="/">{SITE_TITLE}</a></h2>
-    <div class="internal-links">
+    <div class="internal-links" id="internal-links">
       <HeaderLink href="/events">Events</HeaderLink>
       <HeaderLink href="/orgs">Organisers</HeaderLink>
       <HeaderLink href="/about">About</HeaderLink>
@@ -22,6 +22,28 @@ import { SITE_TITLE } from "../consts";
         >
       </a>
     </div>
+    <button
+      class="hamburger"
+      id="hamburger-btn"
+      aria-label="Open menu"
+      type="button"
+    >
+      <svg
+        width="32"
+        height="32"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        ><line x1="3" y1="12" x2="21" y2="12"></line><line
+          x1="3"
+          y1="6"
+          x2="21"
+          y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg
+      >
+    </button>
   </nav>
 </header>
 <style>
@@ -37,7 +59,11 @@ import { SITE_TITLE } from "../consts";
     flex: 1;
   }
 
-  h2 a,
+  h2 a {
+    display: inline-block;
+    padding: 1em 0.5em;
+    text-decoration: none;
+  }
   h2 a.active {
     text-decoration: none;
   }
@@ -69,9 +95,49 @@ import { SITE_TITLE } from "../consts";
     display: flex;
     justify-content: flex-end;
   }
+  .hamburger {
+    display: none;
+    background: none;
+    border: none;
+    padding: 1em 0.5em;
+    cursor: pointer; /* not really needed for mobile view, but good for accessibility */
+    align-items: center;
+    justify-content: center;
+  }
   @media (max-width: 720px) {
+    .internal-links {
+      display: none;
+      position: absolute;
+      top: 60px;
+      left: 0;
+      right: 0;
+      background: white;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(var(--black), 5%);
+      z-index: 1000;
+    }
+    .internal-links.open {
+      display: flex;
+    }
+    .internal-links a {
+      border-bottom: none;
+    }
+    .hamburger {
+      display: flex;
+    }
     .social-links {
       display: none;
     }
   }
 </style>
+
+<script>
+  const btn = document.getElementById("hamburger-btn");
+  const menu = document.getElementById("internal-links");
+  if (btn && menu) {
+    btn.addEventListener("click", () => {
+      menu.classList.toggle("open");
+    });
+  }
+</script>
