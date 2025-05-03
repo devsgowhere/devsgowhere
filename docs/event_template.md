@@ -8,7 +8,7 @@ startDate: "$event_date"
 startTime: "$event_start_time"
 endDate: "$event_date"
 endTime: ""
-heroImage: "blog-placeholder-about.jpg"
+heroImage: "https://placecats.com/300/200?fit=contain&position=top"
 tags: []
 rsvpButtonUrl: "$event_url"
 rsvpButtonText: "RSVP on Meetup"
