@@ -74,7 +74,11 @@ import "../styles/fontawesome/scss/solid.scss";
 		--card-border-color-active: var(--gray-7);
 		--card-shadow-color-active: var(--gray-4);
 
+		--link-text-color: blue;
+
 		--footer-text-color: inherit;
+
+		--text-accent-color: rgb(88, 26, 243);
 
 	}
 
@@ -129,7 +133,11 @@ import "../styles/fontawesome/scss/solid.scss";
 		--card-border-color-active: var(--gray-8);
 		--card-shadow-color-active: var(--color-5);
 
-		--footer-text-color: var(--color-5);
+		--link-text-color: var(--color-5);
+
+		--footer-text-color: var(--color-4);
+
+		--text-accent-color: var(--color-4);
 
 	}
 
@@ -172,6 +180,7 @@ import "../styles/fontawesome/scss/solid.scss";
 	}
 
 	h1, h2, h3, h4 {
+		margin-bottom: .5em;
 		font-weight: 400;
 	}
 
@@ -184,7 +193,12 @@ import "../styles/fontawesome/scss/solid.scss";
 	}
 
 	p {
-		margin-bottom: 1em;
+		margin-bottom: 1.5em;
+	}
+
+	a {
+		color: var(--link-text-color);
+		text-decoration: underline;
 	}
 
 	// text colors from text-gray-1 to text-gray-7
@@ -192,6 +206,10 @@ import "../styles/fontawesome/scss/solid.scss";
 		.text-gray-#{$key} {
 			color: var(--gray-#{$key}) !important;
 		}
+	}
+
+	.text-accent {
+		color: var(--text-accent-color) !important;
 	}
 
 	// text sizes from text-2xs to text-3xl
