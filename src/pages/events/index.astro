@@ -28,7 +28,7 @@ const events = (await getCollection("events"))
     <main class="events-list-page">
       <div class="container">
         <section>
-          <ul class="events-list">
+          <ul class="event-list">
             {
               events.map((event) => (
                 <li class="event-list-item">
@@ -40,14 +40,14 @@ const events = (await getCollection("events"))
                       alt=""
                     />
                     <div class="event-list-item__info">
-                      <div class="org-name text-gray-4">
+                      <div class="org-name text-gray-5 mb-2xs">
                         {
                           orgs.find((org) => org.id === event.data.org.id)?.data
                             .title
                         }
                       </div>
-                      <div class="event-title text-3xl text-bold">{event.data.title}</div>
-                      <div class="event-date">
+                      <div class="event-title text-3xl text-bold mb-xs">{event.data.title}</div>
+                      <div class="event-date mb-m">
                         <i class="fa fa-calendar-days"></i>
                         <FormattedEventDate
                           startDate={event.data.startDate}
@@ -56,6 +56,15 @@ const events = (await getCollection("events"))
                           endTime={event.data.endTime}
                         />
                       </div>
+                      <ul class="tag-list">
+                        { event.data.tags?.map((tag)=>{
+                          return (
+                            <li class="tag">
+                              #{tag}
+                            </li>
+                          )
+                        }) }
+                      </ul>
                     </div>
                   </a>
                 </li>
@@ -75,7 +84,7 @@ const events = (await getCollection("events"))
     text-align: center;
   }
 
-  ul.events-list {
+  ul.event-list {
     list-style: none;
     padding: 0;
     margin: 0;
@@ -130,18 +139,6 @@ const events = (await getCollection("events"))
       padding: 1rem;
       text-align: left;
     }
-
-    // org name
-    .org-name {
-      // color: rgb(125, 125, 125);
-    }
-
-    // event title
-    .event-title {
-      margin-bottom: 0.5rem;
-    }
-
-
 
   }
 
