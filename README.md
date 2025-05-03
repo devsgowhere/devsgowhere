@@ -2,14 +2,16 @@
 
 Discover events for engineers in Singapore!
 
-## To make changes
+## Contributing
+
+### To make changes
 
 1. Fork this GitHub repository.
 2. Make the changes you need in a new branch.
 3. Make a Pull Request to this repo.
 4. Once your Pull Request has been merged, you will see the event on the website.
 
-## To Add an Organisation
+### To Add an Organisation
 
 1. Create a new folder for your org. Use underscore ("_") instad of spaces (" ").
 
@@ -26,7 +28,7 @@ Discover events for engineers in Singapore!
 3. Edit the new markdown file with your content.
 4. You can also put the image files in your org folder.
 
-## To Add an Event
+### To Add an Event
 
 1. Create a new folder for your org in the events folder. Use underscore ("_") instad of spaces (" ").
 
@@ -51,3 +53,30 @@ Discover events for engineers in Singapore!
 4. Edit the new markdown file with your event details.
 5. You can also put the image files in your event folder.
 
+## Developing
+
+### To run the app locally
+
+1. Install dependencies
+
+    ```bash
+    npm install
+    ```
+
+2. Start the app:
+
+    ```bash
+    npm run dev
+    ```
+
+    To stop the app, just press `Ctrl`+`C`.
+
+3. To test the compilation and build of the website:
+
+    ```bash
+    npm run build
+    ```
+
+### Deployment of the Website
+
+This repository is connected to [CloudFlare Pages](https://pages.cloudflare.com/). Any changes made to the `main` branch will be deployed to the website.
