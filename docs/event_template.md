@@ -1,4 +1,5 @@
 ---
+org: "og_name"
 title: "Event name"
 description: "Event description"
 venue: "Name of venue"
