@@ -29,8 +29,6 @@ const optimizedImage = await getImage({
 });
 ---
 
-<GlobalStyles />
-
 <!-- Global Metadata -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -84,3 +82,5 @@ const optimizedImage = await getImage({
   property="twitter:image"
   content={new URL(optimizedImage.src, Astro.url)}
 />
+
+<GlobalStyles />
