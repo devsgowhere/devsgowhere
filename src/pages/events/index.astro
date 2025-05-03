@@ -18,118 +18,110 @@ const events = (await getCollection("events")).sort(
 <html lang="en">
   <head>
     <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
-    <style>
-      main {
-        width: 960px;
-      }
-      ul {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 2rem;
-        list-style-type: none;
-        margin: 0;
-        padding: 0;
-      }
-      ul li {
-        width: calc(50% - 1rem);
-      }
-      ul li * {
-        text-decoration: none;
-        transition: 0.2s ease;
-      }
-      ul li:first-child {
-        width: 100%;
-        margin-bottom: 1rem;
-        text-align: center;
-      }
-      ul li:first-child img {
-        width: 100%;
-      }
-      ul li:first-child .title {
-        font-size: 2.369rem;
-      }
-      ul li img {
-        margin-bottom: 0.5rem;
-        border-radius: 12px;
-      }
-      ul li a {
-        display: block;
-      }
-      .title {
-        margin: 0;
-        color: rgb(var(--black));
-        line-height: 1;
-      }
-      .org-name {
-        margin: 0;
-        color: rgb(var(--gray));
-      }
-      .date {
-        margin: 0;
-        color: rgb(var(--gray));
-      }
-      ul li a:hover h4,
-      ul li a:hover .org-name,
-      ul li a:hover .date {
-        color: rgb(var(--accent));
-      }
-      ul a:hover img {
-        box-shadow: var(--box-shadow);
-      }
-      @media (max-width: 720px) {
-        ul {
-          gap: 0.5em;
-        }
-        ul li {
-          width: 100%;
-          text-align: center;
-        }
-        ul li:first-child {
-          margin-bottom: 0;
-        }
-        ul li:first-child .title {
-          font-size: 1.563em;
-        }
-      }
-    </style>
   </head>
   <body>
     <Header />
-    <main>
-      <section>
-        <ul>
-          {
-            events.map((event) => (
-              <li>
-                <a href={`/events/${event.id}/`}>
-                  <Image
-                    width={720}
-                    height={360}
-                    src={event.data.heroImage}
-                    alt=""
-                  />
-                  <h4 class="title">{event.data.title}</h4>
-                  <p class="org-name">
-                    {
-                      orgs.find((org) => org.id === event.data.org.id)?.data
-                        .title
-                    }
-                  </p>
-                  <p class="date">
-                    <FormattedEventDate
-                      startDate={event.data.startDate}
-                      startTime={event.data.startTime}
-                      endDate={event.data.endDate}
-                      endTime={event.data.endTime}
+    <main class="events-list-page">
+      <div class="container">
+        <section>
+          <ul class="events-list">
+            {
+              events.map((event) => (
+                <li class="event-list-item">
+                  <a href={`/events/${event.id}/`}>
+                    <Image
+                      width={720}
+                      height={360}
+                      src={event.data.heroImage}
+                      alt=""
                     />
-                  </p>
-                </a>
-              </li>
-            ))
-          }
-        </ul>
-      </section>
+                    <div class="event-list-item__info">
+                      <div class="event-title">{event.data.title}</div>
+                      <div class="org-name">
+                        {
+                          orgs.find((org) => org.id === event.data.org.id)?.data
+                            .title
+                        }
+                      </div>
+                      <div class="event-date">
+                        <FormattedEventDate
+                          startDate={event.data.startDate}
+                          startTime={event.data.startTime}
+                          endDate={event.data.endDate}
+                          endTime={event.data.endTime}
+                        />
+                      </div>
+                    </div>
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </section>
+      </div>
     </main>
     <Footer />
   </body>
 </html>
+
+<style lang="scss">
+
+  .events-list-page {
+    text-align: center;
+  }
+
+  ul.events-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  li.event-list-item a {
+
+    max-width: 720px;
+    
+    display: inline-block;
+    background-color: white;
+    border-radius: 1rem;
+    overflow: hidden;
+
+    box-shadow: 10px 10px 0 0 rgba(175, 175, 175, 0.665);
+
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+
+    text-decoration: none;
+    &:visited{
+      color: inherit;
+    }
+
+    border: 3px solid transparent;
+    &:hover {
+      border-color: black;
+    }
+
+    // image
+    img {
+      width: 720px;
+      height: 360px;
+      max-width: 100%;
+    }
+
+    // event info block
+    .event-list-item__info {
+      padding: 1rem;
+      text-align: left;
+    }
+
+    // event title
+    .event-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+
+
+  }
+
+</style>
