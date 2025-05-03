@@ -34,6 +34,7 @@ import { SITE_TITLE } from "../consts";
   h2 {
     margin: 0;
     font-size: 1em;
+    flex: 1;
   }
 
   h2 a,
@@ -43,7 +44,6 @@ import { SITE_TITLE } from "../consts";
   nav {
     display: flex;
     align-items: center;
-    justify-content: space-between;
   }
   nav a {
     padding: 1em 0.5em;
@@ -58,6 +58,16 @@ import { SITE_TITLE } from "../consts";
   .social-links,
   .social-links a {
     display: flex;
+  }
+  .internal-links {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+  }
+  .social-links {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
   }
   @media (max-width: 720px) {
     .social-links {
