@@ -16,7 +16,7 @@ const orgs = (await getCollection("orgs")).sort((a, b) =>
   <head>
     <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
   </head>
-  <body>
+  <body class="theme-tech-blue-aquamarine">
     <Header />
     <main class="pt-xl pb-3xl">
       <section></section>
@@ -25,7 +25,7 @@ const orgs = (await getCollection("orgs")).sort((a, b) =>
               {
                 orgs.map((org) => (
                   <li class="org-list-item">
-                    <a href={`/orgs/${org.id}/`}>
+                    <a class="card" href={`/orgs/${org.id}/`}>
                       <Image
                         width={360}
                         height={360}
@@ -74,19 +74,29 @@ const orgs = (await getCollection("orgs")).sort((a, b) =>
 
     // display a grid
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr; // on mobile, 1 column
     column-gap: 2rem;
     row-gap: 2rem;
+
+    padding: 0; // on mobile, no padding
 
     @media (min-width: 768px) {
       & {
         grid-template-columns: repeat(2, 1fr);
+        padding: 0 1rem;
       }
     }
 
     @media (min-width: 1024px) {
       & {
         grid-template-columns: repeat(3, 1fr);
+        padding: 0 1rem;
+      }
+    }
+
+    @media (min-width: 1280px) {
+      & {
+        padding: 0; // on desktop, no padding
       }
     }
     
@@ -104,21 +114,10 @@ const orgs = (await getCollection("orgs")).sort((a, b) =>
 
     a {
 
-      $border-color: rgba(134, 134, 134, 0.665);
-      $border-color-hover: rgb(56, 25, 157);
-      $shadow-color: rgba(175, 175, 175, 0.429);
-      $shadow-color-hover: rgba(83, 70, 124, 0.599);
-
-      //----------------------------------------------------
-
       display: inline-flex;
       flex-direction: column;
       
       height: 100%;;
-
-      background-color: white;
-      border-radius: 1rem;
-      overflow: hidden;
 
       text-decoration: none;
       color: inherit;
@@ -126,21 +125,14 @@ const orgs = (await getCollection("orgs")).sort((a, b) =>
         color: inherit;
       }
 
-      // border and shadow
-      // - darken on hover
-      border: 3px solid $border-color;
-      box-shadow: 10px 10px 0 0 $shadow-color;
-      &:hover {
-        border-color: $border-color-hover;
-        box-shadow: 10px 10px 0 0 $shadow-color-hover;
-      }
+    
 
       // constrain the image to the tile
       img {
         width: 100%;
         // height: 360px;
         max-width: 100%;
-        object-fit: contain;
+        object-fit: cover;
         box-shadow: 0 0 10px 5px rgba(198, 198, 198, 0.3)
       }
 

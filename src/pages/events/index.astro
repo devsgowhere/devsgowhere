@@ -32,7 +32,7 @@ const events = (await getCollection("events"))
             {
               events.map((event) => (
                 <li class="event-list-item">
-                  <a href={`/events/${event.id}/`}>
+                  <a class="card" href={`/events/${event.id}/`}>
                     <Image
                       width={720}
                       height={360}
@@ -93,10 +93,8 @@ const events = (await getCollection("events"))
   li.event-list-item a {
 
     $width: 720px;
-    $border-color: rgba(134, 134, 134, 0.665);
-    $border-color-hover: rgb(56, 25, 157);
-    $shadow-color: rgba(175, 175, 175, 0.429);
-    $shadow-color-hover: rgba(83, 70, 124, 0.599);
+
+    //------------------------------------------------------------
 
     // size
     max-width: $width;
@@ -107,21 +105,9 @@ const events = (await getCollection("events"))
     display: inline-block;
   
     // color
-    background-color: white;
     color: inherit;
     &:visited{
       color: inherit;
-    }
-
-    // border and shadow
-    // - darken on hover
-    border: 3px solid $border-color;
-    border-radius: 1rem;
-    overflow: hidden;
-    box-shadow: 10px 10px 0 0 $shadow-color;
-    &:hover {
-      border-color: $border-color-hover;
-      box-shadow: 10px 10px 0 0 $shadow-color-hover;
     }
 
     // text
