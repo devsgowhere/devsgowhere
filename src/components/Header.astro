@@ -4,132 +4,237 @@ import { SITE_TITLE } from "../consts";
 ---
 
 <header>
-  <nav>
-    <h2><a href="/">{SITE_TITLE}</a></h2>
-    <div class="internal-links" id="internal-links">
-      <HeaderLink href="/events">Events</HeaderLink>
-      <HeaderLink href="/orgs">Organisers</HeaderLink>
-      <HeaderLink href="/about">About</HeaderLink>
-    </div>
-    <div class="social-links">
-      <a href="https://github.com/devsgowhere/devsgowhere" target="_blank">
-        <span class="sr-only">Go to DevsGoWhere's GitHub repo</span>
-        <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32"
-          ><path
-            fill="currentColor"
-            d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"
-          ></path></svg
-        >
-      </a>
-    </div>
-    <button
-      class="hamburger"
-      id="hamburger-btn"
-      aria-label="Open menu"
-      type="button"
-    >
-      <svg
-        width="32"
-        height="32"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        ><line x1="3" y1="12" x2="21" y2="12"></line><line
-          x1="3"
-          y1="6"
-          x2="21"
-          y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg
+  <div class="container">
+    <nav>
+      <div class="brand-name"><a href="/">{SITE_TITLE}</a></div>
+      <div class="internal-links" id="internal-links">
+        <HeaderLink href="/events">Events</HeaderLink>
+        <HeaderLink href="/orgs">Organisers</HeaderLink>
+        <HeaderLink href="/about">About</HeaderLink>
+      </div>
+      <div class="social-links">
+        <a href="https://github.com/devsgowhere/devsgowhere" target="_blank">
+          <span class="sr-only">Go to DevsGoWhere's GitHub repo</span>
+          <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32"
+            ><path
+              fill="currentColor"
+              d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"
+            ></path></svg
+          >
+        </a>
+      </div>
+      <button
+        class="hamburger"
+        id="hamburger-btn"
+        aria-label="Open menu"
+        type="button"
       >
-    </button>
-  </nav>
+        <i class="fa fa-bars"></i>
+      </button>
+    </nav>
+  </div>
 </header>
-<style>
+
+<style lang="scss">
+
   header {
+
     margin: 0;
     padding: 0 1em;
-    background: white;
+    background: var(--header-background-color);
     box-shadow: 0 2px 8px rgba(var(--black), 5%);
-  }
-  h2 {
-    margin: 0;
-    font-size: 1em;
-    flex: 1;
+
+    // nav container
+    nav {
+
+      padding-top: .25rem;
+      
+      // layout
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      // make each child equal width
+      > div {
+        flex: 1 1 auto;
+      }
+
+      // links
+      a, .hamburger {
+        
+        color: var(--header-link-color);
+        &:visited {
+          color: var(--header-link-color);
+        }
+
+        text-decoration: none;
+
+      }
+
+      // brand name
+      .brand-name {
+        text-align: left;
+      }
+
+      // internal links
+      .internal-links {
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        
+        > a {
+          
+          font-size: 1.25rem;
+          padding: .75rem .75rem;
+
+          border-bottom: 5px solid transparent;
+
+          &.active {
+            color: var(--header-link-active-color);
+            border-color: var(--header-link-active-color);
+          }
+
+        }
+
+      }
+
+      // social links
+      .social-links {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 1em;
+      }
+
+      // hamburger button
+      .hamburger {
+        display: none;
+      }
+
+      //
+      // mobile view
+      //
+
+      @media (max-width: 720px) {
+
+        // hide social links
+        .social-links {
+          display: none;
+        }
+
+        // show hamburger button
+        .hamburger {
+          display: flex;
+          background: none;
+          border: none;
+          padding: 1em 0.5em;
+          cursor: pointer; /* not really needed for mobile view, but good for accessibility */
+          align-items: center;
+          justify-content: center;
+        }
+
+        // hide internal links
+        .internal-links {
+          display: none;
+        }
+
+        // reposition internal links
+        .internal-links.open {
+
+          display: block;
+          
+          position: absolute;
+          top: 2.75rem;
+          left: 0;
+          right: 0;
+          
+          background-color: var(--header-background-color);
+          
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+
+          padding-bottom: 1rem;
+
+          > a {
+            padding: .25rem 2rem;
+            border-width: 0;
+          }
+
+        }
+
+      }
+
+    }
+
   }
 
-  h2 a {
-    display: inline-block;
-    padding: 1em 0.5em;
-    text-decoration: none;
-  }
-  h2 a.active {
-    text-decoration: none;
-  }
-  nav {
-    display: flex;
-    align-items: center;
-  }
-  nav a {
-    padding: 1em 0.5em;
-    color: var(--black);
-    border-bottom: 4px solid transparent;
-    text-decoration: none;
-  }
-  nav a.active {
-    text-decoration: none;
-    border-bottom-color: var(--accent);
-  }
-  .social-links,
-  .social-links a {
-    display: flex;
-  }
-  .internal-links {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-  }
-  .social-links {
-    flex: 1;
-    display: flex;
-    justify-content: flex-end;
-  }
-  .hamburger {
-    display: none;
-    background: none;
-    border: none;
-    padding: 1em 0.5em;
-    cursor: pointer; /* not really needed for mobile view, but good for accessibility */
-    align-items: center;
-    justify-content: center;
-  }
-  @media (max-width: 720px) {
-    .internal-links {
-      display: none;
-      position: absolute;
-      top: 60px;
-      left: 0;
-      right: 0;
-      background: white;
-      flex-direction: column;
-      align-items: center;
-      box-shadow: 0 2px 8px rgba(var(--black), 5%);
-      z-index: 1000;
-    }
-    .internal-links.open {
-      display: flex;
-    }
-    .internal-links a {
-      border-bottom: none;
-    }
-    .hamburger {
-      display: flex;
-    }
-    .social-links {
-      display: none;
-    }
-  }
+  // nav a {
+  //   padding: 1em 0.5em;
+  //   color: var(--black);
+  //   border-bottom: 4px solid transparent;
+  //   text-decoration: none;
+  // }
+  // nav a.active {
+  //   text-decoration: none;
+  //   border-bottom-color: var(--accent);
+  // }
+
+  // .social-links,
+  // .social-links a {
+  //   display: flex;
+  // }
+  
+  // .internal-links {
+  //   flex: 1;
+  //   display: flex;
+  //   justify-content: center;
+  // }
+  
+  // .social-links {
+  //   flex: 1;
+  //   display: flex;
+  //   justify-content: flex-end;
+  // }
+
+  // .hamburger {
+  //   display: none;
+  //   background: none;
+  //   border: none;
+  //   padding: 1em 0.5em;
+  //   cursor: pointer; /* not really needed for mobile view, but good for accessibility */
+  //   align-items: center;
+  //   justify-content: center;
+  // }
+
+  // @media (max-width: 720px) {
+  //   .internal-links {
+  //     display: none;
+  //     position: absolute;
+  //     top: 60px;
+  //     left: 0;
+  //     right: 0;
+  //     background: white;
+  //     flex-direction: column;
+  //     align-items: center;
+  //     box-shadow: 0 2px 8px rgba(var(--black), 5%);
+  //     z-index: 1000;
+  //   }
+  //   .internal-links.open {
+  //     display: flex;
+  //   }
+  //   .internal-links a {
+  //     border-bottom: none;
+  //   }
+  //   .hamburger {
+  //     display: flex;
+  //   }
+  //   .social-links {
+  //     display: none;
+  //   }
+  // }
+
 </style>
 
 <script>
