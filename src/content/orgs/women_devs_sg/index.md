@@ -1,8 +1,18 @@
 ---
+
 title: "Women Devs SG"
 description: "Women Devs SG was formerly known as WomenWhoCode Singapore. We are dedicated to inspiring women to excel in technology careers. We envision a world where women are representative as technical executives, founders, VCs, board members, and software engineers. Our programs are designed to get you there."
 heroImage: "./clean_520650686.avif"
+logoImage: "./clean_520650686.avif"
 tags: ["Technology", "Mobile Development", "Social Coding", "Data Science", "Technology Startups", "Education & Technology", "Information Technology", "Creative Coding", "Web Technology", "Women in Technology", "Coding Dojos", "Blockchain"]
+
+# links
+website: https://womendevssg.netlify.app
+telegram: https://t.me/+hh3Fts4oDG41NzQ1
+instagram: womendevssg
+linkedin: https://www.linkedin.com/company/women-devs-sg
+facebook: https://www.facebook.com/groups/womendevssg/
+
 ---
 
 Join us by attending an event or join our Telegram group to keep in touch:

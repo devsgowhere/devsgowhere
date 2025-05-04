@@ -8,7 +8,8 @@ import Footer from "../components/Footer.astro";
 
 type Props = CollectionEntry<"orgs">["data"];
 
-const { title, description, links, heroImage } = Astro.props;
+const { title, description, heroImage, logoImage } = Astro.props;
+
 ---
 
 <html lang="en">
@@ -17,46 +18,88 @@ const { title, description, links, heroImage } = Astro.props;
   </head>
   <Theme>
     <Header />
-    <main>
-      <article>
-        <div class="hero-image">
-          {
-            heroImage && (
-              <Image width={1020} height={510} src={heroImage} alt="" />
-            )
-          }
-        </div>
-        <div class="container">
-          <h1 class="org-name text-3xl text-accent">{title}</h1>
-          <div class="prose">
-            <slot />
+    <main class="org-profile-page pt-2xl pb-2xl">
+      <div class="container">
+        <article class="card">
+          <div class="hero-image">
+            {
+              heroImage && (
+                <Image width={1020} height={510} src={heroImage} alt="" />
+              )
+            }
           </div>
-        </div>
-        {
-          links && (
-            <div class="sidebar">
-              <h2>Links</h2>
-              <ul>
-                {links?.map((link) => {
-                  const { url, title } = link;
+          <div class="pt-l px-l pb-xl">
+            <h1 class="org-name text-3xl text-accent">{title}</h1>
+            <ul class="tag-list mb-l">
+              { Astro.props.tags?.slice(0, 10).map((tag) => (
+                <li class="tag">
+                  # {tag}
+                </li>
+              )) }
+            </ul>
+            <div class="org-profile-markup">
+              <slot/>
+            </div>
+          </div>
+        </article>
+        <aside>
+          <div class="org-logo">
+            {
+              logoImage && (
+                <Image width={360} height={360} src={logoImage} alt={title} />
+              )
+            }
+          </div>
+          <div>
+            <div class="text-header text-2xl mb-m">Join the community!</div>
+            <ul class="org-links">
+              {
+                [
+                  "website",
+                  "meetup",
+                  "telegram", 
+                  "discord",
+                  "twitter", 
+                  "linkedin",
+                  "facebook",
+                  "instagram",
+                  "tiktok",
+                  "youtube",
+                  "github",
+                ].filter((link)=>{
+                  return Astro.props[link] !== undefined
+                }).map((link) => {
+
+                  let url = Astro.props[link];
+                  let icon = `fab fa-${link}`;
+                  let linkText = link;
+                  let capitalise = true;
+
+                  if(link === "website") {
+                    icon = "fa fa-globe";
+                    linkText = Astro.props[link] || "website";
+                    capitalise = false;
+                  }else if(link === "instagram") {
+                    let handle = Astro.props[link];
+                    url = `https://www.instagram.com/${handle}`;
+                    linkText = "@" + handle;
+                    capitalise = false;
+                  }
+
                   return (
                     <li>
-                      <a
-                        href={url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="text-blue-500 hover:underline"
-                      >
-                        {title}
+                      <a href={url} target="_blank" rel="noopener">
+                        <i class:list={['fa-fw', icon, 'mr-xs']}></i>
+                        <span class:list={[{'text-capitalise': capitalise}]}>{linkText}</span>
                       </a>
                     </li>
-                  );
-                })}
-              </ul>
-            </div>
-          )
-        }
-      </article>
+                  )
+                })
+              }
+            </ul>
+          </div>
+        </aside>
+      </div>
     </main>
     <Footer />
   </Theme>
@@ -64,33 +107,129 @@ const { title, description, links, heroImage } = Astro.props;
 
 <style lang="scss">
 
-  article {
+  .org-profile-page {
 
-    .hero-image {
-      
-      width: 100%;
-      margin-bottom: 3rem;
-      
-      img {
-        width: 100%;
-        height: auto;
-        max-height: 510px;
-        object-fit: contain;
-      }
-    }
-    
+    $article-width: 800px;
+    $aside-width: 400px;
+    $gap: 2rem;
+
     .container {
 
-      max-width: 800px;
+      width: calc(#{$article-width} + #{$aside-width} + #{$gap});
+      max-width: 100%;
 
-      @media (max-width: 1028px) {
-        padding: 0 1rem;
+      display: flex;
+      flex-direction: row;
+      gap: $gap;
+      padding: 0 1rem;
+
+      // >>> article
+      
+      article {
+
+        width: $article-width;
+
+        background-color: white;
+
+        .hero-image img {
+          width: 100%;
+          height: auto;
+          max-height: 510px;
+          object-fit: cover;
+        }
+
       }
+
+      // >>> right side summary info
+      aside {
+
+        width: $aside-width;
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        
+      }
+
+      //
+      // mobile layout
+      //
+    
+      @media (max-width: 768px) {
+        
+        flex-direction: column;
+        gap: 0;
+        width: 100%;
+        max-width: 100%;
+        padding: 0;
+
+        article {
+          width: 100%;
+          margin-bottom: 2rem;
+        }
+
+        aside {
+          width: 100%;
+        }
+        
+      }
+      
 
     }
 
-    .org-name {
-      text-align: center;
+    // >>> logo
+    .org-logo {
+
+      // square shape
+      width: $aside-width;
+      height: $aside-width;
+
+      background-color: white;
+      border-radius: 10px;
+      overflow: hidden;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      margin-bottom: 2rem;
+
+    }
+
+    // >>> org links
+    .org-links {
+
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: .5rem;
+
+      text-align: left;
+
+      li a {
+
+        display: inline-flex;
+        align-items: baseline;
+        font-size: 1.25rem;
+        text-decoration: none;
+
+        i {
+          display: inline-block;
+          width: 1.25em;
+        }
+
+        &:hover {
+          span {
+            text-decoration: underline;
+          }
+        }
+
+      }
+      
     }
 
   }
