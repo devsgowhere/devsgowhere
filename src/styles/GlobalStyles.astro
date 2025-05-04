@@ -3,6 +3,7 @@
 import "../styles/fontawesome/scss/fontawesome.scss";
 import "../styles/fontawesome/scss/regular.scss";
 import "../styles/fontawesome/scss/solid.scss";
+import "../styles/fontawesome/scss/brands.scss";
 
 ---
 
@@ -53,6 +54,16 @@ import "../styles/fontawesome/scss/solid.scss";
 	:root {
 		@each $key, $value in $grays {
 			--gray-#{$key}: #{$value};
+		}
+	}
+
+	.bg-white {
+		background-color: white !important;
+	}
+
+	@each $key, $value in $grays {
+		.bg-gray-#{$key} {
+			background-color: var(--gray-#{$key}) !important;
 		}
 	}
 
@@ -242,6 +253,18 @@ import "../styles/fontawesome/scss/solid.scss";
 		text-decoration: underline !important;
 	}
 
+	.text-capitalise {
+		text-transform: capitalize !important;
+	}
+
+	.text-uppercase {
+		text-transform: uppercase !important;
+	}
+
+	.text-lowercase {
+		text-transform: lowercase !important;
+	}
+
 	//
 	//
 	// Margins and paddings
@@ -340,13 +363,15 @@ import "../styles/fontawesome/scss/solid.scss";
 
 		border: 3px solid var(--card-border-color);
 		box-shadow: 10px 10px 0 0 var(--card-shadow-color);
-		&:hover {
+
+	}
+
+	a.card {
+		transition: all 150ms ease-in-out;
+		&:hover{
 			border-color: var(--card-border-color-active);
 			box-shadow: 10px 10px 0 0 var(--card-shadow-color-active);
 		}
-
-		transition: all 150ms ease-in-out;
-
 	}
 
 	@media (max-width: 768px) {
