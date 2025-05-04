@@ -3,6 +3,7 @@ import type { CollectionEntry } from "astro:content";
 import { Image } from "astro:assets";
 import BaseHead from "../components/BaseHead.astro";
 import Header from "../components/Header.astro";
+import Theme from "./Theme.astro";
 import Footer from "../components/Footer.astro";
 
 type Props = CollectionEntry<"orgs">["data"];
@@ -13,41 +14,8 @@ const { title, description, links, heroImage } = Astro.props;
 <html lang="en">
   <head>
     <BaseHead title={title} description={description} image={heroImage} />
-    <style>
-      main {
-        width: calc(100% - 2em);
-        max-width: 100%;
-        margin: 0;
-      }
-      .hero-image {
-        width: 100%;
-      }
-      .hero-image img {
-        display: block;
-        margin: 0 auto;
-        border-radius: 12px;
-        box-shadow: var(--box-shadow);
-      }
-      .prose {
-        width: 720px;
-        max-width: calc(100% - 2em);
-        margin: auto;
-        padding: 1em;
-        color: rgb(var(--gray-dark));
-      }
-      .title {
-        margin-bottom: 1em;
-        padding: 1em 0;
-        text-align: center;
-        line-height: 1;
-      }
-      .title h1 {
-        margin: 0 0 0.5em 0;
-      }
-    </style>
   </head>
-
-  <body>
+  <Theme>
     <Header />
     <main>
       <article>
@@ -58,13 +26,11 @@ const { title, description, links, heroImage } = Astro.props;
             )
           }
         </div>
-        <div class="prose">
-          <div class="title">
-            <h1>{title}</h1>
-            <hr />
+        <div class="container">
+          <h1 class="org-name text-3xl text-accent">{title}</h1>
+          <div class="prose">
+            <slot />
           </div>
-          <slot />
-          <hr />
         </div>
         {
           links && (
@@ -93,5 +59,40 @@ const { title, description, links, heroImage } = Astro.props;
       </article>
     </main>
     <Footer />
-  </body>
+  </Theme>
 </html>
+
+<style lang="scss">
+
+  article {
+
+    .hero-image {
+      
+      width: 100%;
+      margin-bottom: 3rem;
+      
+      img {
+        width: 100%;
+        height: auto;
+        max-height: 510px;
+        object-fit: contain;
+      }
+    }
+    
+    .container {
+
+      max-width: 800px;
+
+      @media (max-width: 1028px) {
+        padding: 0 1rem;
+      }
+
+    }
+
+    .org-name {
+      text-align: center;
+    }
+
+  }
+
+</style>
