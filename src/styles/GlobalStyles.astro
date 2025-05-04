@@ -366,6 +366,61 @@ import "../styles/fontawesome/scss/brands.scss";
 		margin: 0 auto;
 	}
 
+	
+
+	//
+	//
+	// Element: input(type="text")
+	//
+	//
+
+	input[type="text"] {
+
+		font-family: var(--font-family-body);
+		padding: .25em .5em;
+		border-radius: 10px;
+		border: 2px solid var(--gray-5);
+
+		color: var(--gray-7);
+		font-size: 1em;;
+
+		// when has focus, use the accent color
+		&:focus {
+			outline: none;
+			border-color: var(--text-accent-color);
+			box-shadow: 3px 3px 0 0 var(--text-accent-color);
+		}
+
+	}
+
+	//
+	//
+	// Component : Form Control
+	//
+	//
+
+	.form-control {
+
+		display: inline-block;
+		position: relative;
+
+	}
+
+	// prepend - for placing icons within an input element
+	.form-control .form-control__prepend {
+		position: absolute;
+		top: 50%;
+		left: .75em;
+		transform: translateY(-50%);
+		font-size: 1em;
+		color: var(--gray-5);
+	}
+
+	// style input following after the prepend
+	.form-control .form-control__prepend + input[type="text"] {
+		padding-left: 2em;
+	}
+
 	//
 	//
 	// Component : Card
