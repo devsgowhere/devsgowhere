@@ -4,9 +4,9 @@ description: "Join us for a comprehensive look at how AI is transforming our dig
 org: "lorong-ai"
 venue: "Lorong AI (WeWork@22 Cross St.)"
 venueAddress: "22 Cross Street, Singapore"
-startDate: "24 April 2025"
-startTime: "1:00pm"
-endDate: "24 April 2025"
+startDate: "6 May 2025"
+startTime: "3:00pm"
+endDate: "6 May 2025"
 endTime: "5:00pm"
 heroImage: "./ai-toolsdays.png"
 tags: ["ai", "social-media", "tech"]
