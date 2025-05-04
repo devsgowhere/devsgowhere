@@ -95,7 +95,8 @@ const orgData = await getEntry(org);
     <Header />
     <main style="display: flex; gap: 2em; justify-content: center;">
       <div class="container">
-        <article style="flex: 7;">
+        <article style="flex: 7; display: flex; gap: 2em;">
+          <div style="flex: 7;">
           <div class="hero-image">
             {
               heroImage && (
@@ -132,22 +133,23 @@ const orgData = await getEntry(org);
             </div>
             <slot />
           </div>
+          </div>
+          <div style="flex: 3; position: sticky; top: 1em; align-self: start;">
+            <SummaryCard
+              title={title}
+              description={description}
+              startDate={startDate}
+              startTime={startTime}
+              endDate={endDate}
+              endTime={endTime}
+              venue={venue}
+              venueAddress={venueAddress}
+              org={org && orgData.data.title}
+              rsvpButtonUrl={rsvpButtonUrl}
+              rsvpButtonText={rsvpButtonText}
+            />
+          </div>        
         </article>
-        <aside style="flex: 3; position: sticky; top: 1em; align-self: start;">
-          <SummaryCard
-            title={title}
-            description={description}
-            startDate={startDate}
-            startTime={startTime}
-            endDate={endDate}
-            endTime={endTime}
-            venue={venue}
-            venueAddress={venueAddress}
-            org={org && orgData.data.title}
-            rsvpButtonUrl={rsvpButtonUrl}
-            rsvpButtonText={rsvpButtonText}
-          />
-        </aside>
       </div>
     </main>
     <Footer />
