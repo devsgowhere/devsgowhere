@@ -21,13 +21,24 @@ const orgs = (await getCollection("orgs")).sort((a, b) =>
   </head>
   <Theme>
     <Header />
-    <main class="pt-xl pb-3xl">
-      <section></section>
+    <main class="org-list-page pt-xl pb-3xl">
         <div class="container">
+            <header class="org-list-header mb-l">
+              <h1 class="page-title text-m text-accent">Organisations</h1>
+              <div class="org-search form-control">
+                <i class="form-control__prepend fa fa-search"></i>
+                <input
+                  id="org-search__input"
+                  type="text"
+                  class="form-control__input"
+                  placeholder="Search"
+                />
+              </div>
+            </header>
             <ul class="org-list">
               {
                 orgs.map((org) => (
-                  <li class="org-list-item">
+                  <li class="org-list-item" data-id={org.id}>
                     <a class="card" href={`/orgs/${org.id}/`}>
                       <Image
                         width={360}
@@ -59,14 +70,130 @@ const orgs = (await getCollection("orgs")).sort((a, b) =>
                 ))
               }
             </ul>
+            <div class="org-list__empty" style="display: none;">
+              <p class="text-gray-5 text-2xl">No results found!</p>
+            </div>
         </div>
       </section>
     </main>
     <Footer />
   </Theme>
+  <script>
+
+    // fetch all orgs from "orgs/search-index.json"
+    const orgs = [];
+    fetch('/orgs/search-index.json')
+      .then((response) => response.json())
+      .then((data) => {
+        orgs.push(...data);
+      })
+      .catch((error) => {
+        console.error(`Error fetching search index for 'orgs' collection:`, error);
+      });
+
+    // listen for input change on search input
+    const searchInputEl = document.querySelector('#org-search__input');
+
+    searchInputEl.addEventListener('input', (e) => {
+      
+      const searchValue = e.target.value.toLowerCase().trim();
+
+      // if search value is empty, show all orgs
+      if (searchValue === '') {
+        document.querySelectorAll('.org-list-item').forEach((item) => {
+          // remove "hide" class
+          item.classList.remove('hide');
+        });
+        return;
+      }
+
+      // filter orgs based on search value
+      const filteredOrgs = orgs.filter((org) => {
+        // check if org name includes search value
+        if (org.title.toLowerCase().includes(searchValue)) {
+          return true;
+        }
+        // check if org tags include search value
+        if (org.tags.some((tag) => tag.toLowerCase().includes(searchValue))) {
+          return true;
+        }
+        return false;
+      });
+
+      // if no orgs found, show "No results found" message
+      const emptyStateEl = document.querySelector('.org-list__empty');
+      if (filteredOrgs.length === 0) {
+        emptyStateEl.style.display = 'block';
+      } else {
+        emptyStateEl.style.display = 'none';
+      }
+      
+      // show/hide orgs based on search value
+      document.querySelectorAll('.org-list-item').forEach((item) => {
+        const orgId = item.getAttribute('data-id');
+        const show = filteredOrgs.some((org) => org.id === orgId);
+        if (show) {
+          item.classList.remove('hide');
+        } else {
+          item.classList.add('hide');
+        }
+      });
+      
+    });
+
+  </script>
 </html>
 
 <style lang="scss">
+
+  .org-list-header {
+  
+    // layout as flex, row, space-between
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+
+    // add padding to left and right
+    padding: 0 1rem;
+
+    .page-title {
+      // remove default bottom margin
+      margin-bottom: 0;
+    }
+
+    .org-search {
+      // increase font size
+      font-size: 1rem;
+    }
+
+    //
+    // on mobile view
+    //
+    @media (max-width: 768px) {
+
+      // stack the elements
+      flex-direction: column;
+      align-items: stretch;
+
+      // add margin below h1
+      // .page-title {
+      //   margin-bottom: 1rem;
+      // }
+
+      // make search input full width
+      .org-search {
+        width: 100%;
+        margin-bottom: 1rem;
+        input {
+          width: 100%;
+        }
+      }
+
+    }
+
+  }
 
   .org-list {
 
@@ -78,8 +205,8 @@ const orgs = (await getCollection("orgs")).sort((a, b) =>
     // display a grid
     display: grid;
     grid-template-columns: 1fr; // on mobile, 1 column
-    column-gap: 2rem;
-    row-gap: 2rem;
+    // column-gap: 2rem;
+    // row-gap: 2rem;
 
     padding: 0; // on mobile, no padding
 
@@ -87,6 +214,8 @@ const orgs = (await getCollection("orgs")).sort((a, b) =>
       & {
         grid-template-columns: repeat(2, 1fr);
         padding: 0 1rem;
+        column-gap: 2rem;
+        row-gap: 2rem;
       }
     }
 
@@ -151,6 +280,22 @@ const orgs = (await getCollection("orgs")).sort((a, b) =>
         text-decoration-thickness: 2px;
       }
 
+      //
+      // on mobile view
+      @media (max-width: 768px) {
+        & {
+          border-top: 1px solid var(--gray-2);
+          // increase bottom padding on mobile
+          // to give more separation between cards
+          padding-bottom: 2rem;
+        }
+      }
+
+    }
+
+    // is hidden
+    &.hide {
+      display: none;
     }
 
   }
