@@ -3,6 +3,12 @@ title: "Hackware"
 description: "Hackware is a monthly meetup for developers and enthusiasts to share hacks and developments in the hardware, electronics, and IoT scene, promote engineering, and build a community."
 heroImage: "./clean_438010889.avif"
 tags: ["hardware", "singapore","Robotics" ,"Electronics" ,"Microcontrollers" ,"Hardware Engineering" ,"Arduino" ,"Makers" ,"Hardware" ,"Embedded Systems" ,"Makerspaces" ,"3D Printing" ,"Open Source Hardware" ,"Hardware Hacking and Reverse Engineering" ,"Raspberry Pi" ,"Software and Hardware"]
+
+# links
+website: https://engineers.sg/organization/hackware--111
+telegram: https://t.me/joinchat/Cz7rVh1EwsHsSxDuI2g1lw
+facebook: https://www.facebook.com/groups/hackware/
+discord: https://discord.gg/9T9sTJw
 ---
 
 Hackware is a monthly meetup for developers and enthusiasts to share hacks and developments in the hardware, electronics, and IoT scene, promote engineering, and build a community.
