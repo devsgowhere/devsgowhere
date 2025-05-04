@@ -8,7 +8,7 @@ startDate: "24 April 2025"
 startTime: "1:00pm"
 endDate: "24 April 2025"
 endTime: "5:00pm"
-heroImage: "./ai-toolsdays.avif"
+heroImage: "./ai-toolsdays.png"
 tags: ["ai", "social-media", "tech"]
 rsvpButtonUrl: "https://lu.ma/l9ul1qx2"
 rsvpButtonText: "RSVP on Luma"
