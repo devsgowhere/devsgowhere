@@ -28,7 +28,7 @@ const events = (await getCollection("events"))
     <main class="events-list-page">
       <div class="container">
         <section>
-          <ul class="events-list">
+          <ul class="event-list">
             {
               events.map((event) => (
                 <li class="event-list-item">
@@ -40,14 +40,14 @@ const events = (await getCollection("events"))
                       alt=""
                     />
                     <div class="event-list-item__info">
-                      <div class="event-title">{event.data.title}</div>
-                      <div class="org-name">
+                      <div class="org-name text-gray-5 mb-2xs">
                         {
                           orgs.find((org) => org.id === event.data.org.id)?.data
                             .title
                         }
                       </div>
-                      <div class="event-date">
+                      <div class="event-title text-3xl text-bold mb-xs">{event.data.title}</div>
+                      <div class="event-date mb-m">
                         <i class="fa fa-calendar-days"></i>
                         <FormattedEventDate
                           startDate={event.data.startDate}
@@ -56,6 +56,15 @@ const events = (await getCollection("events"))
                           endTime={event.data.endTime}
                         />
                       </div>
+                      <ul class="tag-list">
+                        { event.data.tags?.map((tag)=>{
+                          return (
+                            <li class="tag">
+                              #{tag}
+                            </li>
+                          )
+                        }) }
+                      </ul>
                     </div>
                   </a>
                 </li>
@@ -75,7 +84,7 @@ const events = (await getCollection("events"))
     text-align: center;
   }
 
-  ul.events-list {
+  ul.event-list {
     list-style: none;
     padding: 0;
     margin: 0;
@@ -83,33 +92,46 @@ const events = (await getCollection("events"))
 
   li.event-list-item a {
 
-    max-width: 720px;
-    
-    display: inline-block;
-    background-color: white;
-    border-radius: 1rem;
-    overflow: hidden;
+    $width: 720px;
+    $border-color: rgba(134, 134, 134, 0.665);
+    $border-color-hover: rgb(56, 25, 157);
+    $shadow-color: rgba(175, 175, 175, 0.429);
+    $shadow-color-hover: rgba(83, 70, 124, 0.599);
 
-    box-shadow: 10px 10px 0 0 rgba(175, 175, 175, 0.665);
-
+    // size
+    max-width: $width;
     margin-top: 1rem;
     margin-bottom: 1rem;
-
-    text-decoration: none;
+    
+    // layout
+    display: inline-block;
+  
+    // color
+    background-color: white;
+    color: inherit;
     &:visited{
       color: inherit;
     }
 
-    border: 3px solid transparent;
+    // border and shadow
+    // - darken on hover
+    border: 3px solid $border-color;
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: 10px 10px 0 0 $shadow-color;
     &:hover {
-      border-color: black;
+      border-color: $border-color-hover;
+      box-shadow: 10px 10px 0 0 $shadow-color-hover;
     }
+
+    // text
+    text-decoration: none;
 
     // image
     img {
-      width: 720px;
-      height: 360px;
       max-width: 100%;
+      width: 720px;
+      height: auto;
     }
 
     // event info block
@@ -117,15 +139,6 @@ const events = (await getCollection("events"))
       padding: 1rem;
       text-align: left;
     }
-
-    // event title
-    .event-title {
-      font-size: 1.5rem;
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-    }
-
-
 
   }
 
