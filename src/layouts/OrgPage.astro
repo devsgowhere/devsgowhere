@@ -18,7 +18,7 @@ const { title, description, heroImage, logoImage } = Astro.props;
   </head>
   <Theme>
     <Header />
-    <main class="org-profile-page pt-2xl pb-2xl">
+    <main class="org-profile-page">
       <div class="container">
         <article class="card">
           <div class="hero-image">
@@ -112,22 +112,28 @@ const { title, description, heroImage, logoImage } = Astro.props;
     $article-width: 800px;
     $aside-width: 400px;
     $gap: 2rem;
+    $padding-x: 1rem;
 
+    padding: 4rem 0;
+    
     .container {
 
-      width: calc(#{$article-width} + #{$aside-width} + #{$gap});
+      width: calc(#{$article-width} + #{$aside-width} + #{$gap} + 2 * #{$padding-x});
       max-width: 100%;
 
       display: flex;
       flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: center;
       gap: $gap;
-      padding: 0 1rem;
+      padding: 0 $padding-x;
 
       // >>> article
       
       article {
 
         width: $article-width;
+        min-width: 560px;
 
         background-color: white;
 
@@ -149,18 +155,33 @@ const { title, description, heroImage, logoImage } = Astro.props;
         flex-direction: column;
         align-items: center;
 
+        padding: 0 1rem;
+
         > div {
           max-width: 100%; // prevent contents (e.g. long link text, like urls) from exceeding the container
         }
         
       }
 
+      
+      
+
+    }
+
+    //
+    // mobile layout
+    //
+  
+    @media (max-width: 768px) {
+
+      // remove top padding on main
+      padding-top: 0; 
+      
       //
-      // mobile layout
+      // stack article on top of aside
       //
-    
-      @media (max-width: 768px) {
-        
+      .container {
+
         flex-direction: column;
         gap: 0;
         width: 100%;
@@ -168,6 +189,7 @@ const { title, description, heroImage, logoImage } = Astro.props;
         padding: 0;
 
         article {
+          min-width: 1px;
           width: 100%;
           margin-bottom: 2rem;
         }
@@ -178,7 +200,6 @@ const { title, description, heroImage, logoImage } = Astro.props;
         
       }
       
-
     }
 
     // >>> logo
