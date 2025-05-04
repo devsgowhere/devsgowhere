@@ -15,99 +15,146 @@ const orgs = (await getCollection("orgs")).sort((a, b) =>
 <html lang="en">
   <head>
     <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
-    <style>
-      main {
-        width: 960px;
-      }
-      ul {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 2rem;
-        list-style-type: none;
-        margin: 0;
-        padding: 0;
-      }
-      ul li {
-        width: calc(50% - 1rem);
-      }
-      ul li * {
-        text-decoration: none;
-        transition: 0.2s ease;
-      }
-      ul li:first-child {
-        width: 100%;
-        margin-bottom: 1rem;
-        text-align: center;
-      }
-      ul li:first-child img {
-        width: 100%;
-      }
-      ul li:first-child .title {
-        font-size: 2.369rem;
-      }
-      ul li img {
-        margin-bottom: 0.5rem;
-        border-radius: 12px;
-      }
-      ul li a {
-        display: block;
-      }
-      .title {
-        margin: 0;
-        color: rgb(var(--black));
-        line-height: 1;
-      }
-      .date {
-        margin: 0;
-        color: rgb(var(--gray));
-      }
-      ul li a:hover h4,
-      ul li a:hover .date {
-        color: rgb(var(--accent));
-      }
-      ul a:hover img {
-        box-shadow: var(--box-shadow);
-      }
-      @media (max-width: 720px) {
-        ul {
-          gap: 0.5em;
-        }
-        ul li {
-          width: 100%;
-          text-align: center;
-        }
-        ul li:first-child {
-          margin-bottom: 0;
-        }
-        ul li:first-child .title {
-          font-size: 1.563em;
-        }
-      }
-    </style>
   </head>
   <body>
     <Header />
-    <main>
-      <section>
-        <ul>
-          {
-            orgs.map((org) => (
-              <li>
-                <a href={`/orgs/${org.id}/`}>
-                  <Image
-                    width={720}
-                    height={360}
-                    src={org.data.heroImage}
-                    alt=""
-                  />
-                  <h4 class="title">{org.data.title}</h4>
-                </a>
-              </li>
-            ))
-          }
-        </ul>
+    <main class="pt-xl pb-3xl">
+      <section></section>
+        <div class="container">
+            <ul class="org-list">
+              {
+                orgs.map((org) => (
+                  <li class="org-list-item">
+                    <a href={`/orgs/${org.id}/`}>
+                      <Image
+                        width={360}
+                        height={360}
+                        src={org.data.heroImage}
+                        alt=""
+                      />
+                      <div class="org-list-item__info p-m">
+                        <div class="org-list-item__info__top">
+                          <div class="org-name text-2xl text-bold mb-xs">
+                            {org.data.title}
+                          </div>
+                          <div class="org-description text-gray-5 mb-s">
+                            {org.data.description.slice(0, 100)}...
+                          </div>
+                        </div>
+                        <div class="org-list-item__info__bottom">
+                          <ul class="tag-list">
+                            { org.data.tags?.slice(0, 5).map((tag) => (
+                              <li class="tag">
+                                # {tag}
+                              </li>
+                            )) }
+                          </ul>
+                        </div>
+                      </div>
+                    </a>
+                  </li>
+                ))
+              }
+            </ul>
+        </div>
       </section>
     </main>
     <Footer />
   </body>
 </html>
+
+<style lang="scss">
+
+  .org-list {
+
+    // remove list style
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    // display a grid
+    display: grid;
+    grid-template-columns: 1fr;
+    column-gap: 2rem;
+    row-gap: 2rem;
+
+    @media (min-width: 768px) {
+      & {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (min-width: 1024px) {
+      & {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+    
+  }
+
+  .org-list-item {
+
+    $size: 300px;
+    width: 100%;
+    min-width: $size;
+
+    // layout
+    display: flex;
+    flex-direction: column; // this is to make the card stretch
+
+    a {
+
+      $border-color: rgba(134, 134, 134, 0.665);
+      $border-color-hover: rgb(56, 25, 157);
+      $shadow-color: rgba(175, 175, 175, 0.429);
+      $shadow-color-hover: rgba(83, 70, 124, 0.599);
+
+      //----------------------------------------------------
+
+      display: inline-flex;
+      flex-direction: column;
+      
+      height: 100%;;
+
+      background-color: white;
+      border-radius: 1rem;
+      overflow: hidden;
+
+      text-decoration: none;
+      color: inherit;
+      &:visited {
+        color: inherit;
+      }
+
+      // border and shadow
+      // - darken on hover
+      border: 3px solid $border-color;
+      box-shadow: 10px 10px 0 0 $shadow-color;
+      &:hover {
+        border-color: $border-color-hover;
+        box-shadow: 10px 10px 0 0 $shadow-color-hover;
+      }
+
+      // constrain the image to the tile
+      img {
+        width: 100%;
+        // height: 360px;
+        max-width: 100%;
+        object-fit: contain;
+        box-shadow: 0 0 10px 5px rgba(198, 198, 198, 0.3)
+      }
+
+      // org info block
+      .org-list-item__info {
+        flex: 1 1 auto;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+
+      }
+
+    }
+
+  }
+
+</style>
