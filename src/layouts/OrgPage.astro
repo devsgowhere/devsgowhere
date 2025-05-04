@@ -51,7 +51,7 @@ const { title, description, heroImage, logoImage } = Astro.props;
             }
           </div>
           <div>
-            <div class="text-header text-2xl mb-m">Join the community!</div>
+            <div class="text-header text-2xl text-center mb-m">Join the community!</div>
             <ul class="org-links">
               {
                 [
@@ -148,6 +148,10 @@ const { title, description, heroImage, logoImage } = Astro.props;
         display: flex;
         flex-direction: column;
         align-items: center;
+
+        > div {
+          max-width: 100%; // prevent contents (e.g. long link text, like urls) from exceeding the container
+        }
         
       }
 
@@ -220,6 +224,10 @@ const { title, description, heroImage, logoImage } = Astro.props;
         i {
           display: inline-block;
           width: 1.25em;
+        }
+
+        span {
+          word-break: break-all; // to break up long urls
         }
 
         &:hover {
