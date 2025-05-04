@@ -3,6 +3,9 @@ title: "Division Zero (Div0) – Singapore Cybersecurity Community"
 description: "$%org_description"
 heroImage: "./clean_494988213.avif"
 tags: ["Hacking", "Ethical Hacking", "Cybersecurity", "Information Security", "Computer Security", "Network Security", "Application Security", "Software Security", "Web Security", "Web Application Security", "Cloud Security", "Penetration Testing", "White Hat Hacking"]
+# links
+website: https://www.div0.sg
+discord: https://www.div0.sg/digital-kampung
 ---
 
 [Division Zero (Div0)](https://www.div0.sg/) is an open, inclusive, and completely volunteer-driven cybersecurity community. The mission of Div0 is to promote a vibrant cybersecurity community and safer cyberspace in Singapore. Div0 does so by providing a platform where cybersecurity professionals, practitioners, and enthusiasts can meet like-minded people, explore and learn with peers, and contribute to the community at large. Div0 activities include organising events, encouraging contributions and collaborations, and reaching out to the public.
