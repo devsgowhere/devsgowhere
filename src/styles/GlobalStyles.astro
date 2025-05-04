@@ -382,7 +382,9 @@ import "../styles/fontawesome/scss/brands.scss";
 		border: 2px solid var(--gray-5);
 
 		color: var(--gray-7);
-		font-size: 1em;;
+		font-size: 1em;
+
+		transition: all 150ms ease-in-out;
 
 		// when has focus, use the accent color
 		&:focus {
@@ -440,7 +442,8 @@ import "../styles/fontawesome/scss/brands.scss";
 
 	a.card {
 		transition: all 150ms ease-in-out;
-		&:hover{
+		&:hover, &:focus {
+			outline: none;
 			border-color: var(--card-border-color-active);
 			box-shadow: 10px 10px 0 0 var(--card-shadow-color-active);
 		}
