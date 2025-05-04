@@ -56,7 +56,7 @@ const orgs = (await getCollection("orgs")).sort((a, b) =>
                           </div>
                         </div>
                         <div class="org-list-item__info__bottom">
-                          <ul class="tag-list">
+                          <ul class="tag-list mb-0">
                             { org.data.tags?.slice(0, 5).map((tag) => (
                               <li class="tag">
                                 # {tag}
@@ -97,14 +97,21 @@ const orgs = (await getCollection("orgs")).sort((a, b) =>
     searchInputEl.addEventListener('input', (e) => {
       
       const searchValue = e.target.value.toLowerCase().trim();
+      const emptyStateEl = document.querySelector('.org-list__empty');
 
       // if search value is empty, show all orgs
       if (searchValue === '') {
+        
+        // hide "No results found" message
+        emptyStateEl.style.display = 'none';
+        
+        // show all orgs
         document.querySelectorAll('.org-list-item').forEach((item) => {
-          // remove "hide" class
           item.classList.remove('hide');
         });
+
         return;
+
       }
 
       // filter orgs based on search value
@@ -121,7 +128,6 @@ const orgs = (await getCollection("orgs")).sort((a, b) =>
       });
 
       // if no orgs found, show "No results found" message
-      const emptyStateEl = document.querySelector('.org-list__empty');
       if (filteredOrgs.length === 0) {
         emptyStateEl.style.display = 'block';
       } else {
