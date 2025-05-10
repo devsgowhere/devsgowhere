@@ -3,3 +3,4 @@
 
 export const SITE_TITLE = "DevsGoWhere";
 export const SITE_DESCRIPTION = "Discover events for engineers in Singapore! ";
+export const DEFAULT_THEME = "theme-tech-blue-aquamarine";

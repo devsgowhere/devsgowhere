@@ -1,7 +1,9 @@
 ---
 import BaseHead from "../../components/BaseHead.astro";
 import Header from "../../components/Header.astro";
+import Theme from "../../layouts/Theme.astro";
 import Footer from "../../components/Footer.astro";
+
 import { SITE_TITLE, SITE_DESCRIPTION } from "../../consts";
 import { getCollection } from "astro:content";
 import { Image } from "astro:assets";
@@ -23,16 +25,19 @@ const events = (await getCollection("events"))
   <head>
     <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
   </head>
-  <body>
+  <Theme>
     <Header />
-    <main class="events-list-page">
+    <main class="events-list-page pt-xl pb-3xl">
+      <h1 class="text-3xl text-bold text-accent mb-xl">
+        Upcoming Events
+      </h1>
       <div class="container">
         <section>
           <ul class="event-list">
             {
               events.map((event) => (
                 <li class="event-list-item">
-                  <a href={`/events/${event.id}/`}>
+                  <a class="card" href={`/events/${event.id}/`}>
                     <Image
                       width={720}
                       height={360}
@@ -75,7 +80,7 @@ const events = (await getCollection("events"))
       </div>
     </main>
     <Footer />
-  </body>
+  </Theme>
 </html>
 
 <style lang="scss">
@@ -93,10 +98,8 @@ const events = (await getCollection("events"))
   li.event-list-item a {
 
     $width: 720px;
-    $border-color: rgba(134, 134, 134, 0.665);
-    $border-color-hover: rgb(56, 25, 157);
-    $shadow-color: rgba(175, 175, 175, 0.429);
-    $shadow-color-hover: rgba(83, 70, 124, 0.599);
+
+    //------------------------------------------------------------
 
     // size
     max-width: $width;
@@ -107,21 +110,9 @@ const events = (await getCollection("events"))
     display: inline-block;
   
     // color
-    background-color: white;
     color: inherit;
     &:visited{
       color: inherit;
-    }
-
-    // border and shadow
-    // - darken on hover
-    border: 3px solid $border-color;
-    border-radius: 1rem;
-    overflow: hidden;
-    box-shadow: 10px 10px 0 0 $shadow-color;
-    &:hover {
-      border-color: $border-color-hover;
-      box-shadow: 10px 10px 0 0 $shadow-color-hover;
     }
 
     // text
@@ -138,6 +129,11 @@ const events = (await getCollection("events"))
     .event-list-item__info {
       padding: 1rem;
       text-align: left;
+    }
+
+    &:hover .event-title {
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
     }
 
   }

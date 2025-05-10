@@ -1,7 +1,10 @@
 ---
+
 import BaseHead from "../../components/BaseHead.astro";
 import Header from "../../components/Header.astro";
+import Theme from "../../layouts/Theme.astro";
 import Footer from "../../components/Footer.astro";
+
 import { SITE_TITLE, SITE_DESCRIPTION } from "../../consts";
 import { getCollection } from "astro:content";
 import { Image } from "astro:assets";
@@ -16,16 +19,27 @@ const orgs = (await getCollection("orgs")).sort((a, b) =>
   <head>
     <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
   </head>
-  <body>
+  <Theme>
     <Header />
-    <main class="pt-xl pb-3xl">
-      <section></section>
+    <main class="org-list-page pt-xl pb-3xl">
         <div class="container">
+            <header class="org-list-header mb-l">
+              <h1 class="page-title text-m text-accent">Organisations</h1>
+              <div class="org-search form-control">
+                <i class="form-control__prepend fa fa-search"></i>
+                <input
+                  id="org-search__input"
+                  type="text"
+                  class="form-control__input"
+                  placeholder="Search"
+                />
+              </div>
+            </header>
             <ul class="org-list">
               {
                 orgs.map((org) => (
-                  <li class="org-list-item">
-                    <a href={`/orgs/${org.id}/`}>
+                  <li class="org-list-item" data-id={org.id}>
+                    <a class="card" href={`/orgs/${org.id}/`}>
                       <Image
                         width={360}
                         height={360}
@@ -42,7 +56,7 @@ const orgs = (await getCollection("orgs")).sort((a, b) =>
                           </div>
                         </div>
                         <div class="org-list-item__info__bottom">
-                          <ul class="tag-list">
+                          <ul class="tag-list mb-0">
                             { org.data.tags?.slice(0, 5).map((tag) => (
                               <li class="tag">
                                 # {tag}
@@ -56,14 +70,136 @@ const orgs = (await getCollection("orgs")).sort((a, b) =>
                 ))
               }
             </ul>
+            <div class="org-list__empty" style="display: none;">
+              <p class="text-gray-5 text-2xl">No results found!</p>
+            </div>
         </div>
       </section>
     </main>
     <Footer />
-  </body>
+  </Theme>
+  <script>
+
+    // fetch all orgs from "orgs/search-index.json"
+    const orgs = [];
+    fetch('/orgs/search-index.json')
+      .then((response) => response.json())
+      .then((data) => {
+        orgs.push(...data);
+      })
+      .catch((error) => {
+        console.error(`Error fetching search index for 'orgs' collection:`, error);
+      });
+
+    // listen for input change on search input
+    const searchInputEl = document.querySelector('#org-search__input');
+
+    searchInputEl.addEventListener('input', (e) => {
+      
+      const searchValue = e.target.value.toLowerCase().trim();
+      const emptyStateEl = document.querySelector('.org-list__empty');
+
+      // if search value is empty, show all orgs
+      if (searchValue === '') {
+        
+        // hide "No results found" message
+        emptyStateEl.style.display = 'none';
+        
+        // show all orgs
+        document.querySelectorAll('.org-list-item').forEach((item) => {
+          item.classList.remove('hide');
+        });
+
+        return;
+
+      }
+
+      // filter orgs based on search value
+      const filteredOrgs = orgs.filter((org) => {
+        // check if org name includes search value
+        if (org.title.toLowerCase().includes(searchValue)) {
+          return true;
+        }
+        // check if org tags include search value
+        if (org.tags.some((tag) => tag.toLowerCase().includes(searchValue))) {
+          return true;
+        }
+        return false;
+      });
+
+      // if no orgs found, show "No results found" message
+      if (filteredOrgs.length === 0) {
+        emptyStateEl.style.display = 'block';
+      } else {
+        emptyStateEl.style.display = 'none';
+      }
+      
+      // show/hide orgs based on search value
+      document.querySelectorAll('.org-list-item').forEach((item) => {
+        const orgId = item.getAttribute('data-id');
+        const show = filteredOrgs.some((org) => org.id === orgId);
+        if (show) {
+          item.classList.remove('hide');
+        } else {
+          item.classList.add('hide');
+        }
+      });
+      
+    });
+
+  </script>
 </html>
 
 <style lang="scss">
+
+  .org-list-header {
+  
+    // layout as flex, row, space-between
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+
+    // add padding to left and right
+    padding: 0 1rem;
+
+    .page-title {
+      // remove default bottom margin
+      margin-bottom: 0;
+    }
+
+    .org-search {
+      // increase font size
+      font-size: 1rem;
+    }
+
+    //
+    // on mobile view
+    //
+    @media (max-width: 768px) {
+
+      // stack the elements
+      flex-direction: column;
+      align-items: stretch;
+
+      // add margin below h1
+      // .page-title {
+      //   margin-bottom: 1rem;
+      // }
+
+      // make search input full width
+      .org-search {
+        width: 100%;
+        margin-bottom: 1rem;
+        input {
+          width: 100%;
+        }
+      }
+
+    }
+
+  }
 
   .org-list {
 
@@ -74,19 +210,31 @@ const orgs = (await getCollection("orgs")).sort((a, b) =>
 
     // display a grid
     display: grid;
-    grid-template-columns: 1fr;
-    column-gap: 2rem;
-    row-gap: 2rem;
+    grid-template-columns: 1fr; // on mobile, 1 column
+    // column-gap: 2rem;
+    // row-gap: 2rem;
+
+    padding: 0; // on mobile, no padding
 
     @media (min-width: 768px) {
       & {
         grid-template-columns: repeat(2, 1fr);
+        padding: 0 1rem;
+        column-gap: 2rem;
+        row-gap: 2rem;
       }
     }
 
     @media (min-width: 1024px) {
       & {
         grid-template-columns: repeat(3, 1fr);
+        padding: 0 1rem;
+      }
+    }
+
+    @media (min-width: 1280px) {
+      & {
+        padding: 0; // on desktop, no padding
       }
     }
     
@@ -104,21 +252,10 @@ const orgs = (await getCollection("orgs")).sort((a, b) =>
 
     a {
 
-      $border-color: rgba(134, 134, 134, 0.665);
-      $border-color-hover: rgb(56, 25, 157);
-      $shadow-color: rgba(175, 175, 175, 0.429);
-      $shadow-color-hover: rgba(83, 70, 124, 0.599);
-
-      //----------------------------------------------------
-
       display: inline-flex;
       flex-direction: column;
       
       height: 100%;;
-
-      background-color: white;
-      border-radius: 1rem;
-      overflow: hidden;
 
       text-decoration: none;
       color: inherit;
@@ -126,21 +263,12 @@ const orgs = (await getCollection("orgs")).sort((a, b) =>
         color: inherit;
       }
 
-      // border and shadow
-      // - darken on hover
-      border: 3px solid $border-color;
-      box-shadow: 10px 10px 0 0 $shadow-color;
-      &:hover {
-        border-color: $border-color-hover;
-        box-shadow: 10px 10px 0 0 $shadow-color-hover;
-      }
-
       // constrain the image to the tile
       img {
         width: 100%;
         // height: 360px;
         max-width: 100%;
-        object-fit: contain;
+        object-fit: cover;
         box-shadow: 0 0 10px 5px rgba(198, 198, 198, 0.3)
       }
 
@@ -153,6 +281,27 @@ const orgs = (await getCollection("orgs")).sort((a, b) =>
 
       }
 
+      &:hover .org-name {
+        text-decoration: underline;
+        text-decoration-thickness: 2px;
+      }
+
+      //
+      // on mobile view
+      @media (max-width: 768px) {
+        & {
+          border-top: 1px solid var(--gray-2);
+          // increase bottom padding on mobile
+          // to give more separation between cards
+          padding-bottom: 2rem;
+        }
+      }
+
+    }
+
+    // is hidden
+    &.hide {
+      display: none;
     }
 
   }

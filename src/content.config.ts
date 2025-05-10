@@ -29,7 +29,20 @@ const orgs = defineCollection({
       title: z.string(),
       description: z.string().optional().nullable(),
       heroImage: image(),
+      logoImage: image().optional().nullable(),
       tags: z.array(z.string()).optional(),
+      // links
+      website: z.string().url().optional().nullable(),
+      twitter: z.string().url().optional().nullable(),
+      facebook: z.string().url().optional().nullable(),
+      instagram: z.string().optional().nullable(), // collect instagram handle instead of url
+      linkedin: z.string().url().optional().nullable(),
+      youtube: z.string().url().optional().nullable(),
+      tiktok: z.string().url().optional().nullable(),
+      discord: z.string().url().optional().nullable(),
+      github: z.string().url().optional().nullable(),
+      telegram: z.string().url().optional().nullable(),
+      meetup: z.string().url().optional().nullable(),
     }),
 });
 
