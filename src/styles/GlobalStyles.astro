@@ -3,6 +3,7 @@
 import "../styles/fontawesome/scss/fontawesome.scss";
 import "../styles/fontawesome/scss/regular.scss";
 import "../styles/fontawesome/scss/solid.scss";
+import "../styles/fontawesome/scss/brands.scss";
 
 ---
 
@@ -29,15 +30,16 @@ import "../styles/fontawesome/scss/solid.scss";
 		box-sizing: border-box;
 	}
 
+	ul, ol {
+		padding-left: 1rem;
+		margin-bottom: 1rem;
+	}
+
 	//
 	//
 	// Colors
 	//
 	//
-
-	:root {
-		--base-color: #eeeeee;
-	}
 
 	//
 	// Define grays from gray-1 to gray-8
@@ -60,7 +62,102 @@ import "../styles/fontawesome/scss/solid.scss";
 		}
 	}
 
-	html {
+	.bg-white {
+		background-color: white !important;
+	}
+
+	@each $key, $value in $grays {
+		.bg-gray-#{$key} {
+			background-color: var(--gray-#{$key}) !important;
+		}
+	}
+
+	//
+	// Theme colors
+	//
+
+	:root {
+		
+		--base-color: #eeeeee;
+
+		--header-background-color: white;
+		--header-link-color: black;
+		--header-link-active-color: rgb(88, 26, 243);
+
+		--card-background-color: white;
+		--card-border-color: var(--gray-4);
+		--card-shadow-color: var(--gray-3);
+		--card-border-color-active: var(--gray-7);
+		--card-shadow-color-active: var(--gray-4);
+
+		--link-text-color: blue;
+
+		--footer-text-color: inherit;
+
+		--text-accent-color: rgb(88, 26, 243);
+
+	}
+
+	.theme-mellow-techno {
+
+		--color-1: #0000cc;
+		--color-2: #5239b7;
+		--color-3: #9063a7;
+		--color-4: #cd8e97;
+		--color-5: #f6aa8c;
+
+		--base-color: var(--color-3);
+
+		--header-background-color: var(--color-1);
+		--header-link-color: white;
+		--header-link-active-color: var(--color-5);
+
+		--card-border-color: var(--gray-7);
+		--card-shadow-color: var(--color-2);
+		--card-border-color-active: var(--gray-8);
+		--card-shadow-color-active: var(--color-5);
+
+		--footer-text-color: var(--color-5);
+
+	}
+
+	.theme-tech-blue-aquamarine {
+
+		$color-1: #17072b;
+		$color-2: #172d67;
+		$color-3: #22ddd2;
+		$color-4: #2e73ea;
+		$color-5: #8c15e9;
+		$color-6: #e42eea;
+
+		--color-1: #{$color-1};
+		--color-2: #{$color-2};
+		--color-3: #{$color-3};
+		--color-4: #{$color-4};
+		--color-5: #{$color-5};
+		--color-6: #{$color-6};
+
+		--base-color: #{mix($color-3, white, 40%)};
+		//--base-color: var(--color-3);
+
+		--header-background-color: var(--color-1);
+		--header-link-color: white;
+		--header-link-active-color: var(--color-6);
+
+		--card-border-color: var(--gray-7);
+		--card-shadow-color: var(--color-2);
+		--card-border-color-active: var(--gray-8);
+		--card-shadow-color-active: var(--color-5);
+
+		--link-text-color: var(--color-5);
+
+		--footer-text-color: var(--color-4);
+
+		--text-accent-color: var(--color-5);
+
+	}
+
+	body {
 		background-color: var(--base-color);
 	}
 
@@ -93,7 +190,13 @@ import "../styles/fontawesome/scss/solid.scss";
 		font-family: var(--font-family-header) !important;
 	}
 
+	.brand-name {
+		font-family: var(--font-family-header) !important;
+		font-weight: 400 !important;
+	}
+
 	h1, h2, h3, h4 {
+		margin-bottom: .5em;
 		font-weight: 400;
 	}
 
@@ -105,11 +208,24 @@ import "../styles/fontawesome/scss/solid.scss";
 		font-family: var(--font-family-code) !important;
 	}
 
+	p {
+		margin-bottom: 1.5em;
+	}
+
+	a {
+		color: var(--link-text-color);
+		text-decoration: underline;
+	}
+
 	// text colors from text-gray-1 to text-gray-7
 	@each $key, $value in $grays {
 		.text-gray-#{$key} {
 			color: var(--gray-#{$key}) !important;
 		}
+	}
+
+	.text-accent {
+		color: var(--text-accent-color) !important;
 	}
 
 	// text sizes from text-2xs to text-3xl
@@ -140,6 +256,30 @@ import "../styles/fontawesome/scss/solid.scss";
 
 	.text-underline {
 		text-decoration: underline !important;
+	}
+
+	.text-capitalise {
+		text-transform: capitalize !important;
+	}
+
+	.text-uppercase {
+		text-transform: uppercase !important;
+	}
+
+	.text-lowercase {
+		text-transform: lowercase !important;
+	}
+
+	.text-center {
+		text-align: center !important;
+	}
+
+	.text-left {
+		text-align: left !important;
+	}
+
+	.text-right {
+		text-align: right !important;
 	}
 
 	//
@@ -226,9 +366,110 @@ import "../styles/fontawesome/scss/solid.scss";
 		margin: 0 auto;
 	}
 
+	
+
+	//
+	//
+	// Element: input(type="text")
+	//
+	//
+
+	input[type="text"] {
+
+		font-family: var(--font-family-body);
+		padding: .25em .5em;
+		border-radius: 10px;
+		border: 2px solid var(--gray-5);
+
+		color: var(--gray-7);
+		font-size: 1em;
+
+		transition: all 150ms ease-in-out;
+
+		// when has focus, use the accent color
+		&:focus {
+			outline: none;
+			border-color: var(--text-accent-color);
+			box-shadow: 3px 3px 0 0 var(--text-accent-color);
+		}
+
+	}
+
+	//
+	//
+	// Component : Form Control
+	//
+	//
+
+	.form-control {
+
+		display: inline-block;
+		position: relative;
+
+	}
+
+	// prepend - for placing icons within an input element
+	.form-control .form-control__prepend {
+		position: absolute;
+		top: 50%;
+		left: .75em;
+		transform: translateY(-50%);
+		font-size: 1em;
+		color: var(--gray-5);
+	}
+
+	// style input following after the prepend
+	.form-control .form-control__prepend + input[type="text"] {
+		padding-left: 2em;
+	}
+
+	//
+	//
+	// Component : Card
+	//
+	//
+
+	.card {
+
+		background-color: var(--card-background-color);
+      	border-radius: 1rem;
+      	overflow: hidden;
+
+		border: 3px solid var(--card-border-color);
+		box-shadow: 10px 10px 0 0 var(--card-shadow-color);
+
+	}
+
+	a.card {
+		transition: all 150ms ease-in-out;
+		&:hover, &:focus {
+			outline: none;
+			border-color: var(--card-border-color-active);
+			box-shadow: 10px 10px 0 0 var(--card-shadow-color-active);
+		}
+	}
+
+	@media (max-width: 768px) {
+		
+		.card {
+			
+			width: 100%;
+			max-width: 100%;
+			
+			border-radius: 0;
+			border: none;
+			box-shadow: none;
+			&:hover {
+				box-shadow: none;
+			}
+
+		}
+
+	}
+
 	//
 	// 
-	// Tags
+	// Component : Tags
 	//
 	//
 
