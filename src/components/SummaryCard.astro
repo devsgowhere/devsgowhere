@@ -37,7 +37,7 @@ const {
   <h2 class="summary-card__title">{title}</h2>
   <div class="summary-card__details">
     <div class="event-date">
-      <i class="far fa-clock"></i>
+      <i class="fa-solid fa-clock"></i>
       <FormattedEventDate
         startDate={startDate}
         startTime={startTime}
@@ -45,17 +45,17 @@ const {
         endTime={endTime}
       />
     </div>
+    <div style="margin-bottom: 8px;"></div>
     <div class="event-location">
       <div style="display: flex; align-items: top;">
-        <i class="far fa-location-dot"></i>        
-        <div
-          style="display: flex; flex-direction: column; align-items: flex-start;"
-        >
+        <i class="fa-solid fa-location-dot"></i>        
+        <div style="margin-left:8px; display: flex; flex-direction: column; align-items: flex-start;">
         <p style="margin: 0; font-weight: bold;">{venue}</p>
         <p style="margin: 0; color: #888;">{venueAddress}</p>
         </div>
       </div>
     </div>
+    <div style="margin-bottom: 8px;"></div>
     <div
       style="display: flex; flex-direction: column; align-items: center; gap: 8px;"
     >
@@ -70,7 +70,7 @@ const {
             {rsvpButtonText ?? "RSVP"}
           </a>
         )
-      }
+      }      
       <AddToCalendarButton
         client:only="react"
         label="Add to Calendar" 
@@ -91,9 +91,9 @@ const {
       border: 1px solid #ccc;
       border-radius: 8px;
       padding: 16px;
-      max-width: 300px;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       text-align: center;
+      background-color: white;
     }
 
     .summary-card__image {

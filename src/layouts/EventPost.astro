@@ -5,6 +5,7 @@ import { getEntry } from "astro:content";
 import BaseHead from "../components/BaseHead.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
+import Theme from "./Theme.astro";
 import SummaryCard from "../components/SummaryCard.astro";
 import FormattedEventDate from "../components/FormattedEventDate.astro";
 
@@ -31,72 +32,12 @@ const orgData = await getEntry(org);
 <html lang="en">
   <head>
     <BaseHead title={title} description={description} image={heroImage} />
-    <style>
-      main {
-        width: calc(100% - 2em);
-        max-width: 100%;
-        margin: 0;
-      }
-      .hero-image {
-        width: 100%;
-      }
-      .hero-image img {
-        display: block;
-        margin: 0 auto;
-        border-radius: 12px;
-        box-shadow: var(--box-shadow);
-      }
-      .prose {
-        width: 720px;
-        max-width: calc(100% - 2em);
-        margin: auto;
-        padding: 1em;
-        color: rgb(var(--gray-dark));
-      }
-      .title {
-        margin-bottom: 1em;
-        padding: 1em 0;
-        text-align: center;
-        line-height: 1;
-      }
-      .title h1 {
-        margin: 0 0 0.5em 0;
-      }
-      .date {
-        margin-bottom: 0.5em;
-        color: rgb(var(--gray));
-      }
-      .last-updated-on {
-        font-style: italic;
-      }
-      .org-name {
-        margin-bottom: 0.5em;
-        color: rgb(var(--gray));
-      }
-      .rsvp-button {
-        display: inline-block;
-        padding: 0.8em 1.6em;
-        margin: 1em 0;
-        background-color: var(--accent);
-        color: white;
-        text-decoration: none;
-        border-radius: 4px;
-        font-weight: bold;
-        transition: background-color 0.2s ease;
-      }
-      .rsvp-button:hover {
-        background-color: var(--accent-dark);
-        color: white;
-      }
-    </style>
   </head>
-
-  <body>
+  <Theme>
     <Header />
-    <main style="display: flex; gap: 2em; justify-content: center;">
+    <main class="event-page">
       <div class="container">
-        <article style="flex: 7; display: flex; gap: 2em;">
-          <div style="flex: 7;">
+        <article class="card">
           <div class="hero-image">
             {
               heroImage && (
@@ -104,9 +45,15 @@ const orgData = await getEntry(org);
               )
             }
           </div>
-          <div class="prose">
-            <div class="title">
-              <h1>{title}</h1>
+            <div class="pt-l px-l pb-xl">
+              <h1 class="event-title text-3xl text-accent">{title}</h1>
+            <ul class="tag-list mb-l">
+              { Astro.props.tags?.slice(0, 10).map((tag) => (
+                <li class="tag">
+                  # {tag}
+                </li>
+              )) }
+            </ul>
               {org && <h4 class="org-name">{orgData.data.title}</h4>}
               <h4 class="date">
                 <FormattedEventDate
@@ -116,7 +63,6 @@ const orgData = await getEntry(org);
                   endTime={endTime}
                 />
               </h4>
-
               {
                 rsvpButtonUrl && (
                   <a
@@ -129,12 +75,14 @@ const orgData = await getEntry(org);
                   </a>
                 )
               }
-              <hr />
-            </div>
+              <hr />            
+            <div class="event-markup">
             <slot />
+            </div>
           </div>
-          </div>
-          <div style="flex: 3; position: sticky; top: 1em; align-self: start;">
+        </article>
+        <aside class="sticky-aside">
+          <div class="event-panel">
             <SummaryCard
               title={title}
               description={description}
@@ -148,10 +96,146 @@ const orgData = await getEntry(org);
               rsvpButtonUrl={rsvpButtonUrl}
               rsvpButtonText={rsvpButtonText}
             />
-          </div>        
-        </article>
+          </div>
+        </aside>
+
+      <style lang="scss">
+        .sticky-aside {
+          position: sticky;
+          top: 1rem; // Adjust this value to control the distance from the top of the viewport
+          align-self: flex-start; // Ensures proper alignment in flex containers
+        }
+      </style>
       </div>
     </main>
     <Footer />
-  </body>
+    </Theme>
 </html>
+
+<style lang="scss">
+  .event-page {
+    $article-width: 800px;
+    $aside-width: 400px;
+    $gap: 2rem;
+    $padding-x: 1rem;
+    padding: 4rem 0;
+    
+    .container {
+      width: calc(#{$article-width} + #{$aside-width} + #{$gap} + 2 * #{$padding-x});
+      max-width: 100%;
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: $gap;
+      padding: 0 $padding-x;
+
+      // >>> article      
+      article {
+        width: $article-width;
+        min-width: 560px;
+        background-color: white;
+        .hero-image img {
+          width: 100%;
+          height: auto;
+          max-height: 510px;
+          object-fit: cover;
+        }
+      }
+
+      // >>> right side summary info
+      aside {
+        width: $aside-width;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 0 1rem;
+        > div {
+          max-width: 100%; // prevent contents (e.g. long link text, like urls) from exceeding the container
+        }        
+      }
+    }
+
+    //
+    // mobile layout
+    //
+  
+    @media (max-width: 768px) {
+
+      // remove top padding on main
+      padding-top: 0; 
+      
+      //
+      // stack article on top of aside
+      //
+      .container {
+
+        flex-direction: column;
+        gap: 0;
+        width: 100%;
+        max-width: 100%;
+        padding: 0;
+
+        article {
+          min-width: 1px;
+          width: 100%;
+          margin-bottom: 2rem;
+        }
+
+        aside {
+          width: 100%;
+        }
+        
+      }
+      
+    }
+
+    // >>> logo
+    .event-panel {
+      // square shape    
+      width: $aside-width;
+      height: $aside-width;
+      background-color: transparent;
+      border-radius: 10px;
+      overflow: hidden;
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      margin-bottom: 2rem;
+    }  
+      .date {
+        margin-bottom: 0.5em;
+        color: rgb(var(--gray));
+      }
+      .last-updated-on {
+        font-style: italic;
+      }
+      .event-title {
+        margin-bottom: 0.5em;
+        color: rgb(var(--gray));
+      }
+      .rsvp-button {
+        display: inline-block;
+        padding: 0.8em 1.6em;
+        margin: 1em 0;
+        background-color: var(--accent, #007BFF);
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+        font-weight: bold;
+        transition: background-color 0.2s ease;
+      }
+      .rsvp-button:hover {
+        background-color: var(--accent,  #0056b3);
+        color: white;
+      }
+      .org-name {
+        margin-bottom: 0.5em;
+        color: rgb(var(--gray));
+      }
+  }
+
+</style>
+
