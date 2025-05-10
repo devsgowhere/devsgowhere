@@ -28,30 +28,39 @@ const events = (await getCollection("events"))
   <Theme>
     <Header />
     <main class="events-list-page pt-xl pb-3xl">
-      <h1 class="text-3xl text-bold text-accent mb-xl">
-        Upcoming Events
-      </h1>
       <div class="container">
-        <section>
+            <header class="event-list-header mb-l">
+              <h1 class="page-title text-m text-accent">Upcoming Events</h1>
+              <div class="event-search form-control">
+                <i class="form-control__prepend fa fa-search"></i>
+                <input
+                  id="event-search__input"
+                  type="text"
+                  class="form-control__input"
+                  placeholder="Search"
+                />
+              </div>
+            </header>
           <ul class="event-list">
             {
               events.map((event) => (
-                <li class="event-list-item">
+                <li class="event-list-item"  data-id={event.id}>
                   <a class="card" href={`/events/${event.id}/`}>
                     <Image
-                      width={720}
+                      width={360}
                       height={360}
                       src={event.data.heroImage}
                       alt=""
                     />
-                    <div class="event-list-item__info">
-                      <div class="org-name text-gray-5 mb-2xs">
+                    <div class="event-list-item__info p-m">
+                      <div class="event-list-item__info__top">
+                          <div class="event-name text-2xl text-bold mb-xs">
                         {
                           orgs.find((org) => org.id === event.data.org.id)?.data
                             .title
                         }
                       </div>
-                      <div class="event-title text-3xl text-bold mb-xs">{event.data.title}</div>
+                      <div class="event-title text-xl text-bold mb-xs">{event.data.title}</div>
                       <div class="event-date mb-m">
                         <i class="fa fa-calendar-days"></i>
                         <FormattedEventDate
@@ -61,8 +70,9 @@ const events = (await getCollection("events"))
                           endTime={event.data.endTime}
                         />
                       </div>
-                      <ul class="tag-list">
-                        { event.data.tags?.map((tag)=>{
+                        <div class="event-list-item__info__bottom">
+                        <ul class="tag-list mb-0">
+                        { event.data.tags?.slice(0,5).map((tag)=>{
                           return (
                             <li class="tag">
                               #{tag}
@@ -71,69 +81,244 @@ const events = (await getCollection("events"))
                         }) }
                       </ul>
                     </div>
+                    </div>
                   </a>
                 </li>
               ))
             }
-          </ul>
-        </section>
+          </ul>        
+          <div class="event-list__empty" style="display: none;">
+            <p class="text-gray-5 text-2xl">No results found!</p>
+          </div>
       </div>
+      </section>
     </main>
     <Footer />
   </Theme>
+  <script>
+
+    // fetch all events from "events/search-index.json"
+    const events = [];
+    fetch('/events/search-index.json')
+      .then((response) => response.json())
+      .then((data) => {
+        events.push(...data);
+      })
+      .catch((error) => {
+        console.error(`Error fetching search index for 'events' collection:`, error);
+      });
+
+    // listen for input change on search input
+    const searchInputEl = document.querySelector('#event-search__input');
+
+    searchInputEl.addEventListener('input', (e) => {
+      
+      const searchValue = e.target.value.toLowerCase().trim();
+      const emptyStateEl = document.querySelector('.event-list__empty');
+
+      // if search value is empty, show all events
+      if (searchValue === '') {
+        
+        // hide "No results found" message
+        emptyStateEl.style.display = 'none';
+        
+        // show all events
+        document.querySelectorAll('.event-list-item').forEach((item) => {
+          item.classList.remove('hide');
+        });
+
+        return;
+
+      }
+
+      // filter events based on search value
+      const filteredEvents = events.filter((event) => {
+        // check if event name includes search value
+        if (event.title.toLowerCase().includes(searchValue)) {
+          return true;
+        }
+        // check if event tags include search value
+        if (event.tags.some((tag) => tag.toLowerCase().includes(searchValue))) {
+          return true;
+        }
+        return false;
+      });
+
+      // if no events found, show "No results found" message
+      if (filteredEvents.length === 0) {
+        emptyStateEl.style.display = 'block';
+      } else {
+        emptyStateEl.style.display = 'none';
+      }
+      
+      // show/hide events based on search value
+      document.querySelectorAll('.event-list-item').forEach((item) => {
+        const eventId = item.getAttribute('data-id');
+        const show = filteredEvents.some((event) => event.id === eventId);
+        if (show) {
+          item.classList.remove('hide');
+        } else {
+          item.classList.add('hide');
+        }
+      });
+      
+    });
+
+  </script>
 </html>
 
 <style lang="scss">
 
-  .events-list-page {
-    text-align: center;
+  .event-list-header {
+  
+    // layout as flex, row, space-between
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+
+    // add padding to left and right
+    padding: 0 1rem;
+
+    .page-title {
+      // remove default bottom margin
+      margin-bottom: 0;
+    }
+
+    .event-search {
+      // increase font size
+      font-size: 1rem;
+    }
+
+    //
+    // on mobile view
+    //
+    @media (max-width: 768px) {
+
+      // stack the elements
+      flex-direction: column;
+      align-items: stretch;
+
+      // add margin below h1
+      // .page-title {
+      //   margin-bottom: 1rem;
+      // }
+
+      // make search input full width
+      .event-search {
+        width: 100%;
+        margin-bottom: 1rem;
+        input {
+          width: 100%;
+        }
+      }
+
+    }
+
   }
 
-  ul.event-list {
+  .event-list {
+
+    // remove list style
     list-style: none;
     padding: 0;
     margin: 0;
+
+    // display a grid
+    display: grid;
+    grid-template-columns: 1fr; // on mobile, 1 column
+    // column-gap: 2rem;
+    // row-gap: 2rem;
+
+    padding: 0; // on mobile, no padding
+
+    @media (min-width: 768px) {
+      & {
+        grid-template-columns: repeat(2, 1fr);
+        padding: 0 1rem;
+        column-gap: 2rem;
+        row-gap: 2rem;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      & {
+        grid-template-columns: repeat(3, 1fr);
+        padding: 0 1rem;
+      }
+    }
+
+    @media (min-width: 1280px) {
+      & {
+        padding: 0; // on desktop, no padding
+      }
+    }
+    
   }
 
-  li.event-list-item a {
+  .event-list-item {
 
-    $width: 720px;
+    $size: 300px;
+    width: 100%;
+    min-width: $size;
 
-    //------------------------------------------------------------
-
-    // size
-    max-width: $width;
-    margin-top: 1rem;
-    margin-bottom: 1rem;
-    
     // layout
-    display: inline-block;
-  
-    // color
-    color: inherit;
-    &:visited{
+    display: flex;
+    flex-direction: column; // this is to make the card stretch
+
+    a {
+
+      display: inline-flex;
+      flex-direction: column;
+      
+      height: 100%;;
+
+      text-decoration: none;
       color: inherit;
+      &:visited {
+        color: inherit;
+      }
+
+      // constrain the image to the tile
+      img {
+        width: 100%;
+        // height: 360px;
+        max-width: 100%;
+        object-fit: cover;
+        box-shadow: 0 0 10px 5px rgba(198, 198, 198, 0.3)
+      }
+
+      // event info block
+      .event-list-item__info {
+        flex: 1 1 auto;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+
+      }
+
+      &:hover .event-name {
+        text-decoration: underline;
+        text-decoration-thickness: 2px;
+      }
+
+      //
+      // on mobile view
+      @media (max-width: 768px) {
+        & {
+          border-top: 1px solid var(--gray-2);
+          // increase bottom padding on mobile
+          // to give more separation between cards
+          padding-bottom: 2rem;
+        }
+      }
+
     }
 
-    // text
-    text-decoration: none;
-
-    // image
-    img {
-      max-width: 100%;
-      width: 720px;
-      height: auto;
-    }
-
-    // event info block
-    .event-list-item__info {
-      padding: 1rem;
-      text-align: left;
-    }
-
-    &:hover .event-title {
-      text-decoration: underline;
-      text-decoration-thickness: 2px;
+    // is hidden
+    &.hide {
+      display: none;
     }
 
   }
