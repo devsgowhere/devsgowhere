@@ -37,7 +37,7 @@ const {
   <h2 class="summary-card__title text-accent m-l">{title}</h2>
   <div class="summary-card__details m-m">
     <div class="event-date ml-m">
-      <i class="fa-solid fa-clock"></i>      
+      <i class="fa-solid fa-clock mr-xs"></i>      
       <FormattedEventDate        
         startDate={startDate ? new Date(startDate) : undefined}
         startTime={startTime}
@@ -46,11 +46,11 @@ const {
       />
     </div>
     <div class="event-location m-m">
-      <div style="display: flex; align-items: top;">
-        <i class="fa-solid fa-location-dot"></i>        
+      <div style="display: flex; align-items: baseline;">
+        <i class="fa-solid fa-location-dot mr-xs"></i>        
         <div style="display: flex; flex-direction: column; align-items: flex-start;">
         <p class="ml-xs mt-0" style="font-weight: bold;">{venue}</p>
-        <p class="ml-xs mt-0" style="color: #888;">{venueAddress}</p>
+        <p class="ml-xs mt-0 text-gray-6">{venueAddress}</p>
         </div>
       </div>
     </div>
