@@ -63,7 +63,7 @@ const orgData = await getEntry(org);
                 <i class="fa-solid fa-location-dot mr-xs"></i>
                 <div style="display: flex; flex-direction: column; align-items:baseline;">
                   <p class="mt-0 mb-xs" style="font-weight: bold;">{venue}</p>
-                  <p class="mt-0 mb-0">{venueAddress}</p>
+                  <p class="text-capitalise mt-0 mb-0">{(venueAddress ?? '').toLowerCase()}</p>
                 </div>
                 </ul>
               <div class="ml-s" style={{display: "flex", gap: "1rem", alignItems: "center" }}>
