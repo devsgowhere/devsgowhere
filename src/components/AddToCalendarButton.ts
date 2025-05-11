@@ -53,7 +53,7 @@ export function getDateTimeForCalendarButton(
         return datetime_date_obj;
     }
 
-    let startDateTime = getDateTime(startDate, startTime || "00:00 am");
+    let startDateTime = getDateTime(startDate, startTime ?? "00:00 am");
 
     // by default, end date time is 3 hours after start date time
     let endDateTime = new Date(startDateTime.getTime() + 3 * 60 * 60 * 1000); // add 3 hours to start date time
