@@ -45,19 +45,13 @@ const orgData = await getEntry(org);
                 <Image width={1020} height={510} src={heroImage} alt="" />
               )
             }
-          </div>
+          </div>              
             <div class="pt-l px-l pb-xl">
+              {org && <ul class="org-name mb-xs pl-0 text-s text-gray-6">Hosted by: {orgData.data.title}</ul>}
               <h1 class="event-title text-3xl text-accent">{title}</h1>
-            <ul class="tag-list mb-l">
-              { Astro.props.tags?.slice(0, 10).map((tag) => (
-                <li class="tag">
-                  # {tag}
-                </li>
-              )) }
-            </ul>
               <hr class="mb-l"/>   
-              {org && <ul class="org-name">{orgData.data.title}</ul>}
-              <ul class="date">
+              <ul class="date mb-m">
+                <i class="fa-solid fa-clock mr-xs"></i>      
                 <FormattedEventDate
                   startDate={startDate ? new Date(startDate) : undefined}
                   startTime={startTime ?? "00:00"}                  
@@ -65,6 +59,13 @@ const orgData = await getEntry(org);
                   endTime={endTime ?? "00:00"}
                 />
               </ul>
+                <ul style="display: flex; align-items: baseline; gap: 0.5rem;">
+                <i class="fa-solid fa-location-dot mr-xs"></i>
+                <div style="display: flex; flex-direction: column; align-items:baseline;">
+                  <p class="mt-0 mb-xs" style="font-weight: bold;">{venue}</p>
+                  <p class="mt-0 mb-0 text-gray-6">{venueAddress}</p>
+                </div>
+                </ul>
               <div class="ml-s" style={{display: "flex", gap: "1rem", alignItems: "center" }}>
               {
                 rsvpButtonUrl && (
@@ -95,6 +96,13 @@ const orgData = await getEntry(org);
             <div class="event-markup">
             <slot />
             </div>
+            <ul class="tag-list mb-l">
+              { Astro.props.tags?.slice(0, 10).map((tag) => (
+                <li class="tag">
+                  # {tag}
+                </li>
+              )) }
+            </ul>
           </div>
         </article>
         <aside class="sticky-aside">
@@ -247,7 +255,6 @@ const orgData = await getEntry(org);
         color: white;
       }
       .org-name {
-        margin-bottom: 0.5em;
         color: rgb(var(--gray));
       }
   }
