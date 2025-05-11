@@ -33,31 +33,30 @@ const {
 } = Astro.props;
 ---
 
-<div class="summary-card">
-  <h2 class="summary-card__title">{title}</h2>
-  <div class="summary-card__details">
-    <div class="event-date">
-      <i class="fa-solid fa-clock"></i>
-      <FormattedEventDate
-        startDate={startDate}
+<div class="card" style="overflow:visible;">
+  <h2 class="summary-card__title text-accent m-l">{title}</h2>
+  <div class="summary-card__details m-m">
+    <div class="event-date ml-m">
+      <i class="fa-solid fa-clock mr-xs"></i>      
+      <FormattedEventDate        
+        startDate={startDate ? new Date(startDate) : undefined}
         startTime={startTime}
-        endDate={endDate}
+        endDate={endDate ? new Date(endDate) : undefined}
         endTime={endTime}
       />
     </div>
-    <div style="margin-bottom: 8px;"></div>
-    <div class="event-location">
-      <div style="display: flex; align-items: top;">
-        <i class="fa-solid fa-location-dot"></i>        
-        <div style="margin-left:8px; display: flex; flex-direction: column; align-items: flex-start;">
-        <p style="margin: 0; font-weight: bold;">{venue}</p>
-        <p style="margin: 0; color: #888;">{venueAddress}</p>
+    <div class="event-location m-m">
+      <div style="display: flex; align-items: baseline;">
+        <i class="fa-solid fa-location-dot mr-xs"></i>        
+        <div style="display: flex; flex-direction: column; align-items: flex-start;">
+        <p class="ml-xs mt-0" style="font-weight: bold;">{venue}</p>
+        <p class="ml-xs mt-0 text-gray-6">{venueAddress}</p>
         </div>
       </div>
     </div>
-    <div style="margin-bottom: 8px;"></div>
     <div
-      style="display: flex; flex-direction: column; align-items: center; gap: 8px;"
+      style="display: flex; flex-direction: column; align-items: center;"      
+      class="mb-l"
     >
       {
         rsvpButtonUrl && (
@@ -71,7 +70,7 @@ const {
           </a>
         )
       }      
-      <AddToCalendarButton
+      <AddToCalendarButton        
         client:only="react"
         label="Add to Calendar" 
         name={title}
@@ -87,25 +86,8 @@ const {
   </div>
 
   <style>
-    .summary-card {
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      padding: 16px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      text-align: center;
-      background-color: white;
-    }
-
-    .summary-card__image {
-      width: 100%;
-      height: auto;
-      border-radius: 8px;
-      margin-bottom: 16px;
-    }
-
     .summary-card__title {
-      font-size: 1.5rem;
-      margin-bottom: 8px;
+      font-size: 1.5rem;      
     }
 
     .summary-card__details {
