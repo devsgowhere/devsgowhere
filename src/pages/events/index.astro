@@ -54,14 +54,14 @@ const events = (await getCollection("events"))
                       alt=""
                     />
                     <div class="event-list-item__info">
-                    <div class="org-name text-gray-5 mb-2xs">
+                    <div class="org-name text-s text-gray-5 mb-2xs">
                         {
                           orgs.find((org) => org.id === event.data.org.id)?.data
                             .title
                         }
                       </div>
-                      <div class="event-title text-3xl text-bold mb-l">{event.data.title}</div>
-                      <div class="event-date mb-xs">
+                      <div class="event-title text-accent text-3xl text-bold mb-l">{event.data.title}</div>
+                      <div class="event-date mb-xs text-bold">
                         <i class="fa fa-calendar-days mr-xs"></i>
                         <FormattedEventDate
                           startDate={event.data.startDate}
@@ -74,12 +74,12 @@ const events = (await getCollection("events"))
                         <div style="display: flex; align-items: baseline;">
                         <i class="fa fa-location-dot mr-xs"></i>
                         <div style="display: flex; flex-direction: column; align-items: flex-start;">
-                        <p class="ml-xs mt-0 mb-0" style="font-weight: bold;">{event.data.venue}</p>
-                        <p class="ml-xs mt-0 text-gray-6">{event.data.venueAddress}</p>
+                        <p class="ml-xs mt-0 mb-0 text-bold">{event.data.venue}</p>
+                        <p class="ml-xs mt-0">{event.data.venueAddress}</p>
                         </div>
                         </div>
                       </div>
-                      <div class="event-description text-s mb-m">{event.data.description.slice(0, 160)}...</div>                      
+                      <div class="event-description mb-m">{event.data.description.slice(0, 200)}...</div>                      
                         <ul class="tag-list mb-0">
                         { event.data.tags?.slice(0,5).map((tag)=>{
                           return (
@@ -217,7 +217,7 @@ const events = (await getCollection("events"))
 
     // event info block
     .event-list-item__info {
-      padding: 1rem;
+      padding: 2rem;
       text-align: left;
     }
 
