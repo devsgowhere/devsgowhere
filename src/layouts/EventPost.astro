@@ -8,6 +8,7 @@ import Footer from "../components/Footer.astro";
 import Theme from "./Theme.astro";
 import SummaryCard from "../components/SummaryCard.astro";
 import FormattedEventDate from "../components/FormattedEventDate.astro";
+import AddToCalendarButton from "../components/AddToCalendarButton.tsx";
 
 type Props = CollectionEntry<"events">["data"];
 
@@ -44,25 +45,28 @@ const orgData = await getEntry(org);
                 <Image width={1020} height={510} src={heroImage} alt="" />
               )
             }
-          </div>
+          </div>              
             <div class="pt-l px-l pb-xl">
+              {org && <ul class="org-name mb-xs pl-0 text-s text-gray-6">Hosted by: {orgData.data.title}</ul>}
               <h1 class="event-title text-3xl text-accent">{title}</h1>
-            <ul class="tag-list mb-l">
-              { Astro.props.tags?.slice(0, 10).map((tag) => (
-                <li class="tag">
-                  # {tag}
-                </li>
-              )) }
-            </ul>
-              {org && <h4 class="org-name">{orgData.data.title}</h4>}
-              <h4 class="date">
+              <hr class="mb-l"/>   
+              <ul class="date mb-m">
+                <i class="fa-solid fa-clock mr-xs"></i>      
                 <FormattedEventDate
-                  startDate={startDate}
-                  startTime={startTime}
-                  endDate={endDate}
-                  endTime={endTime}
+                  startDate={startDate ? new Date(startDate) : undefined}
+                  startTime={startTime ?? "00:00"}                  
+                  endDate={endDate ? new Date(endDate) : undefined}                  
+                  endTime={endTime ?? "00:00"}
                 />
-              </h4>
+              </ul>
+                <ul style="display: flex; align-items: baseline; gap: 0.5rem;">
+                <i class="fa-solid fa-location-dot mr-xs"></i>
+                <div style="display: flex; flex-direction: column; align-items:baseline;">
+                  <p class="mt-0 mb-xs" style="font-weight: bold;">{venue}</p>
+                  <p class="mt-0 mb-0 text-gray-6">{venueAddress}</p>
+                </div>
+                </ul>
+              <div class="ml-s" style={{display: "flex", gap: "1rem", alignItems: "center" }}>
               {
                 rsvpButtonUrl && (
                   <a
@@ -74,11 +78,31 @@ const orgData = await getEntry(org);
                     {rsvpButtonText ?? "Link"}
                   </a>
                 )
-              }
-              <hr />            
+              }                       
+              <AddToCalendarButton        
+                client:only="react"
+                label="Add to Calendar" 
+                name={title}
+                options="'Apple','Google'"
+                location={venue ?? undefined}
+                startDate={startDate ? new Date(startDate).toISOString().split("T")[0] : undefined}
+                endDate={endDate ? new Date(endDate).toISOString().split("T")[0] : undefined}
+                startTime="00:00"
+                endTime="00:00"
+                timeZone="Singapore"
+              />
+            </div>
+              <hr class="mb-l mt-m"/>   
             <div class="event-markup">
             <slot />
             </div>
+            <ul class="tag-list mb-l">
+              { Astro.props.tags?.slice(0, 10).map((tag) => (
+                <li class="tag">
+                  # {tag}
+                </li>
+              )) }
+            </ul>
           </div>
         </article>
         <aside class="sticky-aside">
@@ -86,15 +110,15 @@ const orgData = await getEntry(org);
             <SummaryCard
               title={title}
               description={description}
-              startDate={startDate}
-              startTime={startTime}
-              endDate={endDate}
-              endTime={endTime}
-              venue={venue}
-              venueAddress={venueAddress}
+              startDate={startDate ? new Date(startDate).toISOString() : ""}
+              startTime={startTime ?? "00:00"}              
+              endDate={endDate ? new Date(endDate).toISOString() : ""}
+              endTime={endTime ?? "00:00"}
+              venue={venue ?? ""}
+              venueAddress={venueAddress ?? ""}
               org={org && orgData.data.title}
-              rsvpButtonUrl={rsvpButtonUrl}
-              rsvpButtonText={rsvpButtonText}
+              rsvpButtonUrl={rsvpButtonUrl ?? ""}
+              rsvpButtonText={rsvpButtonText ?? "RSVP"}
             />
           </div>
         </aside>
@@ -197,7 +221,6 @@ const orgData = await getEntry(org);
       height: $aside-width;
       background-color: transparent;
       border-radius: 10px;
-      overflow: hidden;
       img {
         width: 100%;
         height: 100%;
@@ -232,7 +255,6 @@ const orgData = await getEntry(org);
         color: white;
       }
       .org-name {
-        margin-bottom: 0.5em;
         color: rgb(var(--gray));
       }
   }
