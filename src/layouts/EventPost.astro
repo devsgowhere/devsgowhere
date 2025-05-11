@@ -9,6 +9,7 @@ import Theme from "./Theme.astro";
 import SummaryCard from "../components/SummaryCard.astro";
 import FormattedEventDate from "../components/FormattedEventDate.astro";
 import AddToCalendarButton from "../components/AddToCalendarButton.tsx";
+import {getDateTimeForCalendarButton} from "../components/AddToCalendarButton.ts";
 
 type Props = CollectionEntry<"events">["data"];
 
@@ -28,6 +29,14 @@ const {
 } = Astro.props;
 
 const orgData = await getEntry(org);
+
+let { startDateTime, endDateTime } = getDateTimeForCalendarButton(
+  startDate ? new Date(startDate).toISOString() : "",
+  startTime ?? "00:00",
+  endDate ? new Date(endDate).toISOString() : "",
+  endTime ?? "00:00"
+);
+
 ---
 
 <html lang="en">
@@ -84,12 +93,12 @@ const orgData = await getEntry(org);
                 label="Add to Calendar" 
                 name={title}
                 options="'Apple','Google'"
-                location={venue ?? undefined}
-                startDate={startDate ? new Date(startDate).toISOString().split("T")[0] : undefined}
-                endDate={endDate ? new Date(endDate).toISOString().split("T")[0] : undefined}
-                startTime="00:00"
-                endTime="00:00"
-                timeZone="Singapore"
+                location={venueAddress ?? undefined}
+                startDate={startDateTime.toISOString().split("T")[0]}
+                endDate={endDateTime.toISOString().split("T")[0]}
+                startTime={startDateTime.toISOString().split("T")[1].substring(0, 5)}
+                endTime={endDateTime.toISOString().split("T")[1].substring(0, 5)}
+                timeZone="UTC"
               />
             </div>
               <hr class="mb-l mt-m"/>   
