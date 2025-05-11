@@ -61,14 +61,24 @@ const events = (await getCollection("events"))
                         }
                       </div>
                       <div class="event-title text-3xl text-bold mb-xs">{event.data.title}</div>
+                      <div class="event-description text-s mb-m">{event.data.description}</div>
                       <div class="event-date mb-m">
-                        <i class="fa fa-calendar-days"></i>
+                        <i class="fa fa-calendar-days mr-xs"></i>
                         <FormattedEventDate
                           startDate={event.data.startDate}
                           startTime={event.data.startTime}
                           endDate={event.data.endDate}
                           endTime={event.data.endTime}
                         />
+                      </div>
+                      <div class="event-location mb-m">
+                        <div style="display: flex; align-items: baseline;">
+                        <i class="fa fa-location-dot mr-xs"></i>
+                        <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                        <p class="ml-xs mt-0 mb-0" style="font-weight: bold;">{event.data.venue}</p>
+                        <p class="ml-xs mt-0 text-gray-6">{event.data.venueAddress}</p>
+                        </div>
+                        </div>
                       </div>
                         <ul class="tag-list mb-0">
                         { event.data.tags?.slice(0,5).map((tag)=>{
