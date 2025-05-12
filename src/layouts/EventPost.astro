@@ -31,9 +31,9 @@ const {
 const orgData = await getEntry(org);
 
 let { startDateTime, endDateTime } = getDateTimeForCalendarButton(
-  startDate ? new Date(startDate).toISOString() : "",
+(startDate ? startDate.toISOString() : ""),
   startTime ?? "00:00",
-  endDate ? new Date(endDate).toISOString() : "",
+  (endDate ? endDate.toISOString() : ""),
   endTime ?? "00:00"
 );
 
@@ -95,11 +95,11 @@ let orgUrl = `/orgs/${org.id}`;
                 label="Add to Calendar" 
                 name={title}
                 options="'Apple','Google'"
-                location={venueAddress ?? undefined}
-                startDate={startDateTime.toISOString().split("T")[0]}
-                endDate={endDateTime.toISOString().split("T")[0]}
-                startTime={startDateTime.toISOString().split("T")[1].substring(0, 5)}
-                endTime={endDateTime.toISOString().split("T")[1].substring(0, 5)}
+                location={venueAddress ?? ""}
+                startDate={startDateTime instanceof Date && !isNaN(startDateTime.getTime()) ? startDateTime.toISOString().split("T")[0] : ""}
+                endDate={endDateTime instanceof Date && !isNaN(endDateTime.getTime()) ? new Date(endDateTime).toISOString().split("T")[0] : ""}
+                startTime={startDateTime instanceof Date && !isNaN(startDateTime.getTime()) ? startDateTime.toISOString().split("T")[1].substring(0, 5) : "00:00"}
+                endTime={endDateTime instanceof Date && !isNaN(endDateTime.getTime()) ? endDateTime.toISOString().split("T")[1].substring(0, 5) : "00:00"}
                 timeZone="UTC"
               />
             </div>
@@ -121,9 +121,9 @@ let orgUrl = `/orgs/${org.id}`;
             <SummaryCard
               title={title}
               description={description}
-              startDate={startDate ? new Date(startDate).toISOString() : ""}
+              startDate={startDate ? startDate.toISOString() : ""}
               startTime={startTime ?? "00:00"}              
-              endDate={endDate ? new Date(endDate).toISOString() : ""}
+              endDate={endDate ? endDate.toISOString() : ""}
               endTime={endTime ?? "00:00"}
               venue={venue ?? ""}
               venueAddress={venueAddress ?? ""}

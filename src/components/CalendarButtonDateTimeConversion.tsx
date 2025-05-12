@@ -76,7 +76,7 @@ export function getDateTimeForCalendarButton(
 
     return {
         startDateTime: startDateTime,
-        endDateTime: endDateTime,
+        endDateTime: endDateTime
     };
 }
 
