@@ -28,6 +28,9 @@ const {
 } = Astro.props;
 
 const orgData = await getEntry(org);
+
+let orgUrl = `/orgs/${org.id}`;
+
 ---
 
 <html lang="en">
@@ -47,7 +50,7 @@ const orgData = await getEntry(org);
             }
           </div>              
             <div class="pt-l px-l pb-xl">
-              {org && <ul class="org-name mb-xs pl-0 text-s text-gray-6">Hosted by: {orgData.data.title}</ul>}
+              {org && <div class="org-name mb-xs pl-0 text-s text-gray-6">Hosted by: {orgData.data.title}</div>}
               <h1 class="event-title text-3xl text-accent">{title}</h1>
               <hr class="mb-l"/>   
               <ul class="date mb-m">
@@ -120,6 +123,32 @@ const orgData = await getEntry(org);
               rsvpButtonUrl={rsvpButtonUrl ?? ""}
               rsvpButtonText={rsvpButtonText ?? "RSVP"}
             />
+            <div class="org-info-container mt-xl">
+              <a class="org-info__logo mb-l" href={orgUrl}>
+                {
+                  // if logoImage is defined, use it
+                  orgData.data.logoImage && (
+                    <Image width={360} height={360} src={orgData.data.logoImage} alt={title} />
+                  )
+                }
+              </a>
+              <div class="org-info__info-block">
+                <div class="org-info__name text-bold text-accent text-xl mb-s">
+                  {orgData.data.title}
+                </div>
+                <p>
+                  {
+                    // let max length be 150 characters
+                    orgData.data.description.length > 150
+                      ? `${orgData.data.description.slice(0, 150)}...`
+                      : orgData.data.description
+                  }
+                </p>
+                <div>
+                  <a href={orgUrl}><i class="fa fa-arrow-right"></i> More events</a>
+                </div>
+              </div>
+            </div>
           </div>
         </aside>
 
@@ -138,6 +167,7 @@ const orgData = await getEntry(org);
 
 <style lang="scss">
   .event-page {
+
     $article-width: 800px;
     $aside-width: 400px;
     $gap: 2rem;
@@ -257,6 +287,42 @@ const orgData = await getEntry(org);
       .org-name {
         color: rgb(var(--gray));
       }
+
+      //
+      // org info
+      //
+      .org-info-container{
+
+        width: 100%;
+
+        padding: 2rem;
+
+        // >>> logo
+        .org-info__logo{
+
+          $size: 200px;
+          
+          width: $size;
+          height: $size;
+
+          // center the logo horizontally
+          margin: 0 auto;
+          
+          background-color: white;
+          border-radius: 10px;
+
+          // center the content
+          display: flex;
+          justify-content: center;
+          align-items: center;
+
+          // padding to prevent content from touching the edges
+          padding: 2rem;
+          
+        }
+
+      }
+
   }
 
 </style>
