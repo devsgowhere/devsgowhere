@@ -80,11 +80,11 @@ let { startDateTime, endDateTime } = getDateTimeForCalendarButton(startDate, sta
         label="Add to Calendar" 
         name={title}
         options="'Apple','Google'"
-        location={venueAddress}
-        startDate={startDateTime.toISOString().split("T")[0]}
-        endDate={endDateTime.toISOString().split("T")[0]}
-        startTime={startDateTime.toISOString().split("T")[1].substring(0, 5)}
-        endTime={endDateTime.toISOString().split("T")[1].substring(0, 5)}
+        location={venueAddress ?? ""}
+        startDate={startDateTime instanceof Date && !isNaN(startDateTime.getTime()) ? startDateTime.toISOString().split("T")[0] : ""}
+        endDate={endDateTime instanceof Date && !isNaN(endDateTime.getTime()) ? new Date(endDateTime).toISOString().split("T")[0] : ""}
+        startTime={startDateTime instanceof Date && !isNaN(startDateTime.getTime()) ? startDateTime.toISOString().split("T")[1].substring(0, 5) : "00:00"}
+        endTime={endDateTime instanceof Date && !isNaN(endDateTime.getTime()) ? endDateTime.toISOString().split("T")[1].substring(0, 5) : "00:00"}
         timeZone="UTC"
       />      
     </div>
