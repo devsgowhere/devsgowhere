@@ -2,6 +2,7 @@
 title: "Junior Developers Singapore"
 description: "Are you a Junior Developer or newbie in the Tech industry? Do you sometimes feel anxious about work or question your own abilities? Are you excited to be starting your career and want to celebrate your accomplishments with others? You are not alone!"
 heroImage: "./hero.avif"
+logoImage: "./logo.png"
 tags: ["coding", "ios"]
 # links
 website: https://linktr.ee/juniordevsg

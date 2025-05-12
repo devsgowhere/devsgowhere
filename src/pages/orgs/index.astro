@@ -40,12 +40,30 @@ const orgs = (await getCollection("orgs")).sort((a, b) =>
                 orgs.map((org) => (
                   <li class="org-list-item" data-id={org.id}>
                     <a class="card" href={`/orgs/${org.id}/`}>
-                      <Image
-                        width={360}
-                        height={360}
-                        src={org.data.heroImage}
-                        alt=""
-                      />
+                      {
+                        org.data.logoImage && (
+                        <div class="org-list-item__logo">
+                          <Image
+                              width={360}
+                              height={360}
+                              src={org.data.logoImage ?? org.data.heroImage}
+                              alt=""
+                          />
+                        </div>
+                        )
+                      }
+                      {
+                        !org.data.logoImage && (
+                        <div class="org-list-item__heroImg">
+                          <Image
+                              width={360}
+                              height={360}
+                              src={org.data.heroImage}
+                              alt=""
+                          />
+                        </div>
+                        )
+                      }
                       <div class="org-list-item__info p-m">
                         <div class="org-list-item__info__top">
                           <div class="org-name text-2xl text-bold mb-xs">
@@ -263,13 +281,40 @@ const orgs = (await getCollection("orgs")).sort((a, b) =>
         color: inherit;
       }
 
-      // constrain the image to the tile
-      img {
+      // logo image
+      .org-list-item__logo {
+
         width: 100%;
-        // height: 360px;
-        max-width: 100%;
-        object-fit: cover;
-        box-shadow: 0 0 10px 5px rgba(198, 198, 198, 0.3)
+      
+        // prevent the image from touching the edges
+        padding: 2rem; 
+
+        // drop shadow
+        box-shadow: 0 0 10px 5px rgba(198, 198, 198, 0.3);
+      
+        // constrain the image to the tile
+        img {
+          width: 100%;
+          // height: 360px;
+          max-width: 100%;
+          object-fit: contain;
+        }
+
+      }
+
+      // hero image ( if no logo image )
+      .org-list-item__heroImg {
+        width: 100%;
+        height: 360px;
+        overflow: hidden;
+        position: relative;
+
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover; // cover the entire area instead of contain
+          object-position: center;
+        }
       }
 
       // org info block
