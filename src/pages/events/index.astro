@@ -156,9 +156,11 @@ const events = (await getCollection("events"))
             return true;
           }
           // check if organizer name includes search value
-          const organizer = orgs.find((org) => org.id === event.org.id)?.data.title.toLowerCase();
-          if (organizer && organizer.includes(searchValue)) {
-            return true;
+          if (event.org && event.org.id) {
+            const organizer = orgs.find((org) => org.id === event.org.id)?.data.title.toLowerCase();
+            if (organizer && organizer.includes(searchValue)) {
+              return true;
+            }
           }
           return false;
         });
