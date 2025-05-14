@@ -103,17 +103,20 @@ const events = (await getCollection("events"))
     <Footer />
   </Theme>
   <script>
-
     // fetch all events from "events/search-index.json"
-    const events: Array<{
+    type EventSearchIndex = {
       id: string;
       title: string;
       tags: string[];
-    }> = []; // Explicitly define the type for events
+      org: { id: string };
+    };
+    declare const orgs: Array<{ id: string; data: { title: string } }>; // Updated type to include organizer ID
+
+    const events: EventSearchIndex[] = [];
 
     fetch('/events/search-index.json')
       .then((response) => response.json())
-      .then((data: Array<{ id: string; title: string; tags: string[] }>) => {
+      .then((data: EventSearchIndex[]) => {
         events.push(...data);
       })
       .catch((error) => {
@@ -124,26 +127,22 @@ const events = (await getCollection("events"))
     const searchInputEl = document.querySelector<HTMLInputElement>('#event-search__input');
 
     if (searchInputEl) {
-      searchInputEl.addEventListener('input', (e) => {
+      searchInputEl.addEventListener('input', (e: Event) => {
         const target = e.target as HTMLInputElement | null;
-        const searchValue = target?.value.toLowerCase().trim() || '';
+        const searchValue = target?.value?.toLowerCase().trim() || '';
         const emptyStateEl = document.querySelector<HTMLElement>('.event-list__empty');
 
         // if search value is empty, show all events
         if (searchValue === '') {
-          
           // hide "No results found" message
           if (emptyStateEl) {
             emptyStateEl.style.display = 'none';
           }
-          
           // show all events
-          document.querySelectorAll('.event-list-item').forEach((item) => {
+          document.querySelectorAll<HTMLElement>('.event-list-item').forEach((item) => {
             item.classList.remove('hide');
           });
-
           return;
-
         }
 
         // filter events based on search value
@@ -153,7 +152,12 @@ const events = (await getCollection("events"))
             return true;
           }
           // check if event tags include search value
-          if (event.tags.some((tag) => tag.toLowerCase().includes(searchValue))) {
+          if (event.tags.some((tag: string) => tag.toLowerCase().includes(searchValue))) {
+            return true;
+          }
+          // check if organizer name includes search value
+          const organizer = orgs.find((org) => org.id === event.org.id)?.data.title.toLowerCase();
+          if (organizer && organizer.includes(searchValue)) {
             return true;
           }
           return false;
@@ -163,9 +167,9 @@ const events = (await getCollection("events"))
         if (emptyStateEl) {
           emptyStateEl.style.display = filteredEvents.length === 0 ? 'block' : 'none';
         }
-        
+
         // show/hide events based on search value
-        document.querySelectorAll('.event-list-item').forEach((item) => {
+        document.querySelectorAll<HTMLElement>('.event-list-item').forEach((item) => {
           const eventId = item.getAttribute('data-id');
           const show = filteredEvents.some((event) => event.id === eventId);
           if (show) {
@@ -174,10 +178,8 @@ const events = (await getCollection("events"))
             item.classList.add('hide');
           }
         });
-        
       });
     }
-
   </script>
 </html>
 
