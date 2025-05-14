@@ -105,10 +105,15 @@ const events = (await getCollection("events"))
   <script>
 
     // fetch all events from "events/search-index.json"
-    const events = [];
+    const events: Array<{
+      id: string;
+      title: string;
+      tags: string[];
+    }> = []; // Explicitly define the type for events
+
     fetch('/events/search-index.json')
       .then((response) => response.json())
-      .then((data) => {
+      .then((data: Array<{ id: string; title: string; tags: string[] }>) => {
         events.push(...data);
       })
       .catch((error) => {
@@ -116,60 +121,62 @@ const events = (await getCollection("events"))
       });
 
     // listen for input change on search input
-    const searchInputEl = document.querySelector('#event-search__input');
+    const searchInputEl = document.querySelector<HTMLInputElement>('#event-search__input');
 
-    searchInputEl.addEventListener('input', (e) => {
-      
-      const searchValue = e.target.value.toLowerCase().trim();
-      const emptyStateEl = document.querySelector('.event-list__empty');
+    if (searchInputEl) {
+      searchInputEl.addEventListener('input', (e) => {
+        const target = e.target as HTMLInputElement | null;
+        const searchValue = target?.value.toLowerCase().trim() || '';
+        const emptyStateEl = document.querySelector<HTMLElement>('.event-list__empty');
 
-      // if search value is empty, show all events
-      if (searchValue === '') {
-        
-        // hide "No results found" message
-        emptyStateEl.style.display = 'none';
-        
-        // show all events
-        document.querySelectorAll('.event-list-item').forEach((item) => {
-          item.classList.remove('hide');
+        // if search value is empty, show all events
+        if (searchValue === '') {
+          
+          // hide "No results found" message
+          if (emptyStateEl) {
+            emptyStateEl.style.display = 'none';
+          }
+          
+          // show all events
+          document.querySelectorAll('.event-list-item').forEach((item) => {
+            item.classList.remove('hide');
+          });
+
+          return;
+
+        }
+
+        // filter events based on search value
+        const filteredEvents = events.filter((event) => {
+          // check if event name includes search value
+          if (event.title.toLowerCase().includes(searchValue)) {
+            return true;
+          }
+          // check if event tags include search value
+          if (event.tags.some((tag) => tag.toLowerCase().includes(searchValue))) {
+            return true;
+          }
+          return false;
         });
 
-        return;
-
-      }
-
-      // filter events based on search value
-      const filteredEvents = events.filter((event) => {
-        // check if event name includes search value
-        if (event.title.toLowerCase().includes(searchValue)) {
-          return true;
+        // if no events found, show "No results found" message
+        if (emptyStateEl) {
+          emptyStateEl.style.display = filteredEvents.length === 0 ? 'block' : 'none';
         }
-        // check if event tags include search value
-        if (event.tags.some((tag) => tag.toLowerCase().includes(searchValue))) {
-          return true;
-        }
-        return false;
+        
+        // show/hide events based on search value
+        document.querySelectorAll('.event-list-item').forEach((item) => {
+          const eventId = item.getAttribute('data-id');
+          const show = filteredEvents.some((event) => event.id === eventId);
+          if (show) {
+            item.classList.remove('hide');
+          } else {
+            item.classList.add('hide');
+          }
+        });
+        
       });
-
-      // if no events found, show "No results found" message
-      if (filteredEvents.length === 0) {
-        emptyStateEl.style.display = 'block';
-      } else {
-        emptyStateEl.style.display = 'none';
-      }
-      
-      // show/hide events based on search value
-      document.querySelectorAll('.event-list-item').forEach((item) => {
-        const eventId = item.getAttribute('data-id');
-        const show = filteredEvents.some((event) => event.id === eventId);
-        if (show) {
-          item.classList.remove('hide');
-        } else {
-          item.classList.add('hide');
-        }
-      });
-      
-    });
+    }
 
   </script>
 </html>
