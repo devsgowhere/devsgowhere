@@ -4,26 +4,23 @@ import FormattedDate from "../components/FormattedDate.astro";
 interface Props {
   startDate: string;
   startTime: string;
-  endDate?: string;
-  endTime?: string;
+  endDate?: string | null;
+  endTime?: string | null;
 }
 
 const { startDate, startTime, endDate, endTime } = Astro.props;
 
 console.log("startdate: ", startDate);
 
-const isSingleDayEvent =
-  !endDate || startDate === endDate;
+const isSingleDayEvent = !endDate || startDate === endDate;
 ---
 
 <span class="event-date">
-
-  <FormattedDate date={startDate} time={startTime}/>
+  <FormattedDate date={startDate} time={startTime} />
 
   {(!isSingleDayEvent || endTime) && "-"}
 
   {!isSingleDayEvent && <FormattedDate date={endDate} time={endTime} />}
-  
-  {isSingleDayEvent && endTime && <FormattedDate time={endTime} />}
 
+  {isSingleDayEvent && endTime && <FormattedDate time={endTime} />}
 </span>

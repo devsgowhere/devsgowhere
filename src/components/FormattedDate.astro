@@ -1,7 +1,7 @@
 ---
 interface Props {
-  date?: string;
-  time?: string;
+  date?: string | null;
+  time?: string | null;
 }
 
 const { date, time } = Astro.props;
@@ -27,14 +27,8 @@ const convertTo12HourFormat = (time: string) => {
 };
 
 const time_12h = time ? convertTo12HourFormat(time) : "";
-
 ---
-{
-  formattedDate && (
-    <time datetime={date}>
-      {formattedDate}
-    </time>
-  )
-}
+
+{formattedDate && <time datetime={date}>{formattedDate}</time>}
 {date && time_12h && ", "}
 {time_12h && <time datetime={time_12h}>{time_12h}</time>}
