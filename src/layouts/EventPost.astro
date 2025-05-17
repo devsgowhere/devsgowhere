@@ -9,6 +9,7 @@ import Theme from "./Theme.astro";
 import SummaryCard from "../components/SummaryCard.astro";
 import FormattedEventDate from "../components/FormattedEventDate.astro";
 import AddToCalendarButton from "../components/AddToCalendarButton.tsx";
+import {getDateTimeForCalendarButton} from "../components/CalendarButtonDateTimeConversion.tsx";
 
 type Props = CollectionEntry<"events">["data"];
 
@@ -28,6 +29,13 @@ const {
 } = Astro.props;
 
 const orgData = await getEntry(org);
+
+let { startDateTime, endDateTime } = getDateTimeForCalendarButton(
+(startDate ? startDate.toISOString() : ""),
+  startTime ?? "00:00",
+  (endDate ? endDate.toISOString() : ""),
+  endTime ?? "00:00"
+);
 
 let orgUrl = `/orgs/${org.id}`;
 
@@ -66,7 +74,7 @@ let orgUrl = `/orgs/${org.id}`;
                 <i class="fa-solid fa-location-dot mr-xs"></i>
                 <div style="display: flex; flex-direction: column; align-items:baseline;">
                   <p class="mt-0 mb-xs" style="font-weight: bold;">{venue}</p>
-                  <p class="mt-0 mb-0">{venueAddress}</p>
+                  <p class="text-capitalise mt-0 mb-0">{(venueAddress ?? '').toLowerCase()}</p>
                 </div>
                 </ul>
               <div class="ml-s" style={{display: "flex", gap: "1rem", alignItems: "center" }}>
@@ -87,12 +95,12 @@ let orgUrl = `/orgs/${org.id}`;
                 label="Add to Calendar" 
                 name={title}
                 options="'Apple','Google'"
-                location={venue ?? undefined}
-                startDate={startDate ? new Date(startDate).toISOString().split("T")[0] : undefined}
-                endDate={endDate ? new Date(endDate).toISOString().split("T")[0] : undefined}
-                startTime="00:00"
-                endTime="00:00"
-                timeZone="Singapore"
+                location={venueAddress ?? ""}
+                startDate={startDateTime instanceof Date && !isNaN(startDateTime.getTime()) ? startDateTime.toISOString().split("T")[0] : ""}
+                endDate={endDateTime instanceof Date && !isNaN(endDateTime.getTime()) ? new Date(endDateTime).toISOString().split("T")[0] : ""}
+                startTime={startDateTime instanceof Date && !isNaN(startDateTime.getTime()) ? startDateTime.toISOString().split("T")[1].substring(0, 5) : "00:00"}
+                endTime={endDateTime instanceof Date && !isNaN(endDateTime.getTime()) ? endDateTime.toISOString().split("T")[1].substring(0, 5) : "00:00"}
+                timeZone="UTC"
               />
             </div>
               <hr class="mb-l mt-m"/>   
@@ -113,9 +121,9 @@ let orgUrl = `/orgs/${org.id}`;
             <SummaryCard
               title={title}
               description={description}
-              startDate={startDate ? new Date(startDate).toISOString() : ""}
+              startDate={startDate ? startDate.toISOString() : ""}
               startTime={startTime ?? "00:00"}              
-              endDate={endDate ? new Date(endDate).toISOString() : ""}
+              endDate={endDate ? endDate.toISOString() : ""}
               endTime={endTime ?? "00:00"}
               venue={venue ?? ""}
               venueAddress={venueAddress ?? ""}
