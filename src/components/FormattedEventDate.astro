@@ -2,16 +2,17 @@
 import FormattedDate from "../components/FormattedDate.astro";
 
 interface Props {
-  startDate?: Date;
-  startTime?: string;
-  endDate?: Date;
-  endTime?: string;
+  startDate: string;
+  startTime: string;
+  endDate?: string | null;
+  endTime?: string | null;
 }
 
 const { startDate, startTime, endDate, endTime } = Astro.props;
 
-const isSingleDayEvent =
-  !endDate || startDate?.toISOString() === endDate?.toISOString();
+console.log("startdate: ", startDate);
+
+const isSingleDayEvent = !endDate || startDate === endDate;
 ---
 
 <span class="event-date">

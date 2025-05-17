@@ -8,9 +8,10 @@ export interface Props {
   title: string;
   description: string;
   startDate: string;
-  endDate: string;
   startTime: string;
+  endDate: string;
   endTime: string;
+  timezone: string;
   venue: string;
   org: string;
   venueAddress: string;
@@ -18,19 +19,22 @@ export interface Props {
   rsvpButtonText: string;
 }
 
-const {
+let {
   title,
   description,
   startDate,
-  endDate,
   startTime,
+  endDate,
   endTime,
+  timezone,
   venue,
   org,
   venueAddress,
   rsvpButtonUrl,
   rsvpButtonText,
 } = Astro.props;
+
+// console.log("props: ", Astro.props);
 ---
 
 <div class="card" style="overflow:visible;">
@@ -39,10 +43,10 @@ const {
     <div class="event-date ml-m">
       <i class="fa-solid fa-clock mr-xs"></i>      
       <FormattedEventDate        
-        startDate={startDate ? new Date(startDate) : undefined}
+        startDate={startDate}
         startTime={startTime}
-        endDate={endDate ? new Date(endDate) : undefined}
-        endTime={endTime}
+        endDate={endDate ?? ""}
+        endTime={endTime ?? ""}
       />
     </div>
     <div class="event-location m-m">
@@ -50,7 +54,7 @@ const {
         <i class="fa-solid fa-location-dot mr-xs"></i>        
         <div style="display: flex; flex-direction: column; align-items: flex-start;">
         <p class="ml-xs mt-0" style="font-weight: bold;">{venue}</p>
-        <p class="ml-xs mt-0">{venueAddress}</p>
+        <p class="text-capitalise ml-xs mt-0">{(venueAddress ?? '').toLowerCase()}</p>
         </div>
       </div>
     </div>
@@ -75,13 +79,13 @@ const {
         label="Add to Calendar" 
         name={title}
         options="'Apple','Google'"
-        location={venue}
-        startDate={new Date(startDate).toISOString().split("T")[0]}
-        endDate={new Date(endDate).toISOString().split("T")[0]}
-        startTime="00:00"
-        endTime="00:00"
-        timeZone="Singapore"
-      />
+        location={venueAddress ?? ""}
+        startDate={startDate}
+        endDate={endDate ?? ""}
+        startTime={startTime}
+        endTime={endTime}
+        timeZone={timezone ?? "Asia/Singapore"}
+      />      
     </div>
   </div>
 
