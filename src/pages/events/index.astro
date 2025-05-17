@@ -17,7 +17,11 @@ const events = (await getCollection("events"))
     const startDate = new Date(event.data.startDate);
     return startDate >= now;
   })
-  // .sort((a, b) => a.data.startDate.valueOf() - b.data.startDate.valueOf());
+  .sort(
+    (a, b) =>
+      new Date(a.data.startDate).valueOf() -
+      new Date(b.data.startDate).valueOf(),
+  );
 ---
 
 <!doctype html>
