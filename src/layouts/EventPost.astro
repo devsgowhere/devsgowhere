@@ -151,16 +151,8 @@ let orgUrl = `/orgs/${org.id}`;
                 </div>
               </div>
             </div>
-          </div>
+            </div>
         </aside>
-
-      <style lang="scss">
-        .sticky-aside {
-          position: sticky;
-          top: 1rem; // Adjust this value to control the distance from the top of the viewport
-          align-self: flex-start; // Ensures proper alignment in flex containers
-        }
-      </style>
       </div>
     </main>
     <Footer />
@@ -211,6 +203,11 @@ let orgUrl = `/orgs/${org.id}`;
         }        
       }
     }
+    .sticky-aside {
+      position: sticky;
+      top: 1rem; // Adjust this value to control the distance from the top of the viewport
+      align-self: flex-start; // Ensures proper alignment in flex containers
+    }
 
     //
     // mobile layout
@@ -250,7 +247,7 @@ let orgUrl = `/orgs/${org.id}`;
     .event-panel {
       // square shape    
       width: $aside-width;
-      height: $aside-width;
+      //height: $aside-width;
       background-color: transparent;
       border-radius: 10px;
       img {
