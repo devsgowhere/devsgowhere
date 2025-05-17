@@ -5,44 +5,80 @@ import BaseHead from "../components/BaseHead.astro";
 import Header from "../components/Header.astro";
 import Theme from "./Theme.astro";
 import Footer from "../components/Footer.astro";
+import EventCard from "../components/EventCard.astro";
 
-type Props = CollectionEntry<"orgs">["data"];
+type Props = CollectionEntry<"orgs">["data"] & {
+  upcomingEvents: CollectionEntry<"events">[];
+  pastEvents: CollectionEntry<"events">[];
+};
 
-const { title, description, heroImage, logoImage } = Astro.props;
-
+const { title, description, heroImage, logoImage, upcomingEvents, pastEvents } = Astro.props;
 ---
 
 <html lang="en">
   <head>
-    <BaseHead title={title} description={description} image={heroImage} />
+    <BaseHead title={title} description={description!} image={heroImage} />
   </head>
   <Theme>
     <Header />
     <main class="org-profile-page">
       <div class="container">
-        <article class="card">
-          <div class="hero-image">
-            {
-              heroImage && (
-                <Image width={1020} height={510} src={heroImage} alt="" />
-              )
-            }
-          </div>
-          <div class="pt-l px-l pb-xl">
-            <h1 class="org-name text-3xl text-accent">{title}</h1>
-            <ul class="tag-list mb-l">
-              { Astro.props.tags?.slice(0, 10).map((tag) => (
-                <li class="tag">
-                  # {tag}
-                </li>
-              )) }
-            </ul>
-            <div class="org-profile-markup">
-              <slot/>
+        <div>
+          <article class="card">
+            <div class="hero-image">
+              {
+                heroImage && (
+                  <Image width={1020} height={510} src={heroImage} alt="" />
+                )
+              }
             </div>
-          </div>
-        </article>
-        <aside>
+            <div class="pt-l px-l pb-xl">
+              <h1 class="org-name text-3xl text-accent">{title}</h1>
+              <ul class="tag-list mb-l">
+                {
+                  Astro.props.tags
+                    ?.slice(0, 10)
+                    .map((tag) => <li class="tag"># {tag}</li>)
+                }
+              </ul>
+              <div class="org-profile-markup">
+                <slot />
+              </div>
+            </div>
+          </article>
+          <section>
+            {upcomingEvents.length > 0 && (
+              <h2 class="text-2xl text-bold text-accent mt-xl mb-xs">
+                Upcoming Events
+              </h2>
+              <ul class="event-list">
+                {
+                  upcomingEvents.map((event) => (
+                    <li class="event-list-item" data-id={event.id}>
+                      <EventCard event={event} />
+                    </li>
+                  ))
+                }
+              </ul>
+            )}
+
+            {pastEvents.length > 0 && (
+              <h2 class="text-2xl text-bold text-accent mt-xl mb-xs">
+                Past Events
+              </h2>
+              <ul class="event-list">
+                {
+                  pastEvents.map((event) => (
+                    <li class="event-list-item" data-id={event.id}>
+                      <EventCard event={event} />
+                    </li>
+                  ))
+                }
+              </ul>
+            )}
+          </section>
+        </div>
+        <aside class="sticky-aside">
           <div class="org-logo">
             {
               logoImage && (
@@ -51,50 +87,57 @@ const { title, description, heroImage, logoImage } = Astro.props;
             }
           </div>
           <div>
-            <div class="text-header text-2xl text-center mb-m">Join the community!</div>
+            <div class="text-header text-2xl text-center mb-m">
+              Join the community!
+            </div>
             <ul class="org-links">
               {
                 [
                   "website",
                   "meetup",
-                  "telegram", 
+                  "telegram",
                   "discord",
-                  "twitter", 
+                  "twitter",
                   "linkedin",
                   "facebook",
                   "instagram",
                   "tiktok",
                   "youtube",
                   "github",
-                ].filter((link)=>{
-                  return Astro.props[link] !== undefined
-                }).map((link) => {
+                ]
+                  .filter((link) => {
+                    return Astro.props[link] !== undefined;
+                  })
+                  .map((link) => {
+                    let url = Astro.props[link];
+                    let icon = `fab fa-${link}`;
+                    let linkText = link;
+                    let capitalise = true;
 
-                  let url = Astro.props[link];
-                  let icon = `fab fa-${link}`;
-                  let linkText = link;
-                  let capitalise = true;
+                    if (link === "website") {
+                      icon = "fa fa-globe";
+                      linkText = Astro.props[link] || "website";
+                      capitalise = false;
+                    } else if (link === "instagram") {
+                      let handle = Astro.props[link];
+                      url = `https://www.instagram.com/${handle}`;
+                      linkText = "@" + handle;
+                      capitalise = false;
+                    }
 
-                  if(link === "website") {
-                    icon = "fa fa-globe";
-                    linkText = Astro.props[link] || "website";
-                    capitalise = false;
-                  }else if(link === "instagram") {
-                    let handle = Astro.props[link];
-                    url = `https://www.instagram.com/${handle}`;
-                    linkText = "@" + handle;
-                    capitalise = false;
-                  }
-
-                  return (
-                    <li>
-                      <a href={url} target="_blank" rel="noopener">
-                        <i class:list={['fa-fw', icon, 'mr-xs']}></i>
-                        <span class:list={[{'text-capitalise': capitalise}]}>{linkText}</span>
-                      </a>
-                    </li>
-                  )
-                })
+                    return (
+                      <li>
+                        <a href={url} target="_blank" rel="noopener">
+                          <i class:list={["fa-fw", icon, "mr-xs"]} />
+                          <span
+                            class:list={[{ "text-capitalise": capitalise }]}
+                          >
+                            {linkText}
+                          </span>
+                        </a>
+                      </li>
+                    );
+                  })
               }
             </ul>
           </div>
@@ -106,19 +149,18 @@ const { title, description, heroImage, logoImage } = Astro.props;
 </html>
 
 <style lang="scss">
-
   .org-profile-page {
-
     $article-width: 800px;
     $aside-width: 400px;
     $gap: 2rem;
     $padding-x: 1rem;
 
     padding: 4rem 0;
-    
-    .container {
 
-      width: calc(#{$article-width} + #{$aside-width} + #{$gap} + 2 * #{$padding-x});
+    .container {
+      width: calc(
+        #{$article-width} + #{$aside-width} + #{$gap} + 2 * #{$padding-x}
+      );
       max-width: 100%;
 
       display: flex;
@@ -129,9 +171,8 @@ const { title, description, heroImage, logoImage } = Astro.props;
       padding: 0 $padding-x;
 
       // >>> article
-      
-      article {
 
+      article {
         width: $article-width;
         min-width: 560px;
 
@@ -143,12 +184,10 @@ const { title, description, heroImage, logoImage } = Astro.props;
           max-height: 510px;
           object-fit: cover;
         }
-
       }
 
       // >>> right side summary info
       aside {
-
         width: $aside-width;
 
         display: flex;
@@ -160,28 +199,26 @@ const { title, description, heroImage, logoImage } = Astro.props;
         > div {
           max-width: 100%; // prevent contents (e.g. long link text, like urls) from exceeding the container
         }
-        
       }
-
-      
-      
-
+    }
+    .sticky-aside {
+      position: sticky;
+      top: 1rem; // Adjust this value to control the distance from the top of the viewport
+      align-self: flex-start; // Ensures proper alignment in flex containers
     }
 
     //
     // mobile layout
     //
-  
-    @media (max-width: 768px) {
 
+    @media (max-width: 768px) {
       // remove top padding on main
-      padding-top: 0; 
-      
+      padding-top: 0;
+
       //
       // stack article on top of aside
       //
       .container {
-
         flex-direction: column;
         gap: 0;
         width: 100%;
@@ -197,14 +234,11 @@ const { title, description, heroImage, logoImage } = Astro.props;
         aside {
           width: 100%;
         }
-        
       }
-      
     }
 
     // >>> logo
     .org-logo {
-
       // square shape
       width: $aside-width;
       height: $aside-width;
@@ -223,23 +257,20 @@ const { title, description, heroImage, logoImage } = Astro.props;
       }
 
       margin-bottom: 2rem;
-
     }
 
     // >>> org links
     .org-links {
-
       list-style: none;
       padding: 0;
       margin: 0;
       display: flex;
       flex-direction: column;
-      gap: .5rem;
+      gap: 0.5rem;
 
       text-align: left;
 
       li a {
-
         display: inline-flex;
         align-items: baseline;
         font-size: 1.25rem;
@@ -259,11 +290,7 @@ const { title, description, heroImage, logoImage } = Astro.props;
             text-decoration: underline;
           }
         }
-
       }
-      
     }
-
   }
-
 </style>
