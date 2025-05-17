@@ -24,6 +24,7 @@ const events = (await getCollection("events"))
 <html lang="en">
   <head>
     <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+    <script src="https://app.unpkg.com/framer-motion@12.12.1/dist/framer-motion.min.js"></script>
   </head>
   <Theme>
     <Header />
@@ -44,9 +45,12 @@ const events = (await getCollection("events"))
                 <button id="event-search__clear" class="form-control__append" style="display: none;">
                   <i class="fa fa-times"></i>
                 </button>
+                <div id="search-loader" class="search-loader" style="display: none;">
+                  <div class="search-loader__spinner"></div>
+                </div>
               </div>
               <div class="search-results-info mb-m">
-                <p>Showing <span id="results-count">0</span> results</p>
+                <p>Showing <span id="results-count" class="results-count">0</span> results</p>
               </div>
           <ul class="event-list">
             {
@@ -109,6 +113,9 @@ const events = (await getCollection("events"))
     <Footer />
   </Theme>
   <script>
+    // Import search utilities
+    import { normalize, debounce, filterEvents, animateElement, animateNumber } from '../../utils/searchUtils.js';
+
     // Fetch search index
     const events = [];
     fetch('/events/search-index.json')
@@ -117,6 +124,10 @@ const events = (await getCollection("events"))
         events.push(...data);
         // Show total count on initial load
         updateResultsCount(events.length);
+        // Add animation class after initial load
+        document.querySelectorAll('.event-list-item').forEach(item => {
+          item.classList.add('loaded');
+        });
       })
       .catch(error => console.error('Error fetching search index:', error));
 
@@ -127,107 +138,66 @@ const events = (await getCollection("events"))
     const resultsInfo = document.querySelector('.search-results-info');
     const resultsCount = document.querySelector('#results-count');
     const eventItems = document.querySelectorAll('.event-list-item');
+    const searchLoader = document.querySelector('#search-loader');
 
     // Initialize results count with the total number from DOM
     updateResultsCount(eventItems.length);
 
     // Helper function to update results count display
     function updateResultsCount(count) {
-      resultsCount.textContent = count;
+      // Animate count change
+      const currentCount = parseInt(resultsCount.textContent);
+      animateNumber(resultsCount, currentCount, count, 300);
       resultsInfo.style.display = 'block';
     }
-
-    // Normalize text by removing dashes, underscores and spaces
-    const normalize = (text) => text?.toLowerCase().replace(/[-_\s]/g, '') || '';
-
-    // Debounce function for search optimization
-    const debounce = (fn, delay = 300) => {
-      let timer;
-      return (...args) => {
-        clearTimeout(timer);
-        timer = setTimeout(() => fn(...args), delay);
-      };
-    };
 
     // Search implementation
     const performSearch = () => {
       const query = searchInput.value.toLowerCase().trim();
-      const normalizedQuery = normalize(query);
       
       // Toggle clear button visibility
       clearButton.style.display = query ? 'block' : 'none';
       
       // If empty query, show all events
       if (!query) {
-        emptyState.style.display = 'none';
-        eventItems.forEach(item => item.classList.remove('hide'));
+        animateElement(emptyState, false);
+        eventItems.forEach(item => {
+          animateElement(item, true);
+        });
         updateResultsCount(eventItems.length);
         return;
       }
 
-      // Filter events
-      const matches = events.filter(event => {
-        // Try exact matches first (for better performance)
-        if (event.title?.toLowerCase().includes(query) || 
-            event.org?.title?.toLowerCase().includes(query) ||
-            event.venue?.toLowerCase().includes(query)) {
-          return true;
-        }
-        
-        // Try normalized matches for more flexible searching
-        if (normalize(event.title).includes(normalizedQuery)) return true;
-        if (normalize(event.org?.title).includes(normalizedQuery)) return true;
-        if (normalize(event.venue).includes(normalizedQuery)) return true;
-        if (normalize(event.description).includes(normalizedQuery)) return true;
-        
-        // Enhanced tag search - check individual tags and concatenated tags
-        if (event.tags?.length) {
-          // Check individual tags
-          if (event.tags.some(tag => normalize(tag).includes(normalizedQuery))) {
-            return true;
-          }
-          
-          // Create concatenated versions of tags for more flexible matching
-          const normalizedTags = event.tags.map(tag => normalize(tag));
-          const concatenatedTags = normalizedTags.join('');
-          
-          // Check if the query is within the concatenated tags
-          if (concatenatedTags.includes(normalizedQuery)) {
-            return true;
-          }
-          
-          // Try different permutations for multi-word searches
-          // This helps match "javascriptworkshop" even if tags are ["workshop", "javascript"]
-          if (normalizedQuery.length > 5) {
-            for (let i = 3; i < normalizedQuery.length - 2; i++) {
-              const firstPart = normalizedQuery.substring(0, i);
-              const secondPart = normalizedQuery.substring(i);
-              
-              if (normalizedTags.some(tag => tag.includes(firstPart)) && 
-                  normalizedTags.some(tag => tag.includes(secondPart))) {
-                return true;
-              }
-            }
-          }
-        }
-        
-        return false;
-      });
+      // Filter events using the utility function
+      const matches = filterEvents(events, query);
 
       // Update UI based on results
       updateResultsCount(matches.length);
-      emptyState.style.display = matches.length ? 'none' : 'block';
+      animateElement(emptyState, matches.length === 0);
       
-      // Show/hide matching events
-      eventItems.forEach(item => {
+      // Show/hide matching events with staggered animation
+      eventItems.forEach((item, index) => {
         const eventId = item.getAttribute('data-id');
         const visible = matches.some(event => event.id === eventId);
-        item.classList.toggle('hide', !visible);
+        
+        // Add slight delay based on index for staggered effect
+        setTimeout(() => {
+          animateElement(item, visible);
+        }, index % 5 * 50); // Stagger in groups of 5
       });
     };
 
-    // Set up event listeners
-    searchInput.addEventListener('input', debounce(performSearch));
+    // Set up event listeners with loading indicator
+    const debouncedSearch = debounce(() => {
+      searchLoader.style.display = 'none';
+      performSearch();
+    }, 400);
+    
+    searchInput.addEventListener('input', () => {
+      searchLoader.style.display = 'block';
+      debouncedSearch();
+    });
+    
     clearButton.addEventListener('click', () => {
       searchInput.value = '';
       performSearch();
@@ -307,16 +277,23 @@ const events = (await getCollection("events"))
   }
   
   .event-list-item {
-    transition: opacity 0.3s ease-out, height 0.5s ease-out;
-    opacity: 1;
+    transition: transform 0.3s ease-out, opacity 0.4s ease-out, height 0.5s ease-out;
+    opacity: 0;
+    transform: translateY(20px);
     height: auto;
     overflow: hidden;
+    
+    &.loaded {
+      opacity: 1;
+      transform: translateY(0);
+    }
     
     &.hide {
       opacity: 0;
       height: 0;
       margin: 0;
       padding: 0;
+      transform: translateY(10px);
     }
   }
   
@@ -329,10 +306,44 @@ const events = (await getCollection("events"))
     color: #666;
     font-size: 0.9rem;
     margin-top: 1rem;
+    transition: opacity 0.3s ease;
+    
+    .results-count {
+      font-weight: bold;
+      color: #555;
+    }
   }
   
   .event-list__empty {
     text-align: center;
     margin: 3rem 0;
+    transition: opacity 0.3s ease, transform 0.4s ease;
+    opacity: 0;
+    transform: scale(0.95);
+    
+    &:not(.hide) {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  
+  .search-loader {
+    position: absolute;
+    right: 40px;
+    top: 50%;
+    transform: translateY(-50%);
+    
+    &__spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(0, 0, 0, 0.1);
+      border-top-color: #767676;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+  }
+  
+  @keyframes spin {
+    to { transform: rotate(360deg); }
   }
 </style>
