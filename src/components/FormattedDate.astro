@@ -1,22 +1,40 @@
 ---
 interface Props {
-  date?: Date;
+  date?: string;
   time?: string;
 }
 
 const { date, time } = Astro.props;
----
 
+// format time from yyyy-mm-dd to dd mmm yyyy
+const formatDate = (date: string) => {
+  const options: Intl.DateTimeFormatOptions = {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+  };
+  // use en-GB locale instead of 'en-US' to get the day before the month
+  return new Date(date).toLocaleDateString("en-GB", options);
+};
+const formattedDate = date ? formatDate(date) : "";
+
+// convert time from 24 hour format to 12 hour format
+const convertTo12HourFormat = (time: string) => {
+  const [hour, minute] = time.split(":").map(Number);
+  const period = hour >= 12 ? "PM" : "AM";
+  const formattedHour = hour % 12 || 12; // Convert to 12-hour format
+  return `${formattedHour}:${minute.toString().padStart(2, "0")} ${period}`;
+};
+
+const time_12h = time ? convertTo12HourFormat(time) : "";
+
+---
 {
-  date && (
-    <time datetime={date.toISOString()}>
-      {date.toLocaleDateString("en-us", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      })}
+  formattedDate && (
+    <time datetime={date}>
+      {formattedDate}
     </time>
   )
 }
-{date && time && ", "}
-{time && <time datetime={time}>{time}</time>}
+{date && time_12h && ", "}
+{time_12h && <time datetime={time_12h}>{time_12h}</time>}

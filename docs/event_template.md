@@ -4,10 +4,16 @@ title: "$event_name"
 description: "$event_summary"
 venue: "$event_venue_name"
 venueAddress: "$event_venue_address"
-startDate: "$event_date"
-startTime: "$event_start_time"
-endDate: "$event_date"
-endTime: ""
+# Required. Format: yyyy-mm-dd, e.g. 2024-05-01
+startDate: "yyyy-mm-dd"
+# Required. Format (24h): hh:mm, e.g. 09:00 (for 9 AM), 18:00 (for 6 PM) 
+startTime: "hh:mm"
+# Optional. Format: yyyy-mm-dd, e.g. 2024-05-01
+# endDate: "yyyy-mm-dd"
+# Optional. Format(24h): hh:mm, e.g. 09:00 (for 9 AM), 18:00 (for 6 PM) 
+# endTime: "hh:mm"
+# Optional. Defaults to "Asia/Singapore"
+# timezone: "Asia/Singapore"
 heroImage: "https://placecats.com/300/200?fit=contain&position=top"
 tags: []
 rsvpButtonUrl: "$event_url"

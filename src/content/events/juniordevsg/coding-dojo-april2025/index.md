@@ -4,10 +4,9 @@ description: "A Coding Dojo is a meeting where a bunch of coders get together to
 org: "juniordevsg"
 venue: "Open Government Products"
 venueAddress: "51 Bras Basah Rd, #04-08 Lazada One, Singapore 189554"
-startDate: "26 April 2025"
-startTime: "10am"
-endDate: "26 April 2025"
-endTime: "1pm"
+startDate: "2025-04-26"
+startTime: "10:00"
+endTime: "13:00"
 heroImage: "./600_482666709.avif"
 tags: ["junior-devs", "coding-dojo", "tdd"]
 rsvpButtonUrl: "https://www.meetup.com/junior-developers-singapore/events/307083061"
