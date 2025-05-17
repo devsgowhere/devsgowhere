@@ -4,10 +4,9 @@ description: "Join us for a meetup with three speakers who will share change man
 org: "rugs"
 venue: "Autodesk Asia"
 venueAddress: "3 Fusionopolis Way, Symbiosis, Singapore 138633"
-startDate: "21 May 2025"
-startTime: "7pm"
-endDate: "21 May 2025"
-endTime: "9pm"
+startDate: "2025-05-21"
+startTime: "19:00"
+endTime: "21:00"
 heroImage: "./hero.avif"
 tags: ["R Community", "Singapore", "Data Science"]
 rsvpButtonUrl: "https://www.meetup.com/r-user-group-sg/"
