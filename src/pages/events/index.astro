@@ -45,7 +45,7 @@ const events = (await getCollection("events"))
                   <i class="fa fa-times"></i>
                 </button>
               </div>
-              <div class="search-results-info mb-m" style="display: none;">
+              <div class="search-results-info mb-m">
                 <p>Showing <span id="results-count">0</span> results</p>
               </div>
           <ul class="event-list">
@@ -113,7 +113,11 @@ const events = (await getCollection("events"))
     const events = [];
     fetch('/events/search-index.json')
       .then(response => response.json())
-      .then(data => events.push(...data))
+      .then(data => {
+        events.push(...data);
+        // Show total count on initial load
+        updateResultsCount(events.length);
+      })
       .catch(error => console.error('Error fetching search index:', error));
 
     // DOM elements
@@ -123,6 +127,15 @@ const events = (await getCollection("events"))
     const resultsInfo = document.querySelector('.search-results-info');
     const resultsCount = document.querySelector('#results-count');
     const eventItems = document.querySelectorAll('.event-list-item');
+
+    // Initialize results count with the total number from DOM
+    updateResultsCount(eventItems.length);
+
+    // Helper function to update results count display
+    function updateResultsCount(count) {
+      resultsCount.textContent = count;
+      resultsInfo.style.display = 'block';
+    }
 
     // Normalize text by removing dashes, underscores and spaces
     const normalize = (text) => text?.toLowerCase().replace(/[-_\s]/g, '') || '';
@@ -147,8 +160,8 @@ const events = (await getCollection("events"))
       // If empty query, show all events
       if (!query) {
         emptyState.style.display = 'none';
-        resultsInfo.style.display = 'none';
         eventItems.forEach(item => item.classList.remove('hide'));
+        updateResultsCount(eventItems.length);
         return;
       }
 
@@ -202,8 +215,7 @@ const events = (await getCollection("events"))
       });
 
       // Update UI based on results
-      resultsCount.textContent = matches.length;
-      resultsInfo.style.display = 'block';
+      updateResultsCount(matches.length);
       emptyState.style.display = matches.length ? 'none' : 'block';
       
       // Show/hide matching events
