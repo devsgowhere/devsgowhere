@@ -39,8 +39,14 @@ const events = (await getCollection("events"))
                   id="event-search__input"
                   type="text"
                   class="form-control__input"
-                  placeholder="Search"
+                  placeholder="Search events by name, tags, organizer..."
                 />
+                <button id="event-search__clear" class="form-control__append" style="display: none;">
+                  <i class="fa fa-times"></i>
+                </button>
+              </div>
+              <div class="search-results-info mb-m" style="display: none;">
+                <p>Showing <span id="results-count">0</span> results</p>
               </div>
           <ul class="event-list">
             {
@@ -96,81 +102,97 @@ const events = (await getCollection("events"))
             }
           </ul>        
           <div class="event-list__empty" style="display: none;">
-            <p class="text-gray-5 text-2xl">No results found!</p>
+            <p class="text-gray-5 text-2xl">No results found 🤕</p>
           </div>
       </div>
     </main>
     <Footer />
   </Theme>
   <script>
-
-    // fetch all events from "events/search-index.json"
+    // Fetch search index
     const events = [];
     fetch('/events/search-index.json')
-      .then((response) => response.json())
-      .then((data) => {
-        events.push(...data);
-      })
-      .catch((error) => {
-        console.error(`Error fetching search index for 'events' collection:`, error);
-      });
+      .then(response => response.json())
+      .then(data => events.push(...data))
+      .catch(error => console.error('Error fetching search index:', error));
 
-    // listen for input change on search input
-    const searchInputEl = document.querySelector('#event-search__input');
+    // DOM elements
+    const searchInput = document.querySelector('#event-search__input');
+    const clearButton = document.querySelector('#event-search__clear');
+    const emptyState = document.querySelector('.event-list__empty');
+    const resultsInfo = document.querySelector('.search-results-info');
+    const resultsCount = document.querySelector('#results-count');
+    const eventItems = document.querySelectorAll('.event-list-item');
 
-    searchInputEl.addEventListener('input', (e) => {
+    // Normalize text by removing dashes, underscores and spaces
+    const normalize = (text) => text?.toLowerCase().replace(/[-_\s]/g, '') || '';
+
+    // Debounce function for search optimization
+    const debounce = (fn, delay = 300) => {
+      let timer;
+      return (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn(...args), delay);
+      };
+    };
+
+    // Search implementation
+    const performSearch = () => {
+      const query = searchInput.value.toLowerCase().trim();
+      const normalizedQuery = normalize(query);
       
-      const searchValue = e.target.value.toLowerCase().trim();
-      const emptyStateEl = document.querySelector('.event-list__empty');
-
-      // if search value is empty, show all events
-      if (searchValue === '') {
-        
-        // hide "No results found" message
-        emptyStateEl.style.display = 'none';
-        
-        // show all events
-        document.querySelectorAll('.event-list-item').forEach((item) => {
-          item.classList.remove('hide');
-        });
-
+      // Toggle clear button visibility
+      clearButton.style.display = query ? 'block' : 'none';
+      
+      // If empty query, show all events
+      if (!query) {
+        emptyState.style.display = 'none';
+        resultsInfo.style.display = 'none';
+        eventItems.forEach(item => item.classList.remove('hide'));
         return;
-
       }
 
-      // filter events based on search value
-      const filteredEvents = events.filter((event) => {
-        // check if event name includes search value
-        if (event.title.toLowerCase().includes(searchValue)) {
+      // Filter events
+      const matches = events.filter(event => {
+        // Try exact matches first (for better performance)
+        if (event.title?.toLowerCase().includes(query) || 
+            event.org?.title?.toLowerCase().includes(query) ||
+            event.venue?.toLowerCase().includes(query)) {
           return true;
         }
-        // check if event tags include search value
-        if (event.tags.some((tag) => tag.toLowerCase().includes(searchValue))) {
-          return true;
-        }
-        return false;
+        
+        // Try normalized matches for more flexible searching
+        if (normalize(event.title).includes(normalizedQuery)) return true;
+        if (normalize(event.org?.title).includes(normalizedQuery)) return true;
+        if (normalize(event.venue).includes(normalizedQuery)) return true;
+        if (normalize(event.description).includes(normalizedQuery)) return true;
+        
+        // Check tags with both exact and normalized matching
+        return event.tags?.some(tag => 
+          tag.toLowerCase().includes(query) || normalize(tag).includes(normalizedQuery)
+        );
       });
 
-      // if no events found, show "No results found" message
-      if (filteredEvents.length === 0) {
-        emptyStateEl.style.display = 'block';
-      } else {
-        emptyStateEl.style.display = 'none';
-      }
+      // Update UI based on results
+      resultsCount.textContent = matches.length;
+      resultsInfo.style.display = 'block';
+      emptyState.style.display = matches.length ? 'none' : 'block';
       
-      // show/hide events based on search value
-      document.querySelectorAll('.event-list-item').forEach((item) => {
+      // Show/hide matching events
+      eventItems.forEach(item => {
         const eventId = item.getAttribute('data-id');
-        const show = filteredEvents.some((event) => event.id === eventId);
-        if (show) {
-          item.classList.remove('hide');
-        } else {
-          item.classList.add('hide');
-        }
+        const visible = matches.some(event => event.id === eventId);
+        item.classList.toggle('hide', !visible);
       });
-      
-    });
+    };
 
+    // Set up event listeners
+    searchInput.addEventListener('input', debounce(performSearch));
+    clearButton.addEventListener('click', () => {
+      searchInput.value = '';
+      performSearch();
+      searchInput.focus();
+    });
   </script>
 </html>
 
@@ -226,5 +248,51 @@ const events = (await getCollection("events"))
       text-decoration-thickness: 2px;
     }
 
+  }
+
+  .form-control__append {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #999;
+    cursor: pointer;
+    padding: 5px;
+    
+    &:hover {
+      color: #666;
+    }
+  }
+  
+  .event-list-item {
+    transition: opacity 0.3s ease-out, height 0.5s ease-out;
+    opacity: 1;
+    height: auto;
+    overflow: hidden;
+    
+    &.hide {
+      opacity: 0;
+      height: 0;
+      margin: 0;
+      padding: 0;
+    }
+  }
+  
+  .hide {
+    display: none;
+  }
+  
+  .search-results-info {
+    text-align: center;
+    color: #666;
+    font-size: 0.9rem;
+    margin-top: 1rem;
+  }
+  
+  .event-list__empty {
+    text-align: center;
+    margin: 3rem 0;
   }
 </style>
