@@ -1,8 +1,8 @@
 ---
 title: "DevsGoWhere"
 description: "DevsGoWhere is a community of volunteers in Singapore who maintain this site!"
-heroImage: "https://placecats.com/300/200?fit=contain&position=top"
-logoImage: "https://placecats.com/300/200?fit=contain&position=top"
+heroImage: "./dgw lion 4-3.svg"
+logoImage: "./dgw lion.png"
 # Add up to 10 tags for your organisation
 tags: ["coding", "singapore"]
 # (Optional) Links ----------------------------------
