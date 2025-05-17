@@ -167,10 +167,38 @@ const events = (await getCollection("events"))
         if (normalize(event.venue).includes(normalizedQuery)) return true;
         if (normalize(event.description).includes(normalizedQuery)) return true;
         
-        // Check tags with both exact and normalized matching
-        return event.tags?.some(tag => 
-          tag.toLowerCase().includes(query) || normalize(tag).includes(normalizedQuery)
-        );
+        // Enhanced tag search - check individual tags and concatenated tags
+        if (event.tags?.length) {
+          // Check individual tags
+          if (event.tags.some(tag => normalize(tag).includes(normalizedQuery))) {
+            return true;
+          }
+          
+          // Create concatenated versions of tags for more flexible matching
+          const normalizedTags = event.tags.map(tag => normalize(tag));
+          const concatenatedTags = normalizedTags.join('');
+          
+          // Check if the query is within the concatenated tags
+          if (concatenatedTags.includes(normalizedQuery)) {
+            return true;
+          }
+          
+          // Try different permutations for multi-word searches
+          // This helps match "javascriptworkshop" even if tags are ["workshop", "javascript"]
+          if (normalizedQuery.length > 5) {
+            for (let i = 3; i < normalizedQuery.length - 2; i++) {
+              const firstPart = normalizedQuery.substring(0, i);
+              const secondPart = normalizedQuery.substring(i);
+              
+              if (normalizedTags.some(tag => tag.includes(firstPart)) && 
+                  normalizedTags.some(tag => tag.includes(secondPart))) {
+                return true;
+              }
+            }
+          }
+        }
+        
+        return false;
       });
 
       // Update UI based on results
