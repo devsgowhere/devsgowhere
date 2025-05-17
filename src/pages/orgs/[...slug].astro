@@ -12,10 +12,33 @@ export async function getStaticPaths() {
 }
 type Props = CollectionEntry<"orgs">;
 
-const post = Astro.props;
-const { Content } = await render(post);
+const org = Astro.props;
+
+const events = (await getCollection("events"))
+  .filter((event) => org.id === event.data.org.id);
+
+// Partition events to show past and future events separately
+const pastEvents = events.filter((event) => {
+  const startDate = new Date(event.data.startDate);
+  return startDate < new Date();
+}).sort(
+    (a, b) =>
+      new Date(b.data.startDate).valueOf() -
+      new Date(a.data.startDate).valueOf()
+  );
+const upcomingEvents = events.filter((event) => {
+  const startDate = new Date(event.data.startDate);
+  return startDate >= new Date();
+}).sort(
+    (a, b) =>
+      new Date(a.data.startDate).valueOf() -
+      new Date(b.data.startDate).valueOf(),
+  );
+
+
+const { Content } = await render(org);
 ---
 
-<OrgPage {...post.data}>
+<OrgPage {...org.data} pastEvents={pastEvents} upcomingEvents={upcomingEvents}>
   <Content />
 </OrgPage>
