@@ -1,13 +1,19 @@
 ---
+org: "lorong-ai"
 title: "AI ToolsDays: Can AI Make Social Media Smarter & Safer?"
 description: "Join us for a comprehensive look at how AI is transforming our digital landscape! From detecting digital threats to verifying online information and streamlining social media management."
-org: "lorong-ai"
 venue: "Lorong AI (WeWork@22 Cross St.)"
 venueAddress: "22 Cross Street, Singapore"
-startDate: "6 May 2025"
-startTime: "3:00pm"
-endDate: "6 May 2025"
-endTime: "5:00pm"
+# Required. Format: yyyy-mm-dd, e.g. 2024-05-01
+startDate: "2025-05-06"
+# Required. Format (24h): hh:mm, e.g. 09:00 (for 9 AM), 18:00 (for 6 PM) 
+startTime: "15:00"
+# Optional. Format: yyyy-mm-dd, e.g. 2024-05-01
+# endDate: "yyyy-mm-dd"
+# Optional. Format(24h): hh:mm, e.g. 09:00 (for 9 AM), 18:00 (for 6 PM) 
+endTime: "17:00"
+# Optional. Defaults to "Asia/Singapore"
+# timezone: "Asia/Singapore"
 heroImage: "./ai-toolsdays.png"
 tags: ["ai", "social-media", "tech"]
 rsvpButtonUrl: "https://lu.ma/l9ul1qx2"
