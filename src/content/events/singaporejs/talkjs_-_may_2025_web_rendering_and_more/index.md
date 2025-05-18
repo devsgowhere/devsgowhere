@@ -1,7 +1,7 @@
 ---
 org: "singaporejs"
-title: "talk.js - May 2025! Web Rendering and more"
-description: "Welcome back to **talk.js** #61 ,JS enthusiasts 👋! We are back to take a look at some key considerations on the web platform: rendering patterns and more. Join us for some great discussion which we believe would be widely applicable to all your different kinds of web applications and tradeoffs."
+title: "talk.js - May 2025! Web Rendering and Building with Astro"
+description: "Welcome back to talk.js #61, SingaporeJS friends and JavaScript enthusiasts 👋! We are back to take a look at some key considerations on the web platform: rendering patterns and building content-driven websites with Astro."
 venue: "Rakuten Asia"
 venueAddress: "138 Market St · Singapore"
 # Required. Format: yyyy-mm-dd, e.g. 2024-05-01
@@ -20,7 +20,13 @@ rsvpButtonUrl: "https://www.meetup.com/singapore-js/events/307821369"
 rsvpButtonText: "RSVP on Meetup"
 ---
 
-Welcome back to **talk.js** #61 ,JS enthusiasts 👋! We are back to take a look at some key considerations on the web platform: rendering patterns and more. Join us for some great discussion which we believe would be widely applicable to all your different kinds of web applications and tradeoffs.
+Welcome back to **talk.JS #61**, JS enthusiasts 👋! We are back to take a look at some core considerations on the web platform!
+
+First, Ivan from Rakuten will walk us through the evolution of rendering patterns - from simple client-side rendering to the fancy optimization techniques that keep modern sites running smoothly.
+
+Then, we welcome our local community catalyst Michael (surprise, surprise!) to show us how he's rebuilding next community platforms with Astro. Take a peek at his work in action at [DevsGoWhere - talk.js May 2025](https://devsgowhere.com/events/singaporejs/talkjs_-_may_2025_web_rendering_and_more/).
+
+Two speakers, two approaches to better web experiences. What's not to love?
 
 This is an in-person event at [Rakuten Asia](https://www.linkedin.com/company/rakuten-asia-pte-ltd/about/) office at [CapitaGreen](https://goo.gl/maps/625BdmGHjeMXjR8z6). (We truly thank Rakuten team for kindly hosting this).
 
