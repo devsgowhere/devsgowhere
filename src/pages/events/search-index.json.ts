@@ -4,8 +4,18 @@ import type { APIRoute } from "astro";
 
 export const GET: APIRoute = async () => {
 
-    // get events from content collection
-    const events = await getCollection('events');
+    // get upcoming events from content collection
+    const now = new Date();
+    const events = (await getCollection("events"))
+        .filter((event) => {
+            const startDate = new Date(event.data.startDate);
+            return startDate >= now;
+        })
+        .sort(
+            (a, b) =>
+                new Date(a.data.startDate).valueOf() -
+                new Date(b.data.startDate).valueOf(),
+        );
 
     const index = events.map((event) => ({
         id: event.id,
@@ -13,12 +23,11 @@ export const GET: APIRoute = async () => {
         tags: event.data.tags || []
     }));
 
-    return new Response(JSON.stringify(index), 
+    return new Response(JSON.stringify(index),
         {
             headers: {
                 "Content-Type": "application/json",
             },
         }
     )
-
 }
