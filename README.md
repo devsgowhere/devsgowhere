@@ -11,7 +11,21 @@ Discover events for engineers in Singapore!
 3. Make a Pull Request to this repo.
 4. Once your Pull Request has been merged, you will see the event on the website.
 
-### To Add an Organisation
+## To add an Organisation
+
+### Running a script
+
+Run this command in the main folder and follow the prompts:
+
+```bash
+make new-org
+```
+
+To abort or exit the script, press `Ctrl`+`C`.
+
+> **Note:** If you don't have Make installed, you can run the bash script directly `bash scripts/new-org.sh`.
+
+### Manual Steps
 
 1. Create a new folder for your org. Use underscore ("_") instad of spaces (" ").
 
@@ -28,7 +42,22 @@ Discover events for engineers in Singapore!
 3. Edit the new markdown file with your content.
 4. You can also put the image files in your org folder.
 
-### To Add an Event
+## To Add an Event
+
+### Running a script
+
+Run this command in the main folder and follow the prompts:
+
+```bash
+make new-event
+```
+
+To abort or exit the script, press `Ctrl`+`C`.
+
+> **Note:** If you don't have Make installed, you can run the bash script directly `bash scripts/new-event.sh`.
+
+
+### Manual Steps
 
 1. Create a new folder for your org in the events folder. Use underscore ("_") instad of spaces (" ").
 
