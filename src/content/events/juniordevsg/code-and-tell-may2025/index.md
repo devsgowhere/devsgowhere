@@ -4,10 +4,9 @@ description: "Join us for a talk by Francesco Gelli, Machine Learning Scientist 
 org: "juniordevsg"
 venue: "PayPal"
 venueAddress: "5 TEMASEK BOULEVARD #09-01 SUNTEC TOWER FIVE SINGAPORE (038985)"
-startDate: "14 May 2025"
-startTime: "7pm"
-endDate: "14 May 2025"
-endTime: "9.30pm"
+startDate: "2025-05-15"
+startTime: "19:00"
+endTime: "21:30"
 heroImage: "./highres_527855093.avif"
 tags: ["junior-devs", "code-and-tell", "ai", "llm", 'devsgowhere']
 rsvpButtonUrl: "https://www.meetup.com/junior-developers-singapore/events/307645602/?eventOrigin=group_events_list"
@@ -23,7 +22,7 @@ rsvpButtonText: "RSVP on Meetup"
 Speaker:
 **Francesco Gelli**, Machine Learning Scientist
 
-LinkedIn: https://www.linkedin.com/in/francesco-gelli-40014b84/
+LinkedIn: [https://www.linkedin.com/in/francesco-gelli-40014b84/](https://www.linkedin.com/in/francesco-gelli-40014b84/)
 
 Large Language Models (LLMs) have demonstrated surprising capabilities in solving a variety of general tasks, including answering complex questions, conducting extensive research, coding, and automating intricate processes.
 
