@@ -3,8 +3,8 @@
 read -p "Which org is this for (use the org code): " org_name
 read -p "Enter the event name: " event_name
 read -p "Enter the event summary: " event_summary
-read -p "Enter the event date (Format: d-MMM-YYYY): " event_date
-read -p "Enter the event start time: " event_start_time
+read -p "Enter the event date (Format: yyyy-mm-dd): " event_date
+read -p "Enter the event start time (Format (24h): hh:mm, e.g. 09:00 (for 9 AM)): " event_start_time
 read -p "Enter the event venue name: " event_venue_name
 read -p "Enter the event venue address: " event_venue_address
 read -p "Enter the event URL: " event_url
