@@ -1,6 +1,6 @@
 ---
 title: "$org_name"
-description: "$%org_description"
+description: "$org_description"
 heroImage: "https://placecats.com/300/200?fit=contain&position=top"
 logoImage: "https://placecats.com/300/200?fit=contain&position=top"
 # Add up to 10 tags for your organisation
