@@ -5,9 +5,9 @@ description: "$event_summary"
 venue: "$event_venue_name"
 venueAddress: "$event_venue_address"
 # Required. Format: yyyy-mm-dd, e.g. 2024-05-01
-startDate: "yyyy-mm-dd"
+startDate: "$event_date"
 # Required. Format (24h): hh:mm, e.g. 09:00 (for 9 AM), 18:00 (for 6 PM) 
-startTime: "hh:mm"
+startTime: "$event_start_time"
 # Optional. Format: yyyy-mm-dd, e.g. 2024-05-01
 # endDate: "yyyy-mm-dd"
 # Optional. Format(24h): hh:mm, e.g. 09:00 (for 9 AM), 18:00 (for 6 PM) 
