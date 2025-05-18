@@ -6,8 +6,7 @@ import Footer from "../../components/Footer.astro";
 
 import { SITE_TITLE, SITE_DESCRIPTION } from "../../consts";
 import { getCollection } from "astro:content";
-import { Image } from "astro:assets";
-import FormattedEventDate from "../../components/FormattedEventDate.astro";
+import EventCard from "../../components/EventCard.astro";
 
 const orgs = await getCollection("orgs");
 
@@ -17,7 +16,11 @@ const events = (await getCollection("events"))
     const startDate = new Date(event.data.startDate);
     return startDate >= now;
   })
-  .sort((a, b) => a.data.startDate.valueOf() - b.data.startDate.valueOf());
+  .sort(
+    (a, b) =>
+      new Date(a.data.startDate).valueOf() -
+      new Date(b.data.startDate).valueOf(),
+  );
 ---
 
 <!doctype html>
@@ -56,51 +59,7 @@ const events = (await getCollection("events"))
             {
               events.map((event) => (
                 <li class="event-list-item" data-id={event.id}>
-                  <a class="card" href={`/events/${event.id}/`}>
-                    <Image
-                      width={720}
-                      height={360}
-                      src={event.data.heroImage}
-                      alt=""
-                    />
-                    <div class="event-list-item__info">
-                    <div class="org-name text-s text-gray-5 mb-2xs">
-                        {
-                          orgs.find((org) => org.id === event.data.org.id)?.data
-                            .title
-                        }
-                      </div>
-                      <div class="event-title text-accent text-3xl text-bold mb-l">{event.data.title}</div>
-                      <div class="event-date mb-xs text-bold">
-                        <i class="fa fa-calendar-days mr-xs"></i>
-                        <FormattedEventDate
-                          startDate={event.data.startDate}
-                          startTime={event.data.startTime}
-                          endDate={event.data.endDate}
-                          endTime={event.data.endTime}
-                        />
-                      </div>
-                      <div class="event-location mb-0">
-                        <div style="display: flex; align-items: baseline;">
-                        <i class="fa fa-location-dot mr-xs"></i>
-                        <div style="display: flex; flex-direction: column; align-items: flex-start;">
-                        <p class="ml-xs mt-0 mb-0 text-bold">{event.data.venue}</p>
-                        <p class="text-capitalise ml-xs mt-0">{(event.data.venueAddress ?? '').toLowerCase()}</p>
-                        </div>
-                        </div>
-                      </div>
-                      <div class="event-description mb-m">{event.data.description.slice(0, 200)}...</div>                      
-                        <ul class="tag-list mb-0">
-                        { event.data.tags?.slice(0,5).map((tag)=>{
-                          return (
-                            <li class="tag">
-                              #{tag}
-                            </li>
-                          )
-                        }) }
-                      </ul>
-                    </div>                    
-                  </a>
+                  <EventCard event={event} />
                 </li>
               ))
             }
@@ -108,6 +67,7 @@ const events = (await getCollection("events"))
           <div class="event-list__empty" style="display: none;">
             <p class="text-gray-5 text-2xl">No results found 🤕</p>
           </div>
+        </section>
       </div>
     </main>
     <Footer />
@@ -215,49 +175,6 @@ const events = (await getCollection("events"))
     list-style: none;
     padding: 0;
     margin: 0;
-  }
-
-  li.event-list-item a {
-
-    $width: 720px;
-
-    //------------------------------------------------------------
-
-    // size
-    max-width: $width;
-    margin-top: 1rem;
-    margin-bottom: 1rem;
-    
-    // layout
-    display: inline-block;
-  
-    // color
-    color: inherit;
-    &:visited{
-      color: inherit;
-    }
-
-    // text
-    text-decoration: none;
-
-    // image
-    img {
-      max-width: 100%;
-      width: 720px;
-      height: auto;
-    }
-
-    // event info block
-    .event-list-item__info {
-      padding: 2rem;
-      text-align: left;
-    }
-
-    &:hover .event-title {
-      text-decoration: underline;
-      text-decoration-thickness: 2px;
-    }
-
   }
 
   .form-control__append {

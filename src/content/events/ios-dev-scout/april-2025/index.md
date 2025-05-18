@@ -4,10 +4,9 @@ description: "Hello, fellow Apple fans and devs! As sakura petals drift through 
 org: "ios-dev-scout"
 venue: "NUS Enterprise@Blk71"
 venueAddress: "71 Ayer Rajah Crescent, #02-01, Singapore 139951"
-startDate: "24 April 2025"
-startTime: "6:30pm"
-endDate: "24 April 2025"
-endTime: "9pm"
+startDate: "2025-04-24"
+startTime: "18:30"
+endTime: "21:00"
 heroImage: "./highres_527198290.avif"
 tags: ["coding", "ios"]
 rsvpButtonUrl: "https://www.meetup.com/iosdevscout/events/307136645"

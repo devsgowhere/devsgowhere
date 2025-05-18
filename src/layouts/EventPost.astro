@@ -9,7 +9,6 @@ import Theme from "./Theme.astro";
 import SummaryCard from "../components/SummaryCard.astro";
 import FormattedEventDate from "../components/FormattedEventDate.astro";
 import AddToCalendarButton from "../components/AddToCalendarButton.tsx";
-import {getDateTimeForCalendarButton} from "../components/CalendarButtonDateTimeConversion.tsx";
 
 type Props = CollectionEntry<"events">["data"];
 
@@ -20,6 +19,7 @@ const {
   startTime,
   endDate,
   endTime,
+  timezone,
   heroImage,
   rsvpButtonUrl,
   rsvpButtonText,
@@ -29,13 +29,6 @@ const {
 } = Astro.props;
 
 const orgData = await getEntry(org);
-
-let { startDateTime, endDateTime } = getDateTimeForCalendarButton(
-(startDate ? startDate.toISOString() : ""),
-  startTime ?? "00:00",
-  (endDate ? endDate.toISOString() : ""),
-  endTime ?? "00:00"
-);
 
 let orgUrl = `/orgs/${org.id}`;
 
@@ -64,10 +57,10 @@ let orgUrl = `/orgs/${org.id}`;
               <ul class="date mb-m">
                 <i class="fa-solid fa-clock mr-xs"></i>      
                 <FormattedEventDate
-                  startDate={startDate ? new Date(startDate) : undefined}
-                  startTime={startTime ?? "00:00"}                  
-                  endDate={endDate ? new Date(endDate) : undefined}                  
-                  endTime={endTime ?? "00:00"}
+                  startDate={startDate}
+                  startTime={startTime}                  
+                  endDate={endDate ?? ""}
+                  endTime={endTime ?? ""}
                 />
               </ul>
                 <ul style="display: flex; align-items: baseline; gap: 0.5rem;">
@@ -96,11 +89,11 @@ let orgUrl = `/orgs/${org.id}`;
                 name={title}
                 options="'Apple','Google'"
                 location={venueAddress ?? ""}
-                startDate={startDateTime instanceof Date && !isNaN(startDateTime.getTime()) ? startDateTime.toISOString().split("T")[0] : ""}
-                endDate={endDateTime instanceof Date && !isNaN(endDateTime.getTime()) ? new Date(endDateTime).toISOString().split("T")[0] : ""}
-                startTime={startDateTime instanceof Date && !isNaN(startDateTime.getTime()) ? startDateTime.toISOString().split("T")[1].substring(0, 5) : "00:00"}
-                endTime={endDateTime instanceof Date && !isNaN(endDateTime.getTime()) ? endDateTime.toISOString().split("T")[1].substring(0, 5) : "00:00"}
-                timeZone="UTC"
+                startDate={startDate}
+                endDate={endDate ?? ""}
+                startTime={startTime}
+                endTime={endTime ?? ""}
+                timeZone={timezone ?? "Asia/Singapore"}
               />
             </div>
               <hr class="mb-l mt-m"/>   
@@ -121,10 +114,11 @@ let orgUrl = `/orgs/${org.id}`;
             <SummaryCard
               title={title}
               description={description}
-              startDate={startDate ? startDate.toISOString() : ""}
-              startTime={startTime ?? "00:00"}              
-              endDate={endDate ? endDate.toISOString() : ""}
-              endTime={endTime ?? "00:00"}
+              startDate={startDate}
+              startTime={startTime}
+              endDate={endDate ?? ""}
+              endTime={endTime ?? ""}
+              timezone={timezone ?? "Asia/Singapore"}
               venue={venue ?? ""}
               venueAddress={venueAddress ?? ""}
               org={org && orgData.data.title}
@@ -147,9 +141,9 @@ let orgUrl = `/orgs/${org.id}`;
                 <p>
                   {
                     // let max length be 150 characters
-                    orgData.data.description.length > 150
-                      ? `${orgData.data.description.slice(0, 150)}...`
-                      : orgData.data.description
+                    (orgData.data.description ?? "").length > 150
+                      ? `${(orgData.data.description ?? "").slice(0, 150)}...`
+                      : (orgData.data.description ?? "")
                   }
                 </p>
                 <div>
@@ -157,16 +151,8 @@ let orgUrl = `/orgs/${org.id}`;
                 </div>
               </div>
             </div>
-          </div>
+            </div>
         </aside>
-
-      <style lang="scss">
-        .sticky-aside {
-          position: sticky;
-          top: 1rem; // Adjust this value to control the distance from the top of the viewport
-          align-self: flex-start; // Ensures proper alignment in flex containers
-        }
-      </style>
       </div>
     </main>
     <Footer />
@@ -217,6 +203,11 @@ let orgUrl = `/orgs/${org.id}`;
         }        
       }
     }
+    .sticky-aside {
+      position: sticky;
+      top: 1rem; // Adjust this value to control the distance from the top of the viewport
+      align-self: flex-start; // Ensures proper alignment in flex containers
+    }
 
     //
     // mobile layout
@@ -256,7 +247,7 @@ let orgUrl = `/orgs/${org.id}`;
     .event-panel {
       // square shape    
       width: $aside-width;
-      height: $aside-width;
+      //height: $aside-width;
       background-color: transparent;
       border-radius: 10px;
       img {

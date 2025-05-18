@@ -1,7 +1,6 @@
 ---
 import FormattedEventDate from "../components/FormattedEventDate.astro";
 import AddToCalendarButton from "../components/AddToCalendarButton.tsx";
-import {getDateTimeForCalendarButton} from "./CalendarButtonDateTimeConversion.tsx";
 import "../styles/GlobalStyles.astro";
 
 // Props for the SummaryCard component
@@ -12,6 +11,7 @@ export interface Props {
   startTime: string;
   endDate: string;
   endTime: string;
+  timezone: string;
   venue: string;
   org: string;
   venueAddress: string;
@@ -26,14 +26,13 @@ let {
   startTime,
   endDate,
   endTime,
+  timezone,
   venue,
   org,
   venueAddress,
   rsvpButtonUrl,
   rsvpButtonText,
 } = Astro.props;
-
-let { startDateTime, endDateTime } = getDateTimeForCalendarButton(startDate, startTime, endDate, endTime);
 
 // console.log("props: ", Astro.props);
 ---
@@ -44,10 +43,10 @@ let { startDateTime, endDateTime } = getDateTimeForCalendarButton(startDate, sta
     <div class="event-date ml-m">
       <i class="fa-solid fa-clock mr-xs"></i>      
       <FormattedEventDate        
-        startDate={startDate ? new Date(startDate) : undefined}
+        startDate={startDate}
         startTime={startTime}
-        endDate={endDate ? new Date(endDate) : undefined}
-        endTime={endTime}
+        endDate={endDate ?? ""}
+        endTime={endTime ?? ""}
       />
     </div>
     <div class="event-location m-m">
@@ -81,11 +80,11 @@ let { startDateTime, endDateTime } = getDateTimeForCalendarButton(startDate, sta
         name={title}
         options="'Apple','Google'"
         location={venueAddress ?? ""}
-        startDate={startDateTime instanceof Date && !isNaN(startDateTime.getTime()) ? startDateTime.toISOString().split("T")[0] : ""}
-        endDate={endDateTime instanceof Date && !isNaN(endDateTime.getTime()) ? new Date(endDateTime).toISOString().split("T")[0] : ""}
-        startTime={startDateTime instanceof Date && !isNaN(startDateTime.getTime()) ? startDateTime.toISOString().split("T")[1].substring(0, 5) : "00:00"}
-        endTime={endDateTime instanceof Date && !isNaN(endDateTime.getTime()) ? endDateTime.toISOString().split("T")[1].substring(0, 5) : "00:00"}
-        timeZone="UTC"
+        startDate={startDate}
+        endDate={endDate ?? ""}
+        startTime={startTime}
+        endTime={endTime}
+        timeZone={timezone ?? "Asia/Singapore"}
       />      
     </div>
   </div>
