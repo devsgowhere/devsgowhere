@@ -8,8 +8,6 @@ import { SITE_TITLE, SITE_DESCRIPTION } from "../../consts";
 import { getCollection } from "astro:content";
 import EventCard from "../../components/EventCard.astro";
 
-const orgs = await getCollection("orgs");
-
 const now = new Date();
 const events = (await getCollection("events"))
   .filter((event) => {
