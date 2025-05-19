@@ -1,6 +1,6 @@
 ---
 title: "Python User Group Singapore"
-description: "Registered society to run PyCon Singapore & Python-based meetups"
+description: "Registered society running PyCon Singapore & Python-based meetups"
 heroImage: "./pugsbanner.png"
 logoImage: "./pugslogo.jpg"
 # Add up to 10 tags for your organisation

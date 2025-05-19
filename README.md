@@ -27,7 +27,7 @@ To abort or exit the script, press `Ctrl`+`C`.
 
 ### Manual Steps
 
-1. Create a new folder for your org. Use underscore ("_") instad of spaces (" ").
+1. Create a new folder for your org. Use underscore ("_") instead of spaces (" ").
 
     ```bash
     mkdir src/content/orgs/<name_of_org>
