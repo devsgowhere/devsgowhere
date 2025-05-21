@@ -85,73 +85,35 @@ let orgUrl = `/orgs/${org.id}`;
           
           // Extract postal code from address if present (Singapore format: 6 digits)
           const postalCodeMatch = venueAddress.match(/\b\d{6}\b/);
-          const postalCode = postalCodeMatch?.[0];
-          
-          try {
-            // Method 1: Try with postal code from our dataset
+            const postalCode = postalCodeMatch?.[0];
+            
+            try {
+            // Try with postal code from our dataset
             if (postalCode) {
-              try {
-                const response = await fetch("/json/postal_codes_22_06_2023.json");
-                if (response.ok) {
-                  const locationMapData = await response.json();
-                  
-                  if (locationMapData[postalCode]) {
-                    const location = locationMapData[postalCode];
-                    const lat = parseFloat(location.lat);
-                    const lng = parseFloat(location.lon);
-                    
-                    if (!isNaN(lat) && !isNaN(lng)) {
-                      map.removeLayer(marker);
-                      map.setView([lat, lng], LOCATION_ZOOM);
-                      marker = L.marker([lat, lng], { icon: mapPin })
-                        .addTo(map)
-                        .bindPopup(venue || "Event Location")
-                        .openPopup();
-                      return; // Success with postal code, exit
-                    }
-                  }
-                }
-              } catch (err) {
-                // Continue to fallback geocoding
-              }
-            }
-            
-            // Method 2: Fallback to OpenStreetMap Nominatim geocoding
-            // Append "Singapore" to improve geocoding accuracy
-            let searchAddress = venueAddress;
-            if (!searchAddress.toLowerCase().includes("singapore")) {
-              searchAddress += ", Singapore";
-            }
-            
-            // Use Nominatim API
-            const encodedAddress = encodeURIComponent(searchAddress);
-            const nominatimUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodedAddress}&limit=1`;
-            
-            const response = await fetch(nominatimUrl, {
-              headers: {
-                'Accept': 'application/json',
-                'User-Agent': 'DevsGoWhere/1.0'
-              }
-            });
-            
-            if (response.ok) {
-              const data = await response.json();
+              const response = await fetch("/json/postal_codes_22_06_2023.json");
+              if (response.ok) {
+              const locationMapData = await response.json();
               
-              if (data && data.length > 0) {
-                const location = {
-                  lat: parseFloat(data[0].lat),
-                  lon: parseFloat(data[0].lon)
-                };
+              if (locationMapData[postalCode]) {
+                const location = locationMapData[postalCode];
+                const lat = parseFloat(location.lat);
+                const lng = parseFloat(location.lon);
                 
-                // Update map
+                if (!isNaN(lat) && !isNaN(lng)) {
                 map.removeLayer(marker);
-                map.setView([location.lat, location.lon], LOCATION_ZOOM);
-                marker = L.marker([location.lat, location.lon], { icon: mapPin })
+                map.setView([lat, lng], LOCATION_ZOOM);
+                marker = L.marker([lat, lng], { icon: mapPin })
                   .addTo(map)
                   .bindPopup(venue || "Event Location")
                   .openPopup();
+                return; // Success with postal code, exit
+                }
+              }
               }
             }
+            
+            // If we get here, we couldn't find coordinates - hide the map
+            document.getElementById('map').style.display = 'none';
           } catch (error) {
             // Default marker remains if there's an error
           }
