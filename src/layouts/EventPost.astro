@@ -37,6 +37,135 @@ let orgUrl = `/orgs/${org.id}`;
 <html lang="en">
   <head>
     <BaseHead title={title} description={description} image={heroImage} />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""></script>
+    <script is:inline define:vars={{ venueAddress, venue }}>
+      document.addEventListener("DOMContentLoaded", () => {
+        // Initialize map immediately with default Singapore coordinates
+        const DEFAULT_COORDS = [1.3521, 103.8198]; // Singapore default coordinates
+        const LOCATION_ZOOM = 16;
+        const DEFAULT_ZOOM = 13;
+        
+        // Initialize the map right away
+        const map = L.map("map").setView(DEFAULT_COORDS, DEFAULT_ZOOM);
+        
+        // Add the tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+        
+        // Create custom pin icon
+        const mapPin = L.icon({
+          iconUrl: "/assets/round-pushpin.png",
+          iconSize: [25, 25],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+        });
+        
+        
+        // Add a default marker initially
+        let marker = L.marker(DEFAULT_COORDS, { icon: mapPin })
+          .addTo(map)
+          .bindPopup(venue || "Event Location")
+          .openPopup();
+        
+        // Now fetch location data in the background
+        (async () => {
+          if (!venueAddress) {
+            return; // Exit if no address is available
+          }
+          
+          // Extract postal code from address if present (Singapore format: 6 digits)
+          const postalCodeMatch = venueAddress.match(/\b\d{6}\b/);
+          const postalCode = postalCodeMatch?.[0];
+          
+          try {
+            // Method 1: Try with postal code from our dataset
+            if (postalCode) {
+              try {
+                const response = await fetch("/json/postal_codes_22_06_2023.json");
+                if (response.ok) {
+                  const locationMapData = await response.json();
+                  
+                  if (locationMapData[postalCode]) {
+                    const location = locationMapData[postalCode];
+                    const lat = parseFloat(location.lat);
+                    const lng = parseFloat(location.lon);
+                    
+                    if (!isNaN(lat) && !isNaN(lng)) {
+                      map.removeLayer(marker);
+                      map.setView([lat, lng], LOCATION_ZOOM);
+                      marker = L.marker([lat, lng], { icon: mapPin })
+                        .addTo(map)
+                        .bindPopup(venue || "Event Location")
+                        .openPopup();
+                      return; // Success with postal code, exit
+                    }
+                  }
+                }
+              } catch (err) {
+                // Continue to fallback geocoding
+              }
+            }
+            
+            // Method 2: Fallback to OpenStreetMap Nominatim geocoding
+            // Append "Singapore" to improve geocoding accuracy
+            let searchAddress = venueAddress;
+            if (!searchAddress.toLowerCase().includes("singapore")) {
+              searchAddress += ", Singapore";
+            }
+            
+            // Use Nominatim API
+            const encodedAddress = encodeURIComponent(searchAddress);
+            const nominatimUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodedAddress}&limit=1`;
+            
+            const response = await fetch(nominatimUrl, {
+              headers: {
+                'Accept': 'application/json',
+                'User-Agent': 'DevsGoWhere/1.0'
+              }
+            });
+            
+            if (response.ok) {
+              const data = await response.json();
+              
+              if (data && data.length > 0) {
+                const location = {
+                  lat: parseFloat(data[0].lat),
+                  lon: parseFloat(data[0].lon)
+                };
+                
+                // Update map
+                map.removeLayer(marker);
+                map.setView([location.lat, location.lon], LOCATION_ZOOM);
+                marker = L.marker([location.lat, location.lon], { icon: mapPin })
+                  .addTo(map)
+                  .bindPopup(venue || "Event Location")
+                  .openPopup();
+              }
+            }
+          } catch (error) {
+            // Default marker remains if there's an error
+          }
+        })();
+        
+        // Hide the attribution control
+        setTimeout(() => {
+          const attributionControl = document.querySelector("#map > div.leaflet-control-container > div.leaflet-bottom.leaflet-right > div");
+          if (attributionControl) {
+            attributionControl.style.display = "none";
+          }
+        }, 100);
+      });
+    </script>
   </head>
   <Theme>
     <Header />
@@ -70,6 +199,24 @@ let orgUrl = `/orgs/${org.id}`;
                   <p class="text-capitalise mt-0 mb-0">{(venueAddress ?? '').toLowerCase()}</p>
                 </div>
                 </ul>
+                <div
+                  id="map"
+                  class="map-container mt-m"
+                  style="height: 300px; width: 100%; border-radius: 8px;"
+                >
+                </div>
+                <script is:inline define:vars={{ venueAddress }}>
+                  document.addEventListener("DOMContentLoaded", () => {
+                    const mapElement = document.getElementById("map");
+                    mapElement.addEventListener("dblclick", () => {
+                      const encodedAddress = encodeURIComponent(venueAddress || "");
+                      window.open(
+                        `https://www.google.com/maps/dir//${encodedAddress}`,
+                        "_blank"
+                      );
+                    });
+                  });
+          </script>
               <div class="ml-s" style={{display: "flex", gap: "1rem", alignItems: "center" }}>
               {
                 rsvpButtonUrl && (
@@ -325,4 +472,3 @@ let orgUrl = `/orgs/${org.id}`;
   }
 
 </style>
-
