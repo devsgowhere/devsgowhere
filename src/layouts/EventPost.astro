@@ -206,16 +206,6 @@ let orgUrl = `/orgs/${org.id}`;
                 >
                 </div>
                 <script is:inline define:vars={{ venueAddress }}>
-                  document.addEventListener("DOMContentLoaded", () => {
-                    const mapElement = document.getElementById("map");
-                    mapElement.addEventListener("dblclick", () => {
-                      const encodedAddress = encodeURIComponent(venueAddress || "");
-                      window.open(
-                        `https://www.google.com/maps/dir//${encodedAddress}`,
-                        "_blank"
-                      );
-                    });
-                  });
           </script>
               <div class="ml-s" style={{display: "flex", gap: "1rem", alignItems: "center" }}>
               {
@@ -230,6 +220,15 @@ let orgUrl = `/orgs/${org.id}`;
                   </a>
                 )
               }                       
+              <a
+              href={`https://www.google.com/maps/place/${venueAddress}`}
+              class="rsvp-button"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <i class="fa-solid fa-location-dot mr-xs"></i>
+              Open in Maps
+            </a>
               <AddToCalendarButton        
                 client:only="react"
                 label="Add to Calendar" 
