@@ -1,6 +1,7 @@
 ---
 import FormattedEventDate from "../components/FormattedEventDate.astro";
 import AddToCalendarButton from "../components/AddToCalendarButton.tsx";
+import Map from "../components/Map.astro";
 import "../styles/GlobalStyles.astro";
 
 // Props for the SummaryCard component
@@ -50,6 +51,16 @@ let {
       />
     </div>
     <div class="event-location m-m">
+      {venueAddress && (
+        <Map 
+          venue={venue} 
+          venueAddress={venueAddress}
+          className="map-container mt-m mb-m"
+          height="200px"
+          width="100%"
+          borderRadius="8px"
+        />
+      )}
       <div style="display: flex; align-items: baseline;">
         <i class="fa-solid fa-location-dot mr-xs"></i>        
         <div style="display: flex; flex-direction: column; align-items: flex-start;">
@@ -73,7 +84,20 @@ let {
             {rsvpButtonText ?? "RSVP"}
           </a>
         )
-      }      
+      }
+      
+      {venueAddress && (
+        <a
+          href={`https://www.google.com/maps/place/${venueAddress}`}
+          class="rsvp-button"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <i class="fa-solid fa-location-dot mr-xs"></i>
+          Open in Maps
+        </a>
+      )}
+      
       <AddToCalendarButton        
         client:only="react"
         label="Add to Calendar" 
