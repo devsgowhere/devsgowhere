@@ -1,0 +1,174 @@
+---
+interface Props {
+  venueAddress?: string;
+  venue?: string;
+  height?: string;
+  width?: string;
+  borderRadius?: string;
+  className?: string;
+}
+
+const {
+  venueAddress,
+  venue,
+  height = "300px",
+  width = "100%",
+  borderRadius = "8px",
+  className = "map-container mt-m"
+} = Astro.props;
+---
+
+<div
+  id="map"
+  class={className}
+  style={`height: ${height}; width: ${width}; border-radius: ${borderRadius};`}
+>
+</div>
+
+<style>
+  .leaflet-control-attribution {
+    display: none !important;
+  }
+</style>
+
+<script>
+  // Load Leaflet CSS
+  if (!document.getElementById('leaflet-css')) {
+    const link = document.createElement('link');
+    link.id = 'leaflet-css';
+    link.rel = 'stylesheet';
+    link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+    document.head.appendChild(link);
+  }
+
+  // Load Leaflet JS and initialize map
+  function loadLeaflet() {
+    if (window.L) {
+      initMap();
+      return;
+    }
+    
+    if (!document.getElementById('leaflet-js')) {
+      const script = document.createElement('script');
+      script.id = 'leaflet-js';
+      script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+      script.onload = initMap;
+      document.head.appendChild(script);
+    }
+  }
+
+  function initMap() {
+    if (!window.L) return;
+    
+    const mapElement = document.getElementById('map');
+    if (!mapElement) return;
+    
+    const L = window.L;
+    const DEFAULT_COORDS = [1.3521, 103.8198]; // Singapore
+    const LOCATION_ZOOM = 16;
+    const DEFAULT_ZOOM = 13;
+    
+    // Get venue and address from dataset attributes
+    const venue = mapElement.dataset.venue || "Event Location";
+    const venueAddress = mapElement.dataset.address;
+    
+    // Check if venueAddress has a postal code, hide map if not
+    if (!venueAddress) {
+      mapElement.style.display = 'none';
+      return;
+    }
+    
+    const postalCodeMatch = venueAddress.match(/\b\d{6}\b/);
+    const postalCode = postalCodeMatch?.[0];
+    
+    // Hide map if no postal code found in address
+    if (!postalCode) {
+      mapElement.style.display = 'none';
+      return;
+    }
+    
+    // Create map with attribution control disabled
+    const map = L.map(mapElement, {
+      attributionControl: false
+    }).setView(DEFAULT_COORDS, DEFAULT_ZOOM);
+    
+    // Add tile layer without attribution
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: null
+    }).addTo(map);
+    
+    // Create pin icon using SVG file
+    const mapPin = L.icon({
+      iconUrl: "/assets/pin-svgrepo-com.svg",
+      iconSize: [30, 30],
+      iconAnchor: [15, 30],
+      popupAnchor: [0, -25]
+    });
+    
+    // Place initial marker
+    let marker = L.marker(DEFAULT_COORDS, { icon: mapPin })
+      .addTo(map)
+      .bindPopup(venue)
+      .openPopup();
+    
+    // Try to get coordinates from postal code
+    fetch("/json/postal_codes_22_06_2023.json")
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data[postalCode]) {
+          const location = data[postalCode];
+          const lat = parseFloat(location.lat);
+          const lng = parseFloat(location.lon);
+          
+          if (!isNaN(lat) && !isNaN(lng)) {
+            // Update map and marker with correct location
+            map.removeLayer(marker);
+            map.setView([lat, lng], LOCATION_ZOOM);
+            marker = L.marker([lat, lng], { icon: mapPin })
+              .addTo(map)
+              .bindPopup(venue)
+              .openPopup();
+          }
+        } else if (mapElement) {
+          // Hide map if postal code not found in database
+          mapElement.style.display = 'none';
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching postal code data:', error);
+        // Hide map on error
+        if (mapElement) {
+          mapElement.style.display = 'none';
+        }
+      });
+
+    // Force a resize to ensure the map renders correctly
+    map.invalidateSize();
+  }
+
+  // Set up dataset attributes for use in the script
+  document.addEventListener('DOMContentLoaded', () => {
+    const mapElement = document.getElementById('map');
+    if (mapElement) {
+      // These values come from Astro.props, passed through dataset attributes
+      mapElement.dataset.venue = mapElement.dataset.venue || "Event Location";
+      loadLeaflet();
+    }
+  });
+</script>
+
+<script define:vars={{ venue, venueAddress }}>
+  // Set dataset attributes with Astro prop values
+  document.addEventListener('DOMContentLoaded', () => {
+    const mapElement = document.getElementById('map');
+    if (mapElement) {
+      mapElement.dataset.venue = venue || "Event Location";
+      mapElement.dataset.address = venueAddress || "";
+    }
+  });
+</script>
