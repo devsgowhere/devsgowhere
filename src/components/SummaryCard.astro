@@ -51,16 +51,7 @@ let {
       />
     </div>
     <div class="event-location m-m">
-      {venueAddress && (
-        <Map 
-          venue={venue} 
-          venueAddress={venueAddress}
-          className="map-container mt-m mb-m"
-          height="200px"
-          width="100%"
-          borderRadius="8px"
-        />
-      )}
+      
       <div style="display: flex; align-items: baseline;">
         <i class="fa-solid fa-location-dot mr-xs"></i>        
         <div style="display: flex; flex-direction: column; align-items: flex-start;">
@@ -69,6 +60,16 @@ let {
         </div>
       </div>
     </div>
+    {venueAddress && (
+      <Map 
+        venue={venue} 
+        venueAddress={venueAddress}
+        className="map-container mt-m mb-m"
+        height="200px"
+        width="100%"
+        borderRadius="8px"
+      />
+    )}
     <div
       style="display: flex; flex-direction: column; align-items: center;"      
       class="mb-l"
