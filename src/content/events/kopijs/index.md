@@ -3,7 +3,7 @@ org: "kopijs"
 title: "KopiJS #64 - kopi drink && bun install --kaya"
 description: "Kopi.JS is a casual social gathering for engineers, designers and makers in Singapore. We hang out together, drink kopi and talk about almost anything!"
 venue: "YY Kafei Dian"
-venueAddress: "37 Beach Rd"
+venueAddress: "37 Beach Rd, #01-01, Singapore 189678"
 # Required. Format: yyyy-mm-dd, e.g. 2024-05-01
 startDate: "2025-05-24"
 # Required. Format (24h): hh:mm, e.g. 09:00 (for 9 AM), 18:00 (for 6 PM) 
