@@ -1,6 +1,6 @@
 ---
 title: "Singapore Data & AI Engineering"
-description: "$org_description"
+description: "Handling large-scale data is complex and requires skills across distributed systems, programming, and data analysis. Singapore Data & AI Engineering is a community dedicated to building tools and systems that turn data into products and insights."
 heroImage: "./cover.avif"
 logoImage: "./logo.png"
 # Add up to 10 tags for your organisation
