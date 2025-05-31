@@ -34,4 +34,4 @@ jobs:
     # Check if the dist folder exists
     # List files inside the dist folder
     - name: List files in dist folder
-      run: find dist -type f -exec stat --format="%10s %n" {} \;
+      run: find dist -type f -exec stat --printf="%10s %n" {} \;
