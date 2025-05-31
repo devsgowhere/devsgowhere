@@ -8,9 +8,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container: node:22-alpine # Use Node.js 22 container
-    environment:
-      name: production
-      url: https://devsgowhere.com
 
     steps:
     - run: echo "The job was automatically triggered by a ${{github.event_name}} event."
@@ -31,10 +28,12 @@ jobs:
     # Build the project
     - name: Build
       run: npm run build
-    # Check if the dist folder exists
-    # List files inside the dist folder
-    - name: List files in dist folder
-      run: find dist -type f -exec stat -c "%10s %n" {} \;
+    # Upload dist as artifact
+    - name: Archive dist artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: dist
+        path: dist
 
   deploy:
     needs: build
@@ -45,6 +44,16 @@ jobs:
       url: https://devsgowhere.com
 
     steps:
+    # Check if the dist folder exists
+    # Download dist artifact from build job
+    - name: Download dist artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: dist
+        path: dist    
+    # List files inside the dist folder
+    - name: List files in dist folder
+      run: find dist -type f -exec stat -c "%10s %n" {} \;
     # Install wrangler 
     - name: Install Wrangler
       run: npm install -g wrangler
