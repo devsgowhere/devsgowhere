@@ -28,10 +28,13 @@ jobs:
     # Build the project
     - name: Build
       run: npm run build
-    - run: pwd 
-    - run: ls -la
-    - run: find dist -type f
     # Check if the dist folder exists
     # List files inside the dist folder
     - name: List files in dist folder
       run: find dist -type f -exec stat -c "%10s %n" {} \;
+    # Install wrangler 
+    - name: Install Wrangler
+      run: npm install -g wrangler
+    # Deploy to Cloudflare Pages
+    - name: Deploy to Cloudflare Pages
+      run: "CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_TOKEN }} npx wrangler pages deploy dist --project-name=devsgowhere --branch=${{ github.ref }}"
