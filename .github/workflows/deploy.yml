@@ -11,7 +11,7 @@ jobs:
     environment:
       name: production
       url: https://devsgowhere.com
-      
+
     steps:
     - run: echo "The job was automatically triggered by a ${{github.event_name}} event."
     - run: echo "The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
@@ -35,6 +35,16 @@ jobs:
     # List files inside the dist folder
     - name: List files in dist folder
       run: find dist -type f -exec stat -c "%10s %n" {} \;
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest    
+    container: node:22-alpine # Use Node.js 22 container
+    environment:
+      name: production
+      url: https://devsgowhere.com
+
+    steps:
     # Install wrangler 
     - name: Install Wrangler
       run: npm install -g wrangler
