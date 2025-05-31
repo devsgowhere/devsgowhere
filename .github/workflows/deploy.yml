@@ -2,7 +2,7 @@ name: Deploy
 
 on:
   push:
-    branches: [ main, add-github-actions ]
+    branches: [ main ]
   pull_request: 
     branches: [ main ]
 
