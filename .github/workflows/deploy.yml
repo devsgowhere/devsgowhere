@@ -37,4 +37,6 @@ jobs:
       run: npm install -g wrangler
     # Deploy to Cloudflare Pages
     - name: Deploy to Cloudflare Pages
-      run: "CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_TOKEN }} npx wrangler pages deploy dist --project-name=devsgowhere --branch=${{ github.ref }}"
+      run: "wrangler pages deploy dist --project-name=devsgowhere --branch=${{ github.ref }}"
+      env: 
+        CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
