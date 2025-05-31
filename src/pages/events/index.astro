@@ -20,6 +20,17 @@ const events = (await getCollection("events"))
       new Date(a.data.startDate).valueOf() -
       new Date(b.data.startDate).valueOf(),
   );
+
+// Group events by date
+const groupedEvents = events.reduce((acc, event) => {
+  const date = new Date(event.data.startDate).toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric', year: 'numeric' });
+  console.log("Event Date:", date, "Event ID:", event.id);
+  if (!acc[date]) {
+    acc[date] = [];
+  }
+  acc[date].push(event);
+  return acc;
+}, {});
 ---
 
 <!doctype html>
@@ -54,16 +65,26 @@ const events = (await getCollection("events"))
               <div class="search-results-info mb-m">
                 <p>Showing <span id="results-count" class="results-count">0</span> results</p>
               </div>
-          <ul class="event-list">
-            {
-              events.map((event) => (
-                <li class="event-list-item" data-id={event.id}>
-                  <EventCard event={event} />
-                </li>
-              ))
-            }
-          </ul>        
-          <div class="event-list__empty" style="display: none;">
+          { Object.keys(groupedEvents).length > 0 ? (
+            Object.keys(groupedEvents).map((date) => (
+              <div class="event-date">
+                <h1 class="text-3xl text-bold text-gray-7 mb-s">{date}</h1>
+                <ul class="event-list">
+                  {
+                    groupedEvents[date].map((event) => (
+                      <li class="event-list-item" data-id={event.id}>
+                        <EventCard event={event} />
+                      </li>
+                    ))
+                  }
+                </ul>
+              </div>
+            ))
+          ) : (
+            <p class="text-gray-5 text-2xl">No upcoming events found.</p>
+          )}
+
+          <div class="event-list__empty hide">
             <p class="text-gray-5 text-2xl">No results found 🤕</p>
           </div>
         </section>
