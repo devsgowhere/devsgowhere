@@ -29,6 +29,7 @@ jobs:
       run: npm run build
     - run: pwd 
     - run: ls -la
+    - run: find dist -type f
     # Check if the dist folder exists
     # List files inside the dist folder
     - name: List files in dist folder
