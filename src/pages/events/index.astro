@@ -68,8 +68,8 @@ const groupedEvents = events.reduce((acc, event) => {
           { Object.keys(groupedEvents).length > 0 ? (
             Object.keys(groupedEvents).map((date) => (
               <div class="event-date">
-                <fieldset style="border-bottom: 0px; border-left: 0px; border-right: 0px; border-color: var(--gray-7);">
-                  <legend class="text-3xl text-bold text-gray-7 mb-s mt-m px-m">
+                <fieldset class="mb-s mt-m" style="border-bottom: 0px; border-left: 0px; border-right: 0px; border-color: var(--gray-7);">
+                  <legend class="text-3xl text-bold text-gray-7 px-m">
                     {date}
                   </legend>
                 </fieldset>
