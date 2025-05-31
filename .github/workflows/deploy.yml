@@ -1,0 +1,100 @@
+name: Deploy
+
+on:
+  push:
+    branches: [ main, add-github-actions ]
+  pull_request: 
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: node:22-alpine # Use Node.js 22 container
+
+    steps:
+    - run: echo "The job was automatically triggered by a ${{github.event_name}} event."
+    - run: echo "The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+    # Checkout the repository
+    - name: Check out the repository code
+      uses: actions/checkout@v4
+    - run: echo "The ${{ github.repository }} repository has been cloned to the runner."
+    # Set up node in the runner
+    #- name: Use Node.js 22.x
+    #  uses: actions/setup-node@v4
+    #  with:
+    #    node-version: '22.x'
+    #    cache: 'npm'
+    # Install node dependencies     
+    - name: Install dependencies
+      run: npm ci      
+    # Build the project
+    - name: Build
+      run: npm run build
+    # Upload dist as artifact
+    - name: Archive dist artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: dist
+        path: dist
+
+  deploy-preview:
+    needs: build
+    runs-on: ubuntu-latest    
+    container: node:22-alpine # Use Node.js 22 container
+    environment:
+      name: preview
+      url: https://${{ github.ref_name }}.devsgowhere.pages.dev
+
+    steps:
+    # Check if the dist folder exists
+    # Download dist artifact from build job
+    - name: Download dist artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: dist
+        path: dist    
+    # List files inside the dist folder
+    - name: List files in dist folder
+      run: find dist -type f -exec stat -c "%10s %n" {} \;
+    # Install wrangler 
+    - name: Install Wrangler
+      run: npm install -g wrangler
+    # Deploy to Cloudflare Pages
+    - run: echo "${#CLOUDFLARE_API_TOKEN}"
+      env: 
+        CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}    
+    - name: Deploy to Cloudflare Pages
+      run: "wrangler pages deploy dist --project-name=devsgowhere --branch=${{ github.ref_name }}"
+      env: 
+        CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}        
+
+  deploy-production:
+    needs: build
+    runs-on: ubuntu-latest    
+    container: node:22-alpine # Use Node.js 22 container
+    environment:
+      name: production
+      url: https://devsgowhere.com
+
+    steps:
+    # Check if the dist folder exists
+    # Download dist artifact from build job
+    - name: Download dist artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: dist
+        path: dist    
+    # List files inside the dist folder
+    - name: List files in dist folder
+      run: find dist -type f -exec stat -c "%10s %n" {} \;
+    # Install wrangler 
+    - name: Install Wrangler
+      run: npm install -g wrangler
+    # Deploy to Cloudflare Pages
+    - run: echo "${#CLOUDFLARE_API_TOKEN}"
+      env: 
+        CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}    
+    - name: Deploy to Cloudflare Pages
+      run: "wrangler pages deploy dist --project-name=devsgowhere --branch=${{ github.ref }}"
+      env: 
+        CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
