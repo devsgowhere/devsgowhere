@@ -27,6 +27,9 @@ jobs:
     # Build the project
     - name: Build
       run: npm run build
+    - run: pwd 
+    - run: ls -la
+    # Check if the dist folder exists
     # List files inside the dist folder
     - name: List files in dist folder
       run: find dist -type f -exec stat -f "%10s %n" {} \;
