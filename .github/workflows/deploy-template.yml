@@ -6,12 +6,6 @@ on:
       env_name:
         required: true
         type: string
-      env_url:
-        required: true
-        type: string
-      cf_branch:
-        required: true
-        type: string
       artifact_name:
         required: false
         type: string
@@ -27,6 +21,7 @@ jobs:
     container: node:22-alpine
     environment:
       name: ${{ inputs.env_name }}
+      url: ${{ steps.deploy.outputs.deployment-url }}
     steps:
       - name: Download dist artifact
         uses: actions/download-artifact@v4
