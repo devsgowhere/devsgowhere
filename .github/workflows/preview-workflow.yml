@@ -1,0 +1,33 @@
+name: (Pull Request) Preview Builds
+
+on:
+  # Trigger the workflow on:
+  # - pull request to main branch
+  pull_request: 
+    branches: [ main ]
+
+jobs:
+
+  ##########################################
+  # Build job
+  # - Builds the project and archives the dist folder as an artifact
+  # - Runs on push to main or on pull request to main
+  ##########################################
+  build:
+    uses: ./.github/workflows/build-template.yml
+
+  ##########################################
+  # Preview deployment job
+  # - Deploys branch preview to Cloudflare Pages for each pull request
+  ##########################################
+  deploy-preview:
+    needs: build
+    uses: ./.github/workflows/deploy-template.yml
+    with:
+      env_name: preview
+      env_url: "https://{{ github.sha }}.devsgowhere.pages.dev"
+      cf_branch: ${{ github.sha }}
+    secrets: 
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}   
+
+  # Note that on merge, this will trigger 'production-workflow'
