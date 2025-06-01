@@ -29,7 +29,7 @@ jobs:
     with:
       env_name: preview
       # sanitise the branch name to be used as a subdomain using replace
-      env_url: https://${{ github.ref_name.replace('/', '-') }}.devsgowhere.pages.dev
+      env_url: https://${{ replace(github.ref_name, '/', '-') }}.devsgowhere.pages.dev
       cf_branch: ${{ github.ref_name }}
     secrets: 
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}   
