@@ -1,4 +1,4 @@
-name: Build and Deploy
+name: (Scheduled) Nightly Builds
 
 on:
   # Trigger the workflow on:
