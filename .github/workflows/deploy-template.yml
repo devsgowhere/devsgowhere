@@ -1,0 +1,49 @@
+name: Deploy Template
+
+on:
+  workflow_call:
+    inputs:
+      env_name:
+        required: true
+        type: string
+      env_url:
+        required: true
+        type: string
+      cf_branch:
+        required: true
+        type: string
+      artifact_name:
+        required: false
+        type: string
+        default: dist
+
+    secrets:
+      CLOUDFLARE_API_TOKEN:
+        required: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    container: node:22-alpine
+    environment:
+      name: ${{ inputs.env_name }}
+      url: ${{ inputs.env_url }}
+    steps:
+      - name: Download dist artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.artifact_name }}
+          path: dist
+      - name: List files in dist folder
+        run: find dist -type f -exec stat -c "%10s %n" {} \;
+      - name: Install Wrangler
+        run: npm install -g wrangler
+      - name: Deploy to Cloudflare Pages
+        run: |
+          if [ "${{ inputs.env_name }}" = "production" ] || [ "${{ inputs.env_name }}" = "nightly" ]; then
+            wrangler pages deploy dist --project-name=devsgowhere --branch=${{ inputs.cf_branch }}
+          else
+            wrangler pages deploy dist --project-name=devsgowhere
+          fi
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
