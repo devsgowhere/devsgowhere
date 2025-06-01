@@ -27,7 +27,6 @@ jobs:
     container: node:22-alpine
     environment:
       name: ${{ inputs.env_name }}
-      url: ${{ inputs.env_url }}
     steps:
       - name: Download dist artifact
         uses: actions/download-artifact@v4
@@ -37,10 +36,11 @@ jobs:
       - name: List files in dist folder
         run: find dist -type f -exec stat -c "%10s %n" {} \;
       - name: Deploy to Cloudflare Pages
+        id: deploy # set id, so that we can extract the deployment URL later
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          # If a push to a non-production branch is done, it will deploy as a preview deployment
+          #
           command: pages deploy dist --project-name=devsgowhere
       - name: Print deployment URL
         run: echo $DEPLOYMENT_URL
