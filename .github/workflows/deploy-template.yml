@@ -7,7 +7,6 @@ on:
         required: true
         type: string
       cf_branch:
-        required: true
         type: string
       artifact_name:
         required: false
@@ -38,8 +37,9 @@ jobs:
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          #
-          command: pages deploy dist --project-name=devsgowhere
+          # if inputs.env_name is 'production' or 'nightly', deploy to production branch
+          # otherwise set the branch to the value of inputs.cf_branch
+          command: pages deploy dist --project-name=devsgowhere ${{ ((inputs.env_name == 'production' || inputs.env_name == 'nightly') && ' ') || format(' --branch={0}', inputs.cf_branch) }}
       - name: Print deployment URL
         run: echo $DEPLOYMENT_URL
         env:
