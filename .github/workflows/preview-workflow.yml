@@ -25,8 +25,7 @@ jobs:
     uses: ./.github/workflows/deploy-template.yml
     with:
       env_name: preview
-      env_url: "https://{{ github.sha }}.devsgowhere.pages.dev"
-      cf_branch: ${{ github.sha }}
+      cf_branch: ${{ github.ref_name }}
     secrets: 
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}   
 
