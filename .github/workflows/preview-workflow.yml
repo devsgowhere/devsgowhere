@@ -4,13 +4,10 @@ on:
   # Trigger the workflow on:
   # - push to main
   # - pull request to main branch
-  # - schedule (daily at midnight UTC) on the default branch (which is main)
   push:
     branches: [ main ]
   pull_request: 
     branches: [ main ]
-  schedule:
-    - cron: '0 16 * * *' # Runs daily at midnight +8 GMT (which is 16:00 UTC)
 
 jobs:
 
@@ -31,7 +28,8 @@ jobs:
     uses: ./.github/workflows/deploy-template.yml
     with:
       env_name: preview
-      env_url: https://${{ github.ref_name }}.devsgowhere.pages.dev
+      # sanitise the branch name to be used as a subdomain using replace
+      env_url: https://${{ github.ref_name.replace('/', '-') }}.devsgowhere.pages.dev
       cf_branch: ${{ github.ref_name }}
     secrets: 
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}   
@@ -43,63 +41,10 @@ jobs:
   ##########################################
   deploy-production:
     needs: build
-    runs-on: ubuntu-latest    
-    container: node:22-alpine # Use Node.js 22 container
-    # only deploy to production when targeting the main branch
-    if: github.ref_name == 'main'
-    # note that as production is a protected environment,
-    # this job will require manual approval by the repository admins
-    environment:
-      name: production
-      url: https://devsgowhere.com
-    steps:
-    # Check if the dist folder exists
-    # Download dist artifact from build job
-    - name: Download dist artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: dist
-        path: dist    
-    # List files inside the dist folder
-    - name: List files in dist folder
-      run: find dist -type f -exec stat -c "%10s %n" {} \;
-    # Install wrangler 
-    - name: Install Wrangler
-      run: npm install -g wrangler
-    # Deploy to Cloudflare Pages
-    - name: Deploy to Cloudflare Pages
-      run: "wrangler pages deploy dist --project-name=devsgowhere --branch=${{ github.ref }}"
-      env: 
-        CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
-
-##########################################
-# Nightly deployment job
-# - Deploys the default branch (main) to Cloudflare Pages
-# - Runs daily at midnight UTC
-##########################################
-  deploy-nightly:
-    needs: build
-    runs-on: ubuntu-latest    
-    container: node:22-alpine # Use Node.js 22 container
-    # only run this job if triggered by a schedule event for the main branch
-    if: github.event_name == 'schedule' && github.ref_name == 'main'
-    environment:
-      name: nightly
-      url: https://devsgowhere.com
-    steps:
-    # Check if the dist folder exists
-    # Download dist artifact from build job
-    - name: Download dist artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: dist
-    - name: List files in dist folder
-      run: find dist -type f -exec stat -c "%10s %n" {} \;
-    # Install wrangler
-    - name: Install Wrangler
-      run: npm install -g wrangler
-    # Deploy to Cloudflare Pages
-    - name: Deploy to Cloudflare Pages
-      run: "wrangler pages deploy dist --project-name=devsgowhere --branch=${{ github.ref }}"
-      env: 
-        CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
+    uses: ./.github/workflows/deploy-template.yml
+    with:
+      env_name: production
+      env_url: https://devsgowhere.com
+      cf_branch: main
+    secrets:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
