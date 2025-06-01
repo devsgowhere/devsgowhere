@@ -34,7 +34,7 @@ jobs:
       env_url: https://${{ github.ref_name }}.devsgowhere.pages.dev
       cf_branch: ${{ github.ref_name }}
     secrets: 
-      CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}   
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}   
 
   ##########################################
   # Production deployment job
