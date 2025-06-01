@@ -6,6 +6,12 @@ on:
       env_name:
         required: true
         type: string
+      env_url:
+        required: true
+        type: string
+      cf_branch:
+        required: true
+        type: string
       artifact_name:
         required: false
         type: string
