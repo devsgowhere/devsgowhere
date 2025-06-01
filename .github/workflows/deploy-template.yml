@@ -36,14 +36,13 @@ jobs:
           path: dist
       - name: List files in dist folder
         run: find dist -type f -exec stat -c "%10s %n" {} \;
-      - name: Install Wrangler
-        run: npm install -g wrangler
       - name: Deploy to Cloudflare Pages
-        run: |
-          if [ "${{ inputs.env_name }}" = "production" ] || [ "${{ inputs.env_name }}" = "nightly" ]; then
-            wrangler pages deploy dist --project-name=devsgowhere --branch=${{ inputs.cf_branch }}
-          else
-            wrangler pages deploy dist --project-name=devsgowhere
-          fi
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          # If a push to a non-production branch is done, it will deploy as a preview deployment
+          command: pages deploy dist --project-name=devsgowhere
+      - name: Print deployment URL
+        run: echo $DEPLOYMENT_URL
         env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          DEPLOYMENT_URL: ${{ steps.deploy.outputs.deployment-url }}
