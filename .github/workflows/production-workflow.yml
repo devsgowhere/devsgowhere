@@ -41,6 +41,5 @@ jobs:
     uses: ./.github/workflows/deploy-template.yml
     with:
       env_name: production
-      cf_branch: main
     secrets:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
