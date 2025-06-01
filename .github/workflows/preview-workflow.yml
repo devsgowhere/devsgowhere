@@ -1,11 +1,8 @@
-name: Build and Deploy
+name: (Pull Request) Preview Builds
 
 on:
   # Trigger the workflow on:
-  # - push to main
   # - pull request to main branch
-  push:
-    branches: [ main ]
   pull_request: 
     branches: [ main ]
 
@@ -28,23 +25,9 @@ jobs:
     uses: ./.github/workflows/deploy-template.yml
     with:
       env_name: preview
-      # sanitise the branch name to be used as a subdomain using replace
       env_url: "https://{{ github.sha }}.devsgowhere.pages.dev"
       cf_branch: ${{ github.sha }}
     secrets: 
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}   
 
-  ##########################################
-  # Production deployment job
-  # - Deploys main branch to Cloudflare Pages
-  # - Only runs on push to main branch
-  ##########################################
-  deploy-production:
-    needs: build
-    uses: ./.github/workflows/deploy-template.yml
-    with:
-      env_name: production
-      env_url: https://devsgowhere.com
-      cf_branch: main
-    secrets:
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
+  # Note that on merge, this will trigger 'production-workflow'
