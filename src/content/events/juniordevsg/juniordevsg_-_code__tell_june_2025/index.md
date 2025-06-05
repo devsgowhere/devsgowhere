@@ -11,7 +11,7 @@ startTime: "19:00"
 # Optional. Format: yyyy-mm-dd, e.g. 2024-05-01
 # endDate: "yyyy-mm-dd"
 # Optional. Format(24h): hh:mm, e.g. 09:00 (for 9 AM), 18:00 (for 6 PM) 
-# endTime: "hh:mm"
+endTime: "21:30"
 # Optional. Defaults to "Asia/Singapore"
 # timezone: "Asia/Singapore"
 heroImage: "./hero.png"
