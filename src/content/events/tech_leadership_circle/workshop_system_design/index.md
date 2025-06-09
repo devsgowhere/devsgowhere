@@ -15,7 +15,7 @@ endTime: "21:00"
 # Optional. Defaults to "Asia/Singapore"
 # timezone: "Asia/Singapore"
 heroImage: "./system_design_workshop.png"
-tags: []
+tags: ["System Design", "Software Architecture"]
 rsvpButtonUrl: "https://lu.ma/gp9c16ir"
 rsvpButtonText: "RSVP on Luma"
 ---
