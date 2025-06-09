@@ -1,11 +1,11 @@
 ---
 org: "tech_leadership_circle"
-title: "Workshop: System Design"
+title: "Workshop: System Design (Rescheduled)"
 description: "​In this interactive workshop, participants will engage in a hands-on system design —an iterative and collaborative exercise that simulates real-world architectural problem solving. Working in small groups, participants will be presented with a system design challenge and work through the process of exploring trade-offs, identifying requirements, sketching high-level architectures, and refining their solutions."
 venue: "Open Government Products"
 venueAddress: "51 Bras Basah Rd, #04-08 Lazada One, Singapore 189554"
 # Required. Format: yyyy-mm-dd, e.g. 2024-05-01
-startDate: "2025-06-11"
+startDate: "2025-06-17"
 # Required. Format (24h): hh:mm, e.g. 09:00 (for 9 AM), 18:00 (for 6 PM) 
 startTime: "19:00"
 # Optional. Format: yyyy-mm-dd, e.g. 2024-05-01
@@ -20,7 +20,7 @@ rsvpButtonUrl: "https://lu.ma/gp9c16ir"
 rsvpButtonText: "RSVP on Luma"
 ---
 
-**​Date:** Wed, 11 June 2025<br>
+**​Date:** Tue, 17 June 2025<br>
 **Time:** 7pm to 9pm<br>
 **Venue:** Open Government Products<br>
 51 Bras Basah Rd, #04-08 Lazada One, Singapore 189554
