@@ -1,8 +1,10 @@
 name: (Pull Request) Preview Builds
 
 on:
-  # Run this workflow via manual dispatch. See:
-  #   https://docs.github.com/en/actions/managing-workflow-runs-and-deployments/managing-workflow-runs/manually-running-a-workflow#running-a-workflow
+  # Run this workflow on pull requests to main branch
+  pull_request:
+    branches: [ main ]
+  # Also allow manual triggers
   workflow_dispatch:
 
 jobs:
@@ -10,16 +12,21 @@ jobs:
   ##########################################
   # Build job
   # - Builds the project and archives the dist folder as an artifact
+  # - Runs for all PRs including those from forks
   ##########################################
   build:
+    # Run for all PRs and manual triggers
     uses: ./.github/workflows/build-template.yml
 
   ##########################################
   # Preview deployment job
   # - Deploys branch preview to Cloudflare Pages
+  # - Only runs for PRs from the same repository (not from forks)
   ##########################################
   deploy-preview:
     needs: build
+    # Only run if PR is from the same repository (not from a fork) or it's a manual trigger
+    if: github.event.pull_request.head.repo.full_name == github.repository || github.event_name == 'workflow_dispatch'
     uses: ./.github/workflows/deploy-template.yml
     with:
       env_name: preview
