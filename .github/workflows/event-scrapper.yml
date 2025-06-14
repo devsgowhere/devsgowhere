@@ -16,7 +16,6 @@ jobs:
   create-event:
     # use official Puppeteer image for headless Chrome
     runs-on: ubuntu-latest
-    container: node:22-alpine
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
