@@ -16,13 +16,21 @@ jobs:
   create-event:
     # use official Puppeteer image for headless Chrome
     runs-on: ubuntu-latest
-    container: ghcr.io/puppeteer/puppeteer:latest
+    container: node:22-alpine
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
+      # Install node dependencies
       - name: Install dependencies
         run: npm ci
-        
+      # Run the event scrapper
+      - name: Run event scrapper
+        run: npx tsx cli/index.ts --eventURL=${{ github.event.inputs.eventURL }} --orgID=${{ github.event.inputs.orgID }} --headless
+      # Use git status to check if there are any changes
+      - name: Check for changes
+        run: git status --porcelain
+
+      
