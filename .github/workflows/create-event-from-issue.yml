@@ -1,0 +1,245 @@
+name: Create Event from Issue
+
+on:
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 'GitHub issue containing event details'
+        required: true
+        type: string
+
+jobs:
+  experimental:
+    runs-on: ubuntu-latest   
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+      # - name: Setup Node.js
+      #   uses: actions/setup-node@v4
+      #   with:
+      #     node-version: '18'
+      #     cache: 'npm'
+
+      # - name: Install dependencies
+      #   run: npm ci
+      - name: Get issue details
+        id: get-issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = await github.rest.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: ${{ github.event.inputs.issue_number }}
+            });
+            
+            const issueBody = issue.data.body || '';
+            console.log('Issue body:', issueBody);
+            
+            // Parse orgID and eventURL from issue body
+            const orgIdMatch = issueBody.match(/^[-*]\s*orgID:\s*(.+)$/m);
+            const eventUrlMatch = issueBody.match(/^[-*]\s*eventURL:\s*(.+)$/m);
+            
+            if (!orgIdMatch || !eventUrlMatch) {
+              throw new Error('Could not find orgID and/or eventURL in issue body. Expected format:\n- orgID: your_org_id\n- eventURL: https://meetup.com/...');
+            }
+            
+            const orgId = orgIdMatch[1].trim();
+            const eventUrl = eventUrlMatch[1].trim();
+            
+            console.log('Extracted orgID:', orgId);
+            console.log('Extracted eventURL:', eventUrl);
+            
+            // Validate URL format
+            try {
+              new URL(eventUrl);
+            } catch (error) {
+              throw new Error(`Invalid eventURL format: ${eventUrl}`);
+            }
+            
+            return {
+              orgId: orgId,
+              eventUrl: eventUrl,
+              issueTitle: issue.data.title,
+              issueNumber: issue.data.number
+            };
+
+#       - name: Install Puppeteer dependencies
+#         run: |
+#           sudo apt-get update
+#           sudo apt-get install -y \
+#             ca-certificates \
+#             fonts-liberation \
+#             libappindicator3-1 \
+#             libasound2 \
+#             libatk-bridge2.0-0 \
+#             libatk1.0-0 \
+#             libc6 \
+#             libcairo2 \
+#             libcups2 \
+#             libdbus-1-3 \
+#             libexpat1 \
+#             libfontconfig1 \
+#             libgbm1 \
+#             libgcc1 \
+#             libglib2.0-0 \
+#             libgtk-3-0 \
+#             libnspr4 \
+#             libnss3 \
+#             libpango-1.0-0 \
+#             libpangocairo-1.0-0 \
+#             libstdc++6 \
+#             libx11-6 \
+#             libx11-xcb1 \
+#             libxcb1 \
+#             libxcomposite1 \
+#             libxcursor1 \
+#             libxdamage1 \
+#             libxext6 \
+#             libxfixes3 \
+#             libxi6 \
+#             libxrandr2 \
+#             libxrender1 \
+#             libxss1 \
+#             libxtst6 \
+#             lsb-release \
+#             wget \
+#             xdg-utils
+
+#       - name: Run event scraper
+#         run: |
+#           npm run create-event -- \
+#             --eventURL "${{ fromJson(steps.get-issue.outputs.result).eventUrl }}" \
+#             --orgID "${{ fromJson(steps.get-issue.outputs.result).orgId }}" \
+#             --headless true \
+#             --output-dir scraper-output
+#         env:
+#           PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: false
+
+#       - name: Configure Git
+#         run: |
+#           git config --local user.email "action@github.com"
+#           git config --local user.name "GitHub Action"
+
+#       - name: Create branch and commit changes
+#         id: create-branch
+#         run: |
+#           # Create a unique branch name
+#           BRANCH_NAME="event/issue-${{ github.event.inputs.issue_number }}-$(date +%s)"
+#           echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+          
+#           # Create and switch to new branch
+#           git checkout -b "$BRANCH_NAME"
+          
+#           # Add all new event files
+#           git add src/content/events/
+          
+#           # Check if there are changes to commit
+#           if git diff --staged --quiet; then
+#             echo "No changes to commit"
+#             exit 1
+#           fi
+          
+#           # Commit changes
+#           git commit -m "Add event from issue #${{ github.event.inputs.issue_number }}
+
+#           - orgID: ${{ fromJson(steps.get-issue.outputs.result).orgId }}
+#           - eventURL: ${{ fromJson(steps.get-issue.outputs.result).eventUrl }}
+          
+#           Closes #${{ github.event.inputs.issue_number }}"
+          
+#           # Push branch
+#           git push origin "$BRANCH_NAME"
+
+#       - name: Create Pull Request
+#         uses: actions/github-script@v7
+#         with:
+#           script: |
+#             const issueData = ${{ steps.get-issue.outputs.result }};
+#             const branchName = '${{ steps.create-branch.outputs.branch_name }}';
+            
+#             const pr = await github.rest.pulls.create({
+#               owner: context.repo.owner,
+#               repo: context.repo.repo,
+#               title: `Add event: ${issueData.issueTitle}`,
+#               head: branchName,
+#               base: 'main',
+#               body: `## Event Details
+
+# This PR adds a new event scraped from the provided URL.
+
+# **Source Issue:** #${issueData.issueNumber}
+# **Organization:** ${issueData.orgId}
+# **Event URL:** ${issueData.eventUrl}
+
+# ### Changes
+# - Added new event files to \`src/content/events/${issueData.orgId}/\`
+# - Scraped event details including title, date, venue, and description
+# - Downloaded and included hero image (if available)
+
+# ### Review Checklist
+# - [ ] Event details are accurate
+# - [ ] Date and time are correct
+# - [ ] Venue information is complete
+# - [ ] Hero image displays properly
+# - [ ] RSVP link works correctly
+
+# This PR will close issue #${issueData.issueNumber} when merged.`,
+#               draft: false
+#             });
+            
+#             console.log(`Created PR #${pr.data.number}: ${pr.data.html_url}`);
+            
+#             // Add comment to original issue
+#             await github.rest.issues.createComment({
+#               owner: context.repo.owner,
+#               repo: context.repo.repo,
+#               issue_number: issueData.issueNumber,
+#               body: `🤖 **Event processing completed!**
+              
+# I've successfully scraped the event details and created a pull request with the new event page.
+
+# **Pull Request:** #${pr.data.number}
+# **Branch:** \`${branchName}\`
+
+# The PR includes:
+# - Event details scraped from ${issueData.eventUrl}
+# - Properly formatted event page
+# - Hero image (if available)
+# - All necessary metadata
+
+# Please review the PR and merge it when ready. This issue will be automatically closed when the PR is merged.`
+#             });
+
+#       - name: Handle errors
+#         if: failure()
+#         uses: actions/github-script@v7
+#         with:
+#           script: |
+#             const issueNumber = ${{ github.event.inputs.issue_number }};
+            
+#             await github.rest.issues.createComment({
+#               owner: context.repo.owner,
+#               repo: context.repo.repo,
+#               issue_number: issueNumber,
+#               body: `❌ **Event processing failed**
+              
+# There was an error processing the event from this issue. Please check the [workflow run](${context.payload.repository.html_url}/actions/runs/${context.runId}) for details.
+
+# Common issues:
+# - Invalid orgID (organization doesn't exist)
+# - Invalid eventURL format or unsupported platform
+# - Network issues accessing the event URL
+# - Missing required information in the event page
+
+# Please verify the issue format and try again:
+# \`\`\`
+# - orgID: your_org_id
+# - eventURL: https://meetup.com/your-event-url
+# \`\`\`
+
+# The orgID should match one of the existing organizations in the \`src/content/orgs/\` directory.`
+#             });
