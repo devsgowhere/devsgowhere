@@ -5,10 +5,50 @@ import puppeteer, { Page } from 'puppeteer';
 import fs from 'fs/promises';
 import path from 'path';
 import TurndownService from 'turndown';
+import yargs from 'yargs';
+import { hideBin } from 'yargs/helpers';
 import type { Exception } from 'sass';
 
+// Parse command line arguments using yargs
+const argv = yargs(hideBin(process.argv))
+	.option('eventURL', {
+		type: 'string',
+		description: 'Event URL to scrape data from'
+	})
+	.option('orgID', {
+		type: 'string',
+		description: 'Organization ID for the event'
+	})
+	.option('headless', {
+		alias: 'H',
+		type: 'boolean',
+		default: true,
+		description: 'Run browser in headless mode'
+	})
+	.option('output-dir', {
+		type: 'string',
+		default: 'scraper-output',
+		description: 'Directory for scraper output files'
+	})
+	.help()
+	.alias('help', 'h')
+	.parseSync();
+
+const eventUrl = argv.eventURL;
+const orgId = argv.orgID;
+const headlessMode = argv.headless;
+const outputDir = argv['output-dir'];
+
+// console.log(`Event URL: ${eventUrl || 'Not provided'}`);
+// console.log(`Organization ID: ${orgId || 'Not provided'}`);
+console.log(`Headless mode: ${headlessMode}`);
+console.log(`Output directory: ${outputDir}`);
+
+// Check if we are in auto-scrape mode?
+const autoScrapeMode = !!eventUrl && !!orgId; // true if both eventUrl and orgId are provided
+
 // configure location for scraper output
-const SCRAPER_OUTPUT_DIR = path.join(process.cwd(), 'scraper-output');
+const SCRAPER_OUTPUT_DIR = path.join(process.cwd(), outputDir);
 // ensure the output directory exists
 fs.mkdir(SCRAPER_OUTPUT_DIR, { recursive: true })
 	.catch(err => {
@@ -145,6 +185,14 @@ class EventCLI {
 	}
 
 	async run(): Promise<void> {
+		
+		// Check if we are in auto-scrape mode
+		if (autoScrapeMode) {
+			await this.handleUrlScraping_auto(eventUrl!);
+			return;
+		}
+
+		// If not in auto-scrape mode, proceed with the CLI prompt
 		console.log('🎉 Welcome to the DevSGoWhere Event Creator CLI!');
 		console.log('This tool will help you create new events for the website.\n');
 
@@ -170,7 +218,7 @@ class EventCLI {
 			if (method === 'manual') {
 				await this.handleManualInput();
 			} else {
-				await this.handleUrlScraping();
+				await this.handleUrlScraping_manual();
 			}
 		} catch (error) {
 			console.error('An error occurred:', error);
@@ -186,7 +234,29 @@ class EventCLI {
 		await this.createEventFile(eventData);
 	}
 
-	private async handleUrlScraping(): Promise<void> {
+	private async handleUrlScraping_auto(url: string): Promise<void> {
+		console.log('\n🤖 Automatic Scraper Mode');
+		if (orgId) {
+			console.log(`📋 Using specified organization: ${orgId}`);
+		}
+		console.log('🔍 Scraping event data from URL: :' + url);
+
+		try {
+			// Validate URL
+			new URL(url);
+
+			const scrapedData = await this.scrapeEventData(url, headlessMode);
+			const eventData = await this.createEventDataFromScrapedData(scrapedData, url, orgId);
+			await this.createEventFile(eventData);
+
+			console.log('\n✅ Event created successfully in CI mode!');
+		} catch (error) {
+			console.error('❌ Error in CI mode:', error);
+			process.exit(1);
+		}
+	}
+
+	private async handleUrlScraping_manual(): Promise<void> {
 		console.log('\n🌐 URL Scraping Mode');
 
 		const { url } = await inquirer.prompt([
@@ -208,7 +278,7 @@ class EventCLI {
 		console.log('🔍 Scraping event data from URL...');
 
 		try {
-			const scrapedData = await this.scrapeEventData(url);
+			const scrapedData = await this.scrapeEventData(url, headlessMode);
 			const eventData = await this.collectEventDataWithDefaults(scrapedData, url);
 			await this.createEventFile(eventData);
 		} catch (error) {
@@ -367,12 +437,13 @@ class EventCLI {
 	/**
 	 * Scrapes event data from the provided URL using Puppeteer.
 	 * @param url The URL of the event page to scrape.
+	 * @param headless Whether to run the browser in headless mode (for CI environments).
 	 * @returns A promise that resolves to an object containing the scraped event data.
 	 */
-	private async scrapeEventData(url: string): Promise<ScrapedEventData> {
+	private async scrapeEventData(url: string, headless: boolean = false): Promise<ScrapedEventData> {
 
 		console.log(`Launching browser...`)
-		const browser = await puppeteer.launch({ headless: false });
+		const browser = await puppeteer.launch({ headless });
 
 		console.log(`Opening new page...`)
 		const page = await browser.newPage();
@@ -649,6 +720,87 @@ class EventCLI {
 		]);
 
 		return answers as EventData;
+	}
+
+	/**
+	 * Creates EventData from scraped data without user input (for CI mode)
+	 * @param scrapedData The scraped event data
+	 * @param originalUrl The original event URL
+	 * @param specifiedOrgId Optional organization ID specified via --orgID parameter
+	 * @returns Complete EventData object with defaults filled in
+	 */
+	private async createEventDataFromScrapedData(scrapedData: ScrapedEventData, originalUrl: string, specifiedOrgId?: string | null): Promise<EventData> {
+		console.log('\n✅ Scraped data preview:');
+		if (scrapedData.title) console.log(`Title: ${scrapedData.title}`);
+		if (scrapedData.startDate) console.log(`Date: ${scrapedData.startDate}`);
+		if (scrapedData.startTime) console.log(`Start Time: ${scrapedData.startTime}`);
+		if (scrapedData.venue) console.log(`Venue: ${scrapedData.venue}`);
+		if (scrapedData.venueAddress) console.log(`Venue Address: ${scrapedData.venueAddress}`);
+		if (scrapedData.description) console.log(`Description: ${scrapedData.description.substring(0, 100)}...`);
+		if (scrapedData.tags && scrapedData.tags.length > 0) console.log(`Tags: ${scrapedData.tags.join(', ')}`);
+		if (scrapedData.rsvpButtonText) console.log(`RSVP Button Text: ${scrapedData.rsvpButtonText}`);
+		if (scrapedData.rsvpButtonUrl) console.log(`RSVP URL: ${scrapedData.rsvpButtonUrl}`);
+		if (scrapedData.heroImage) console.log(`Hero Image: ${scrapedData.heroImage}`);
+
+		// Determine organization - prioritize specified orgId, then extract from URL, then use default
+		let org = 'unknown';
+
+		// First priority: use specified orgId if provided
+		if (specifiedOrgId) {
+			org = specifiedOrgId;
+			console.log(`📋 Using specified organization ID: ${org}`);
+		} else if (originalUrl.includes('meetup.com')) {
+			// Second priority: try to extract organization from meetup URL
+			const urlParts = originalUrl.split('/');
+			const meetupGroupIndex = urlParts.findIndex(part => part === 'meetup.com') + 1;
+			if (meetupGroupIndex < urlParts.length) {
+				org = urlParts[meetupGroupIndex].replace(/[^a-z0-9]/gi, '_').toLowerCase();
+				console.log(`🔍 Extracted organization from URL: ${org}`);
+			}
+		}
+
+		// Validate the organization exists in available orgs
+		if (this.availableOrgs.length > 0) {
+			if (!this.availableOrgs.includes(org)) {
+				console.log(`⚠️  Organization '${org}' not found in available orgs. Available: ${this.availableOrgs.join(', ')}`);
+				console.log(`Using first available: ${this.availableOrgs[0]}`);
+				org = this.availableOrgs[0];
+			} else {
+				console.log(`✅ Organization '${org}' found in available orgs`);
+			}
+		}
+
+		// Validate required fields and provide defaults
+		const eventData: EventData = {
+			org,
+			title: scrapedData.title || 'Untitled Event',
+			description: scrapedData.description || 'Event description not available',
+			content: scrapedData.content || '',
+			venue: scrapedData.venue || 'TBD',
+			venueAddress: scrapedData.venueAddress || '',
+			startDate: scrapedData.startDate || new Date().toISOString().split('T')[0],
+			startTime: scrapedData.startTime || '19:00',
+			endDate: scrapedData.endDate,
+			endTime: scrapedData.endTime,
+			tags: scrapedData.tags || [],
+			heroImage: scrapedData.heroImage || 'https://placecats.com/300/200?fit=contain&position=top',
+			rsvpButtonUrl: originalUrl,
+			rsvpButtonText: scrapedData.rsvpButtonText || 'RSVP'
+		};
+
+		// Validate critical fields
+		if (!eventData.title || eventData.title === 'Untitled Event') {
+			throw new Error('❌ Could not extract event title from the URL');
+		}
+		if (!eventData.startDate || !eventData.startTime) {
+			throw new Error('❌ Could not extract event date/time from the URL');
+		}
+		if (!eventData.venue || eventData.venue === 'TBD') {
+			console.warn('⚠️  Could not extract venue information from the URL');
+		}
+
+		console.log('\n🤖 Using automated event data for CI mode');
+		return eventData;
 	}
 
 	private async createEventFile(eventData: EventData): Promise<void> {
