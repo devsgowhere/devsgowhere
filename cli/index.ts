@@ -25,10 +25,10 @@ const argv = yargs(hideBin(process.argv))
 		default: true,
 		description: 'Run browser in headless mode'
 	})
-    .option('no-sandbox', {
+    .option('sandbox', {
         type: 'boolean',
-        default: false,
-        description: 'Disable Chrome sandbox (use in CI environments)'
+        default: true,
+		description: 'Run browser in sandbox mode (should be disabled for CI environments)'
     })
 	.option('output-dir', {
 		type: 'string',
@@ -42,7 +42,7 @@ const argv = yargs(hideBin(process.argv))
 const eventUrl = argv.eventURL;
 const orgId = argv.orgID;
 const headlessMode = argv.headless;
-const noSandbox = argv['no-sandbox'];
+const noSandbox = !argv.sandbox; // if sandbox is false, we set noSandbox to true
 const outputDir = argv['output-dir'];
 
 // console.log(`Event URL: ${eventUrl || 'Not provided'}`);
