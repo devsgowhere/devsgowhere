@@ -27,7 +27,7 @@ jobs:
         run: npm ci
       # Run the event scrapper
       - name: Run event scrapper
-        run: npx tsx cli/index.ts --eventURL=${{ github.event.inputs.eventURL }} --orgID=${{ github.event.inputs.orgID }} --headless
+        run: npx tsx cli/index.ts --eventURL=${{ github.event.inputs.eventURL }} --orgID=${{ github.event.inputs.orgID }} --headless --no-sandbox
       # Use git status to check if there are any changes
       - name: Check for changes
         run: git status --porcelain
