@@ -41,6 +41,9 @@ jobs:
       - name: Check for changes
         id: check-changes
         run: |
+          # Check if there are any changes in the src/content directory
+          git status --porcelain src/content/ > /dev/null
+          # If there are changes, set the output variable
           if [[ -n "$(git status --porcelain)" ]]; then
             echo "changes=true" >> $GITHUB_OUTPUT
           else
@@ -52,7 +55,7 @@ jobs:
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "GitHub Actions"
-          git add content/
+          git add src/content/
           git commit -m "Add event for ${{ github.event.inputs.orgID }} from ${{ github.event.inputs.eventURL }}"
           git push --set-upstream origin ${{ steps.branch-name.outputs.branch }}
 
