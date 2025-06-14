@@ -60,17 +60,32 @@ jobs:
           git push --set-upstream origin ${{ steps.branch-name.outputs.branch }}
       # Create pull request
       - name: Create Pull Request
+        id: create-pull-request
         if: steps.check-changes.outputs.changes == 'true'
         uses: peter-evans/create-pull-request@v5
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: Add new event for ${{ github.event.inputs.orgID }}
-          title: "Add event for ${{ github.event.inputs.orgID }}"
-          body: |
-            This PR adds a new event for the organization ${{ github.event.inputs.orgID }}, scraped from the event URL ${{ github.event.inputs.eventURL }}.
-            Created automatically by the Event Scrapper workflow.
-            Workflow run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          # use the branch name generated earlier
           branch: ${{ steps.branch-name.outputs.branch }}
+          # target the main branch
           base: main
+          # title of the pull request
+          title: "Add event for ${{ github.event.inputs.orgID }} from ${{ github.event.inputs.eventURL }}"
+          # body of the pull request
+          body: |
+            This pull request was automatically created by the event scrapper workflow.
+            It adds an event for organization ID `${{ github.event.inputs.orgID }}` from the URL `${{ github.event.inputs.eventURL }}`.
+          # labels: event
+          labels: event
+          # draft mode?
+          draft: false
+          maintainer_can_modify: true
+      # Print pull request info : number and URL
+      - name: Print Pull Request info
+        if: ${{ steps.create-pull-request.outputs.pull-request-number }}
+        run: |
+          echo "Pull Request created successfully!"
+          echo "Pull Request Number: ${{ steps.create-pull-request.outputs.pull-request-number }}"
+          echo "Pull Request URL: ${{ steps.create-pull-request.outputs.pull-request-url }}"
+
 
       
