@@ -15,7 +15,8 @@ on:
 jobs:
   create-event:
     # use official Puppeteer image for headless Chrome
-    runs-on: ghcr.io/puppeteer/puppeteer:latest
+    runs-on: ubuntu-latest
+    container: ghcr.io/puppeteer/puppeteer:latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
