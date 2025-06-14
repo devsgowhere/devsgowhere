@@ -25,6 +25,11 @@ const argv = yargs(hideBin(process.argv))
 		default: true,
 		description: 'Run browser in headless mode'
 	})
+    .option('sandbox', {
+        type: 'boolean',
+        default: true,
+		description: 'Run browser in sandbox mode (should be disabled for CI environments)'
+    })
 	.option('output-dir', {
 		type: 'string',
 		default: 'scraper-output',
@@ -37,11 +42,13 @@ const argv = yargs(hideBin(process.argv))
 const eventUrl = argv.eventURL;
 const orgId = argv.orgID;
 const headlessMode = argv.headless;
+const noSandbox = !argv.sandbox; // if sandbox is false, we set noSandbox to true
 const outputDir = argv['output-dir'];
 
 // console.log(`Event URL: ${eventUrl || 'Not provided'}`);
 // console.log(`Organization ID: ${orgId || 'Not provided'}`);
 console.log(`Headless mode: ${headlessMode}`);
+console.log(`No sandbox mode: ${noSandbox}`);
 console.log(`Output directory: ${outputDir}`);
 
 // Check if we are in auto-scrape mode?
@@ -442,8 +449,18 @@ class EventCLI {
 	 */
 	private async scrapeEventData(url: string, headless: boolean = false): Promise<ScrapedEventData> {
 
+		// browser launch options
+		let args = [];
+		if (noSandbox) {
+			args.push('--no-sandbox', '--disable-setuid-sandbox');
+		}
+
+		// launch the browser
 		console.log(`Launching browser...`)
-		const browser = await puppeteer.launch({ headless });
+		const browser = await puppeteer.launch({
+			headless,
+			args
+		});
 
 		console.log(`Opening new page...`)
 		const page = await browser.newPage();
