@@ -28,8 +28,8 @@ jobs:
         run: |
           echo "branch=event-scrapper/${{ github.run_id }}-${{ github.run_attempt }}" >> $GITHUB_OUTPUT
       # Create and switch to new branch
-      - name: Create branch
-        run: git checkout -b ${{ steps.branch-name.outputs.branch }}
+      # - name: Create branch
+      #   run: git checkout -b ${{ steps.branch-name.outputs.branch }}
       # Install node dependencies
       - name: Install dependencies
         run: npm ci
@@ -50,14 +50,14 @@ jobs:
             echo "changes=false" >> $GITHUB_OUTPUT
           fi
       # If there are changes, commit them
-      - name: Commit changes
-        if: steps.check-changes.outputs.changes == 'true'
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "GitHub Actions"
-          git add src/content/
-          git commit -m "Add event for ${{ github.event.inputs.orgID }} from ${{ github.event.inputs.eventURL }}"
-          git push --set-upstream origin ${{ steps.branch-name.outputs.branch }}
+      # - name: Commit changes
+      #   if: steps.check-changes.outputs.changes == 'true'
+      #   run: |
+      #     git config --local user.email "github-actions[bot]@users.noreply.github.com"
+      #     git config --local user.name "GitHub Actions"
+      #     git add src/content/
+      #     git commit -m "Add event for ${{ github.event.inputs.orgID }} from ${{ github.event.inputs.eventURL }}"
+      #     git push --set-upstream origin ${{ steps.branch-name.outputs.branch }}
       # Create pull request
       - name: Create Pull Request
         id: create-pull-request
@@ -68,6 +68,11 @@ jobs:
           branch: ${{ steps.branch-name.outputs.branch }}
           # target the main branch
           base: main
+          # paths to include in the pull request
+          add-paths: |
+            src/content/
+          # commit message
+          commit-message: "Add event for ${{ github.event.inputs.orgID }} from ${{ github.event.inputs.eventURL }}"
           # title of the pull request
           title: "Add event for ${{ github.event.inputs.orgID }} from ${{ github.event.inputs.eventURL }}"
           # body of the pull request
@@ -78,7 +83,6 @@ jobs:
           labels: event
           # draft mode?
           draft: false
-          maintainer_can_modify: true
       # Print pull request info : number and URL
       - name: Print Pull Request info
         if: ${{ steps.create-pull-request.outputs.pull-request-number }}
