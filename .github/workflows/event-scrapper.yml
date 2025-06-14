@@ -22,6 +22,14 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
+      # Generate a unique branch name
+      - name: Generate branch name
+        id: branch-name
+        run: |
+          echo "branch=event-scrapper/${{ github.run_id }}-${{ github.run_attempt }}" >> $GITHUB_OUTPUT
+      # Create and switch to new branch
+      - name: Create branch
+        run: git checkout -b ${{ steps.branch-name.outputs.branch }}
       # Install node dependencies
       - name: Install dependencies
         run: npm ci
@@ -29,7 +37,23 @@ jobs:
       - name: Run event scrapper
         run: npx tsx cli/index.ts --eventURL=${{ github.event.inputs.eventURL }} --orgID=${{ github.event.inputs.orgID }} --headless --no-sandbox
       # Use git status to check if there are any changes
+      # Use git status to check if there are any changes
       - name: Check for changes
-        run: git status --porcelain
+        id: check-changes
+        run: |
+          if [[ -n "$(git status --porcelain)" ]]; then
+            echo "changes=true" >> $GITHUB_OUTPUT
+          else
+            echo "changes=false" >> $GITHUB_OUTPUT
+          fi
+      # If there are changes, commit them
+      - name: Commit changes
+        if: steps.check-changes.outputs.changes == 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "GitHub Actions"
+          git add content/
+          git commit -m "Add event for ${{ github.event.inputs.orgID }} from ${{ github.event.inputs.eventURL }}"
+          git push --set-upstream origin ${{ steps.branch-name.outputs.branch }}
 
       
