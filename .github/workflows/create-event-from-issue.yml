@@ -1,4 +1,4 @@
-name: Create Event from Issue
+name: (Manual) Create Event from Issue
 
 on:
   workflow_dispatch:
