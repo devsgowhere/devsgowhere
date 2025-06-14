@@ -58,5 +58,19 @@ jobs:
           git add src/content/
           git commit -m "Add event for ${{ github.event.inputs.orgID }} from ${{ github.event.inputs.eventURL }}"
           git push --set-upstream origin ${{ steps.branch-name.outputs.branch }}
+      # Create pull request
+      - name: Create Pull Request
+        if: steps.check-changes.outputs.changes == 'true'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: Add new event for ${{ github.event.inputs.orgID }}
+          title: "Add event for ${{ github.event.inputs.orgID }}"
+          body: |
+            This PR adds a new event for the organization ${{ github.event.inputs.orgID }}, scraped from the event URL ${{ github.event.inputs.eventURL }}.
+            Created automatically by the Event Scrapper workflow.
+            Workflow run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          branch: ${{ steps.branch-name.outputs.branch }}
+          base: main
 
       
