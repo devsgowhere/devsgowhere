@@ -7,7 +7,9 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "create-event": "tsx cli/index.ts"
+    "create-event": "tsx cli/index.ts",
+    "org-lookup": "tsx cli/org-lookup/index.ts read",
+    "org-lookup:create": "tsx cli/org-lookup/index.ts create"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.2.6",
@@ -22,6 +24,7 @@
     "add-to-calendar-button": "^2.8.9",
     "add-to-calendar-button-react": "^2.8.9",
     "astro": "^5.7.10",
+    "glob": "^11.0.3",
     "inquirer": "^12.6.3",
     "puppeteer": "^24.10.1",
     "react": "^19.1.0",
