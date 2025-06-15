@@ -2,7 +2,7 @@ import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { Glob } from 'glob';
 import { pathToFileURL } from 'url';
 
-const ORG_LOOKUP_PATH = 'cli/org_lookup.tsv';
+const ORG_LOOKUP_PATH = 'cli/org-lookup/lookup_data.tsv';
 
 export function generateOrgLookupMap(): Map<string, string> {
   const lookup = new Map<string, string>();
