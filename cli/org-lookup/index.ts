@@ -23,23 +23,23 @@ export function generateOrgLookupMap(): Map<string, string> {
   return lookup;
 }
 
-export function writeOrgLookupTsv(lookup: Map<string, string>, file = DEFAULT_PATH): void {
-  if (!file.endsWith('.tsv')) {
+export function writeOrgLookupTsv(lookup: Map<string, string>, path = DEFAULT_PATH): void {
+  if (!path.endsWith('.tsv')) {
     throw new Error('The path must end with a .tsv extension');
   }
   const entries = Array.from(lookup.entries());
   const tsvString = entries.reduce((acc, [url, orgid]) => `${acc}\n${url}\t${orgid}`, 'url\torgid');
-  writeFileSync(file, tsvString, 'utf-8');
+  writeFileSync(path, tsvString, 'utf-8');
 }
 
-export function readOrgLookupTsv(file = DEFAULT_PATH): Map<string, string> {
-  if (!file.endsWith('.tsv')) {
+export function readOrgLookupTsv(path = DEFAULT_PATH): Map<string, string> {
+  if (!path.endsWith('.tsv')) {
     throw new Error('The path must end with a .tsv extension');
   }
-  if (!existsSync(file)) {
+  if (!existsSync(path)) {
     throw new Error("Lookup file not found")
   }
-  const tsvString = readFileSync(file, 'utf-8');
+  const tsvString = readFileSync(path, 'utf-8');
   const entries = tsvString.split("\n").slice(1).map(line => line.split("\t", 2) as [string, string])
   return new Map(entries);
 }
