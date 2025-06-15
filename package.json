@@ -7,7 +7,9 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "create-event": "tsx cli/index.ts"
+    "create-event": "tsx cli/index.ts",
+    "org-lookup": "tsx cli/org-lookup.ts read",
+    "org-lookup:create": "tsx cli/org-lookup.ts create"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.2.6",
