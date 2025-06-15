@@ -2,7 +2,7 @@ import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { Glob } from 'glob';
 import { pathToFileURL } from 'url';
 
-const ORG_LOOKUP_PATH = 'cli/org-lookup/lookup_data.tsv';
+const DEFAULT_PATH = 'cli/org-lookup/lookup_data.tsv';
 
 export function generateOrgLookupMap(): Map<string, string> {
   const lookup = new Map<string, string>();
@@ -23,13 +23,13 @@ export function generateOrgLookupMap(): Map<string, string> {
   return lookup;
 }
 
-export function writeOrgLookupTsv(lookup: Map<string, string>, file = ORG_LOOKUP_PATH): void {
+export function writeOrgLookupTsv(lookup: Map<string, string>, file = DEFAULT_PATH): void {
   const entries = Array.from(lookup.entries());
   const tsvString = entries.reduce((acc, [url, orgid]) => `${acc}\n${url}\t${orgid}`, 'url\torgid');
   writeFileSync(file, tsvString, 'utf-8');
 }
 
-export function readOrgLookupTsv(file = ORG_LOOKUP_PATH): Map<string, string> {
+export function readOrgLookupTsv(file = DEFAULT_PATH): Map<string, string> {
   if (!existsSync(file)) {
     throw new Error("Lookup file not found")
   }
@@ -50,7 +50,7 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
         alias: 'p',
         type: 'string',
         describe: 'Path to the TSV file for org lookup data',
-        default: ORG_LOOKUP_PATH,
+        default: DEFAULT_PATH,
         coerce: (path) => {
           if (!path.endsWith('.tsv')) {
             throw new Error('The path must end with a .tsv extension');
