@@ -22,6 +22,7 @@
     "add-to-calendar-button": "^2.8.9",
     "add-to-calendar-button-react": "^2.8.9",
     "astro": "^5.7.10",
+    "glob": "^11.0.3",
     "inquirer": "^12.6.3",
     "puppeteer": "^24.10.1",
     "react": "^19.1.0",
