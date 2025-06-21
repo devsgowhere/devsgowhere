@@ -1,7 +1,7 @@
 ---
 org: "flutter_sg"
 title: "Flutter Singapore Meetup 2025 - Q2"
-description: "DetailsHello Flutter developers and enthusiasts! Flutter Singapore is hosting its next meetup on 25 Jun 2025, Wednesday at FlutterFlow office, 79 Anson Road #23"
+description: "Get ready to learn more about the Flutter Ecosystem! Our meetups are geared toward sharing knowledge on cross-platform development and giving everyone a chance to connect with the Flutter community in Singapore. If you’re interested in networking, discovering new techniques, or simply want to discuss Flutter, join us!"
 venue: "FlutterFlow Office"
 venueAddress: "79 Anson Road, #23-01 · Singapore"
 startDate: "2025-06-25"
