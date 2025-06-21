@@ -1,15 +1,14 @@
 ---
 org: "golang_sg"
 title: "Golang Meetup - Jul 2025"
-description: "Hello Gophers! Announcing our meetup for July 2025! foodpanda will be hosting us at their space. A big thank you to them for sponsoring the venue!"
+description: "DetailsHello Gophers! Announcing our meetup for July 2025! foodpanda will be hosting us at their space. A big thank you to them for sponsoring the venue! Please"
 venue: "foodpanda"
 venueAddress: "63 Robinson Road, Afro-Asia building · Singapore"
 startDate: "2025-07-02"
 startTime: "19:00"
-endTime: "20:30"
-heroImage: "hero-1750480553783.jpeg"
+heroImage: "hero-1750482451203.jpeg"
 tags: ["Events in Singapore, SG", "Golang", "Open Source", "Programming Languages", "Software Development", "Web Technology"]
-rsvpButtonUrl: "https://www.meetup.com/golangsg/events/308567741"
+rsvpButtonUrl: "https://www.meetup.com/golangsg/events/308567741/"
 rsvpButtonText: "RSVP on Meetup"
 ---
 
