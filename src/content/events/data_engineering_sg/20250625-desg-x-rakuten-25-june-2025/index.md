@@ -5,7 +5,8 @@ description: "Join Data Engineers Singapore this June at Rakuten's office for ex
 venue: "Rakuten Asia"
 venueAddress: "138 Market St · Singapore 048946"
 startDate: "2025-06-25"
-startTime: "10:30"
+startTime: "18:30"
+endTime: "20:30"
 heroImage: "hero-1750478355340.jpeg"
 tags: ["Events in Singapore, SG", "Google Cloud", "BigQuery"]
 rsvpButtonUrl: "https://www.meetup.com/data-engineering-sg/events/308518037"
