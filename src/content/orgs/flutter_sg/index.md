@@ -15,7 +15,7 @@ tags: ["flutter", "dart"]
 # tiktok: <url>
 # discord: <url>
 # github: <url>
-# telegram: <url>
+telegram: https://t.me/flutter_sg
 meetup: https://www.meetup.com/flutter-singapore/
 ---
 
