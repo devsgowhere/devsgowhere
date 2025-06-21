@@ -1,107 +1,19 @@
-#!/usr/bin/env node
-
 import fs from 'fs/promises';
 import path from 'path';
-import yargs from 'yargs';
-import { hideBin } from 'yargs/helpers';
-import { EventCLI } from './EventCLI';
-import type { EventCLIOptions } from './types';
+import inquirer from 'inquirer';
+import puppeteer, { Page } from 'puppeteer';
+import TurndownService from 'turndown';
+import type { EventCLIOptions, ScrapedEventData, EventData } from './types';
 
-// Parse command line arguments using yargs
-const argv = yargs(hideBin(process.argv))
-	.option('eventURL', {
-		type: 'string',
-		description: 'Event URL to scrape data from'
-	})
-	.option('orgID', {
-		type: 'string',
-		description: 'Organization ID for the event'
-	})
-	.option('headless', {
-		alias: 'H',
-		type: 'boolean',
-		default: true,
-		description: 'Run browser in headless mode'
-	})
-    .option('sandbox', {
-        type: 'boolean',
-        default: true,
-		description: 'Run browser in sandbox mode (should be disabled for CI environments)'
-    })
-	.option('output-dir', {
-		type: 'string',
-		default: 'scraper-output',
-		description: 'Directory for scraper output files'
-	})
-	.help()
-	.alias('help', 'h')
-	.parseSync();
-
-const cliOptions: EventCLIOptions = {
-	eventURL: argv.eventURL as string | undefined,
-	orgID: argv.orgID as string | undefined,
-	headlessMode: argv.headless as boolean,
-	noSandbox: argv.sandbox as boolean,
-	outputDir: argv['output-dir'] as string
-}
-
-// Check if we are in auto-scrape mode?
-cliOptions.autoScrapeMode = !!cliOptions.eventURL && !!cliOptions.orgID; // true if both eventUrl and orgId are provided
-
-console.log(`Headless mode: ${cliOptions.headlessMode}`);
-console.log(`No sandbox mode: ${cliOptions.noSandbox}`);
-console.log(`Output directory: ${cliOptions.outputDir}`);
-
-// configure location for scraper output
-const SCRAPER_OUTPUT_DIR = path.join(process.cwd(), cliOptions.outputDir!);
-// ensure the output directory exists
-fs.mkdir(SCRAPER_OUTPUT_DIR, { recursive: true })
-	.catch(err => {
-		console.error('Error creating scraper output directory:', err);
-		process.exit(1);
-	}
-	);
-
-interface EventData {
-	org: string;
-	title: string;
-	startDate: string;
-	startTime: string;
-	endDate?: string;
-	endTime?: string;
-	timezone?: string;
-	venue: string;
-	venueAddress: string;
-	description: string; // this is used for the event description in the card and SEO description
-	content?: string; // this is the full content of the event, used for the event page
-	tags: string[];
-	heroImage: string;
-	rsvpButtonText: string;
-	rsvpButtonUrl: string;
-}
-
-interface ScrapedEventData {
-	title?: string;
-	startDate?: string;
-	startTime?: string;
-	endDate?: string;
-	endTime?: string;
-	venue?: string;
-	venueAddress?: string;
-	description?: string; // this is used for the event description in the card and SEO description
-	content?: string; // this is the full content of the event, used for the event page
-	tags?: string[];
-	heroImage?: string;
-	rsvpButtonText?: string;
-	rsvpButtonUrl?: string;
-}
-
-class EventCLI {
+export class EventCLI {
 
 	private availableOrgs: string[] = [];
 	private turndownService!: TurndownService;
+  private options: EventCLIOptions = {}
+  private scraperOutputDir: string;
 
-	constructor() {
+	constructor(scraperOutputDir: string) {
+    this.scraperOutputDir = scraperOutputDir;
 		this.loadAvailableOrgs();
 		this.initializeTurndownService();
 	}
@@ -189,11 +101,12 @@ class EventCLI {
 		}
 	}
 
-	async run(): Promise<void> {
+	async run(options: EventCLIOptions): Promise<void> {
+    this.options = options;
 		
 		// Check if we are in auto-scrape mode
-		if (autoScrapeMode) {
-			await this.handleUrlScraping_auto(eventUrl!);
+		if (this.options.autoScrapeMode) {
+			await this.handleUrlScraping_auto(options.eventURL!);
 			return;
 		}
 
@@ -241,8 +154,8 @@ class EventCLI {
 
 	private async handleUrlScraping_auto(url: string): Promise<void> {
 		console.log('\n🤖 Automatic Scraper Mode');
-		if (orgId) {
-			console.log(`📋 Using specified organization: ${orgId}`);
+		if (this.options.orgID) {
+			console.log(`📋 Using specified organization: ${this.options.orgID}`);
 		}
 		console.log('🔍 Scraping event data from URL: :' + url);
 
@@ -250,8 +163,8 @@ class EventCLI {
 			// Validate URL
 			new URL(url);
 
-			const scrapedData = await this.scrapeEventData(url, headlessMode);
-			const eventData = await this.createEventDataFromScrapedData(scrapedData, url, orgId);
+			const scrapedData = await this.scrapeEventData(url, this.options.headlessMode);
+			const eventData = await this.createEventDataFromScrapedData(scrapedData, url, this.options.orgID);
 			await this.createEventFile(eventData);
 
 			console.log('\n✅ Event created successfully in CI mode!');
@@ -283,7 +196,7 @@ class EventCLI {
 		console.log('🔍 Scraping event data from URL...');
 
 		try {
-			const scrapedData = await this.scrapeEventData(url, headlessMode);
+			const scrapedData = await this.scrapeEventData(url, this.options.headlessMode);
 			const eventData = await this.collectEventDataWithDefaults(scrapedData, url);
 			await this.createEventFile(eventData);
 		} catch (error) {
@@ -425,7 +338,7 @@ class EventCLI {
 			}
 			const arrayBuffer = await response.arrayBuffer();
 			const buffer = Buffer.from(arrayBuffer);
-			const imagePath = path.join(SCRAPER_OUTPUT_DIR, `hero-${Date.now()}.${imageExtension}`);
+			const imagePath = path.join(this.scraperOutputDir, `hero-${Date.now()}.${imageExtension}`);
 			await fs.writeFile(imagePath, buffer);
 			console.log(`Hero image downloaded to ${imagePath}`);
 			scrapedData.heroImage = imagePath; // store the local path of the image
@@ -449,7 +362,7 @@ class EventCLI {
 
 		// browser launch options
 		let args = [];
-		if (noSandbox) {
+		if (this.options.noSandbox) {
 			args.push('--no-sandbox', '--disable-setuid-sandbox');
 		}
 
@@ -479,7 +392,7 @@ class EventCLI {
 			}
 
 			// if url contains meetup.com, use specific scraping logic
-			if (this.isMeetupCom(url)) {
+			if (url.includes('meetup.com')) {
 				console.log(`Scraping Meetup event data...`);
 				return await this.scrapeEventDataFromMeetup(page);
 			} else {
@@ -764,7 +677,7 @@ class EventCLI {
 		if (specifiedOrgId) {
 			org = specifiedOrgId;
 			console.log(`📋 Using specified organization ID: ${org}`);
-		} else if (this.isMeetupCom(originalUrl)) {
+		} else if (originalUrl.includes('meetup.com')) {
 			// Second priority: try to extract organization from meetup URL
 			const urlParts = originalUrl.split('/');
 			const meetupGroupIndex = urlParts.findIndex(part => part === 'meetup.com') + 1;
@@ -952,22 +865,4 @@ class EventCLI {
 
 		return content;
 	}
-
-	/**
-	 * Determines if the url is a Meetup.com event page
-	 * @param {string} url a string representing the url to be checked
-	 * @returns {boolean} true if the url is a Meetup.com event page, false otherwise
-	 */
-	private isMeetupCom(url: string): boolean {
-		const { hostname } = new URL(url)
-		return /^(www\.)?meetup\.com$/i.test(hostname)
-	}
 }
-
-// Run the CLI
-if (import.meta.url === `file://${process.argv[1]}`) {
-	const cli = new EventCLI(SCRAPER_OUTPUT_DIR);
-	cli.run(cliOptions).catch(console.error);
-}
-
-export default EventCLI;
