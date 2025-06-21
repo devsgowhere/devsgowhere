@@ -1,8 +1,7 @@
 ---
 org: "data_engineering_sg"
 title: "DESG x Rakuten - 25 June 2025"
-description: "DetailsHalo Data Engineers Singapore! For June, we have presenters from Rakuten and we are hosting at their office for this month. We are excited to welcome Sat"
-venue: "138 Market St"
+description: "Join Data Engineers Singapore this June at Rakuten's office for expert talks on real-time data streaming, monitoring with Kafka, and GCP data warehousing. Network with fellow engineers over pizza!"
 venueAddress: "138 Market St · Singapore"
 startDate: "2025-06-25"
 startTime: "10:30"
