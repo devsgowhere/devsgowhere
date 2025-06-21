@@ -5,7 +5,8 @@ description: "Get ready to learn more about the Flutter Ecosystem! Our meetups a
 venue: "FlutterFlow Office"
 venueAddress: "79 Anson Road, #23-01 · Singapore"
 startDate: "2025-06-25"
-startTime: "10:30"
+startTime: "18:30"
+endTime: "21:30"
 heroImage: "hero-1750479966208.webp"
 tags: ["Events in Singapore, SG", "iOS Development", "Dart Language", "Dart Programming", "Mobile Development", "Software Development"]
 rsvpButtonUrl: "https://www.meetup.com/flutter-singapore/events/307730486"
