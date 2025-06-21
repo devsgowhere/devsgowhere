@@ -11,11 +11,18 @@ on:
         description: 'Organization ID to associate with the event'
         required: true
         type: string
+      timezone:
+        description: 'Timezone to use for the event'
+        required: false
+        type: string
+        default: 'GMT+8'
 
 jobs:
   create-event:
     # use official Puppeteer image for headless Chrome
     runs-on: ubuntu-latest
+    environment:
+      TZ: ${{ github.event.inputs.timezone }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
