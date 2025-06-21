@@ -5,7 +5,8 @@ description: "Hello Gophers! Announcing our meetup for July 2025! foodpanda will
 venue: "foodpanda"
 venueAddress: "63 Robinson Road, Afro-Asia building · Singapore"
 startDate: "2025-07-02"
-startTime: "11:00"
+startTime: "19:00"
+endTime: "20:30"
 heroImage: "hero-1750480553783.jpeg"
 tags: ["Events in Singapore, SG", "Golang", "Open Source", "Programming Languages", "Software Development", "Web Technology"]
 rsvpButtonUrl: "https://www.meetup.com/golangsg/events/308567741"
