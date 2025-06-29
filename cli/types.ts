@@ -40,3 +40,8 @@ export type EventCLIOptions ={
   outputDir?: string;
   autoScrapeMode?: boolean; // true if both eventURL and orgID are provided
 }
+
+import type { Page } from 'puppeteer';
+export interface PageParser {
+  scrapeEventDataFromPage(page: Page): Promise<ScrapedEventData>
+}

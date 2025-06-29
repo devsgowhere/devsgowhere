@@ -1,15 +1,14 @@
 import fs from 'fs';
 import path from 'path';
 import inquirer from 'inquirer';
-import puppeteer, { Page } from 'puppeteer';
 import type { EventCLIOptions, ScrapedEventData, EventData } from './types';
-import { MeetupScraper } from './scrapers/meetup';
+import { PageScraper } from './scrapers/PageScraper';
 import { EventWriter } from './EventWriter';
 
 export class EventCLI {
 	private availableOrgs: string[] = [];
 	private eventWriter = new EventWriter();
-	private meetupScraper = new MeetupScraper();
+	private pageScraper = new PageScraper();
   private options: EventCLIOptions = {
 		headlessMode: true,
 		noSandbox: true,
@@ -33,7 +32,7 @@ export class EventCLI {
 	async run(options: EventCLIOptions): Promise<void> {
     this.options = options;
 
-		this.meetupScraper.scraperOutputDir = options.outputDir!;
+		this.pageScraper.scraperOutputDir = options.outputDir!;
 		
 		// Check if we are in auto-scrape mode
 		if (this.options.autoScrapeMode) {
@@ -105,8 +104,8 @@ export class EventCLI {
 				// Validate URL
 				new URL(url);
 
-				const scrapedData = await this.scrapeEventData(url, this.options.headlessMode);
-				const eventData = await this.meetupScraper.createEventDataFromScrapedData(scrapedData, url, this.options.orgID);
+				const scrapedData = await this.pageScraper.scrapeEventData(url, this.options.headlessMode, this.options.noSandbox);
+				const eventData = await this.pageScraper.createEventDataFromScrapedData(scrapedData, url, this.options.orgID);
 				this.eventWriter.createEventFile(eventData);
 
 				// console.log('\n✅ Event created successfully in CI mode!');
@@ -144,67 +143,13 @@ export class EventCLI {
 		console.log('🔍 Scraping event data from URL...');
 
 		try {
-			const scrapedData = await this.scrapeEventData(url, this.options.headlessMode);
+			const scrapedData = await this.pageScraper.scrapeEventData(url, this.options.headlessMode, this.options.noSandbox);
 			const eventData = await this.collectEventDataWithDefaults(scrapedData, url);
 			this.eventWriter.createEventFile(eventData);
 		} catch (error) {
 			console.error('Error scraping URL:', error);
 			console.log('\n⚠️  Scraping failed. Falling back to manual input...');
 			await this.handleManualInput();
-		}
-	}
-
-	/**
-	 * Scrapes event data from the provided URL using Puppeteer.
-	 * @param url The URL of the event page to scrape.
-	 * @param headless Whether to run the browser in headless mode (for CI environments).
-	 * @returns A promise that resolves to an object containing the scraped event data.
-	 */
-	private async scrapeEventData(url: string, headless: boolean = false): Promise<ScrapedEventData> {
-
-		// browser launch options
-		let args = [];
-		if (this.options.noSandbox) {
-			args.push('--no-sandbox', '--disable-setuid-sandbox');
-		}
-
-		// launch the browser
-		console.log(`Launching browser...`)
-		const browser = await puppeteer.launch({
-			headless,
-			args
-		});
-
-		console.log(`Opening new page...`)
-		const page = await browser.newPage();
-
-		// set default page navigation timeout to 10 seconds
-		page.setDefaultNavigationTimeout(10000);
-		// set default page timeout to 10 seconds
-		page.setDefaultTimeout(10000);
-
-		try {
-
-			console.log(`Navigating to ${url}...`)
-			try {
-				await page.goto(url);
-				console.log(`Page loaded successfully.`);
-			} catch (error: any) {
-				console.warn(`Error loading page: ${error.message}`);
-			}
-
-			// if url contains meetup.com, use specific scraping logic
-			if (url.includes('meetup.com')) {
-				console.log(`Scraping Meetup event data...`);
-				return await this.meetupScraper.scrapeEventDataFromMeetup(page);
-			} else {
-				// throw error that this event platform is not supported
-				throw new Error('Sorry! This event platform is not supported yet.');
-			}
-
-		} finally {
-			console.log(`Closing browser...`);
-			await browser.close();
 		}
 	}
 
