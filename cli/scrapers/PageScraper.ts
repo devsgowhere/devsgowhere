@@ -44,17 +44,20 @@ export class PageScraper {
 				console.warn(`Error loading page: ${error.message}`);
 			}
 
-			// if url contains meetup.com, use specific scraping logic
-			if (url.includes('meetup.com')) {
-				console.log(`Scraping event data...`);
-				const parser = new MeetupParser();
-				parser.scraperOutputDir = this.scraperOutputDir;
-				return await parser.scrapeEventDataFromPage(page);
-			} else {
-				// throw error that this event platform is not supported
-				throw new Error('Sorry! This event platform is not supported yet.');
+			let result: ScrapedEventData
+			console.log(`Scraping event data...`);
+			switch (true) {
+				case url.includes('meetup.com'):
+					const parser = new MeetupParser();
+					parser.scraperOutputDir = this.scraperOutputDir;
+					result = await parser.scrapeEventDataFromPage(page);
+					break;
+				default:
+					throw new Error('Sorry! This event platform is not supported yet.');
+					break;
 			}
 
+			return result
 		} finally {
 			console.log(`Closing browser...`);
 			await browser.close();
