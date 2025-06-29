@@ -18,4 +18,4 @@ create-org: ## Create a new organization
 	@./scripts/create-org.sh
 
 create-event: ## Create a new event
-	@./scripts/create-event.sh
+	npm run create-event
