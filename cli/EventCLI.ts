@@ -1,15 +1,19 @@
-import fs from 'fs/promises';
+import fs from 'fs';
 import path from 'path';
 import inquirer from 'inquirer';
 import puppeteer, { Page } from 'puppeteer';
 import TurndownService from 'turndown';
 import type { EventCLIOptions, ScrapedEventData, EventData } from './types';
+import { MeetupScraper } from './scrapers/meetup';
 
 export class EventCLI {
 
 	private availableOrgs: string[] = [];
 	private turndownService!: TurndownService;
-  private options: EventCLIOptions = {}
+  private options: EventCLIOptions = {
+		headlessMode: true,
+		noSandbox: true,
+	}
   private scraperOutputDir: string;
 
 	constructor(scraperOutputDir: string) {
@@ -90,10 +94,10 @@ export class EventCLI {
 		}
 	}
 
-	private async loadAvailableOrgs(): Promise<void> {
+	private loadAvailableOrgs(): void {
 		try {
 			const orgsPath = path.join(process.cwd(), 'src', 'content', 'orgs');
-			const orgDirs = await fs.readdir(orgsPath);
+			const orgDirs = fs.readdirSync(orgsPath);
 			this.availableOrgs = orgDirs.filter(dir => !dir.startsWith('.'));
 		} catch (error) {
 			console.error('Error loading organizations:', error);
@@ -106,6 +110,7 @@ export class EventCLI {
 		
 		// Check if we are in auto-scrape mode
 		if (this.options.autoScrapeMode) {
+			this.validateOrganization(this.options.orgID!);
 			await this.handleUrlScraping_auto(options.eventURL!);
 			return;
 		}
@@ -136,6 +141,7 @@ export class EventCLI {
 			if (method === 'manual') {
 				await this.handleManualInput();
 			} else {
+				this.validateOrganization(this.options.orgID!);
 				await this.handleUrlScraping_manual();
 			}
 		} catch (error) {
@@ -149,7 +155,7 @@ export class EventCLI {
 		console.log('Please provide the following information:\n');
 
 		const eventData = await this.collectEventData();
-		await this.createEventFile(eventData);
+		this.createEventFile(eventData);
 	}
 
 	private async handleUrlScraping_auto(url: string): Promise<void> {
@@ -163,9 +169,15 @@ export class EventCLI {
 			// Validate URL
 			new URL(url);
 
-			const scrapedData = await this.scrapeEventData(url, this.options.headlessMode);
-			const eventData = await this.createEventDataFromScrapedData(scrapedData, url, this.options.orgID);
-			await this.createEventFile(eventData);
+			const scraper = new MeetupScraper(
+				url,
+				this.options.orgID!,
+				this.options.headlessMode,
+				this.options.noSandbox,
+				this.scraperOutputDir
+			)
+
+			await scraper.scrape()
 
 			console.log('\n✅ Event created successfully in CI mode!');
 		} catch (error) {
@@ -198,7 +210,7 @@ export class EventCLI {
 		try {
 			const scrapedData = await this.scrapeEventData(url, this.options.headlessMode);
 			const eventData = await this.collectEventDataWithDefaults(scrapedData, url);
-			await this.createEventFile(eventData);
+			this.createEventFile(eventData);
 		} catch (error) {
 			console.error('Error scraping URL:', error);
 			console.log('\n⚠️  Scraping failed. Falling back to manual input...');
@@ -339,7 +351,7 @@ export class EventCLI {
 			const arrayBuffer = await response.arrayBuffer();
 			const buffer = Buffer.from(arrayBuffer);
 			const imagePath = path.join(this.scraperOutputDir, `hero-${Date.now()}.${imageExtension}`);
-			await fs.writeFile(imagePath, buffer);
+			fs.writeFileSync(imagePath, buffer);
 			console.log(`Hero image downloaded to ${imagePath}`);
 			scrapedData.heroImage = imagePath; // store the local path of the image
 		}
@@ -731,7 +743,7 @@ export class EventCLI {
 		return eventData;
 	}
 
-	private async createEventFile(eventData: EventData): Promise<void> {
+	private createEventFile(eventData: EventData): void {
 
 		const eventSlug = this.generateEventSlug(eventData);
 		const eventDir = path.join(process.cwd(), 'src', 'content', 'events', eventData.org, eventSlug);
@@ -739,19 +751,19 @@ export class EventCLI {
 
 		try {
 			// Create directory if it doesn't exist
-			await fs.mkdir(eventDir, { recursive: true });
+			fs.mkdirSync(eventDir, { recursive: true });
 
 			// Generate markdown content
 			const fileContent = this.generateEventFile(eventData);
 
 			// Write the file
-			await fs.writeFile(eventFile, fileContent, 'utf8');
+			fs.writeFileSync(eventFile, fileContent, 'utf8');
 
 			// if got hero image, copy it to the event directory
 			if (eventData.heroImage && !eventData.heroImage.startsWith('http')) {
 				const heroImageFilename = path.basename(eventData.heroImage);
 				const heroImageDest = path.join(eventDir, heroImageFilename);
-				await fs.copyFile(eventData.heroImage, heroImageDest);
+				fs.copyFileSync(eventData.heroImage, heroImageDest);
 				console.log(`Hero image copied to: ${heroImageDest}`);
 			}
 
@@ -864,5 +876,25 @@ export class EventCLI {
 		content += eventData.content ? eventData.content : '';
 
 		return content;
+	}
+
+	private validateOrganization(org: string): void {
+		// Validate the organization exists in available orgs
+		if (this.availableOrgs.length > 0) {
+			if (!this.availableOrgs.includes(org)) {
+				console.log(`⚠️  Organization '${org}' not found in available orgs. Available: ${this.availableOrgs.join(', ')}`);
+				// console.log(`Using first available: ${this.availableOrgs[0]}`);
+				// org = this.availableOrgs[0];
+
+				throw new Error(`❌ Organization '${org}' not found in available orgs. Please specify a valid organization.`);
+			} else {
+				console.log(`✅ Organization '${org}' found in available orgs`);
+				return;
+			}
+		}
+
+		console.log('Available Orgs', this.availableOrgs)
+
+		throw new Error(`❌ Organization '${org}' not found in available orgs. Please specify a valid organization.`);
 	}
 }

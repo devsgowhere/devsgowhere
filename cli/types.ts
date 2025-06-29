@@ -35,8 +35,8 @@ export interface ScrapedEventData {
 export type EventCLIOptions ={
   eventURL?: string;
   orgID?: string;
-  headlessMode?: boolean;
-  noSandbox?: boolean;
+  headlessMode: boolean;
+  noSandbox: boolean;
   outputDir?: string;
   autoScrapeMode?: boolean; // true if both eventURL and orgID are provided
 }
