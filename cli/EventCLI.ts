@@ -5,11 +5,12 @@ import puppeteer, { Page } from 'puppeteer';
 import TurndownService from 'turndown';
 import type { EventCLIOptions, ScrapedEventData, EventData } from './types';
 import { MeetupScraper } from './scrapers/meetup';
+import { EventWriter } from './EventWriter';
 
 export class EventCLI {
-
 	private availableOrgs: string[] = [];
 	private turndownService!: TurndownService;
+	private eventWriter = new EventWriter();
   private options: EventCLIOptions = {
 		headlessMode: true,
 		noSandbox: true,
@@ -154,7 +155,7 @@ export class EventCLI {
 		console.log('Please provide the following information:\n');
 
 		const eventData = await this.collectEventData();
-		this.createEventFile(eventData);
+		this.eventWriter.createEventFile(eventData);
 	}
 
 	private async handleUrlScraping_auto(url: string): Promise<void> {
@@ -209,7 +210,7 @@ export class EventCLI {
 		try {
 			const scrapedData = await this.scrapeEventData(url, this.options.headlessMode);
 			const eventData = await this.collectEventDataWithDefaults(scrapedData, url);
-			this.createEventFile(eventData);
+			this.eventWriter.createEventFile(eventData);
 		} catch (error) {
 			console.error('Error scraping URL:', error);
 			console.log('\n⚠️  Scraping failed. Falling back to manual input...');
@@ -659,222 +660,6 @@ export class EventCLI {
 		]);
 
 		return answers as EventData;
-	}
-
-	/**
-	 * Creates EventData from scraped data without user input (for CI mode)
-	 * @param scrapedData The scraped event data
-	 * @param originalUrl The original event URL
-	 * @param specifiedOrgId Optional organization ID specified via --orgID parameter
-	 * @returns Complete EventData object with defaults filled in
-	 */
-	private async createEventDataFromScrapedData(scrapedData: ScrapedEventData, originalUrl: string, specifiedOrgId?: string | null): Promise<EventData> {
-		console.log('\n✅ Scraped data preview:');
-		if (scrapedData.title) console.log(`Title: ${scrapedData.title}`);
-		if (scrapedData.startDate) console.log(`Date: ${scrapedData.startDate}`);
-		if (scrapedData.startTime) console.log(`Start Time: ${scrapedData.startTime}`);
-		if (scrapedData.venue) console.log(`Venue: ${scrapedData.venue}`);
-		if (scrapedData.venueAddress) console.log(`Venue Address: ${scrapedData.venueAddress}`);
-		if (scrapedData.description) console.log(`Description: ${scrapedData.description.substring(0, 100)}...`);
-		if (scrapedData.tags && scrapedData.tags.length > 0) console.log(`Tags: ${scrapedData.tags.join(', ')}`);
-		if (scrapedData.rsvpButtonText) console.log(`RSVP Button Text: ${scrapedData.rsvpButtonText}`);
-		if (scrapedData.rsvpButtonUrl) console.log(`RSVP URL: ${scrapedData.rsvpButtonUrl}`);
-		if (scrapedData.heroImage) console.log(`Hero Image: ${scrapedData.heroImage}`);
-
-		// Determine organization - prioritize specified orgId, then extract from URL, then use default
-		let org = 'unknown';
-
-		// First priority: use specified orgId if provided
-		if (specifiedOrgId) {
-			org = specifiedOrgId;
-			console.log(`📋 Using specified organization ID: ${org}`);
-		} else if (originalUrl.includes('meetup.com')) {
-			// Second priority: try to extract organization from meetup URL
-			const urlParts = originalUrl.split('/');
-			const meetupGroupIndex = urlParts.findIndex(part => part === 'meetup.com') + 1;
-			if (meetupGroupIndex < urlParts.length) {
-				org = urlParts[meetupGroupIndex].replace(/[^a-z0-9]/gi, '_').toLowerCase();
-				console.log(`🔍 Extracted organization from URL: ${org}`);
-			}
-		}
-
-		// Validate the organization exists in available orgs
-		if (this.availableOrgs.length > 0) {
-			if (!this.availableOrgs.includes(org)) {
-				console.log(`⚠️  Organization '${org}' not found in available orgs. Available: ${this.availableOrgs.join(', ')}`);
-				console.log(`Using first available: ${this.availableOrgs[0]}`);
-				org = this.availableOrgs[0];
-			} else {
-				console.log(`✅ Organization '${org}' found in available orgs`);
-			}
-		}
-
-		// Validate required fields and provide defaults
-		const eventData: EventData = {
-			org,
-			title: scrapedData.title || 'Untitled Event',
-			description: scrapedData.description || 'Event description not available',
-			content: scrapedData.content || '',
-			venue: scrapedData.venue || 'TBD',
-			venueAddress: scrapedData.venueAddress || '',
-			startDate: scrapedData.startDate || new Date().toISOString().split('T')[0],
-			startTime: scrapedData.startTime || '19:00',
-			endDate: scrapedData.endDate,
-			endTime: scrapedData.endTime,
-			tags: scrapedData.tags || [],
-			heroImage: scrapedData.heroImage || 'https://placecats.com/300/200?fit=contain&position=top',
-			rsvpButtonUrl: originalUrl,
-			rsvpButtonText: scrapedData.rsvpButtonText || 'RSVP'
-		};
-
-		// Validate critical fields
-		if (!eventData.title || eventData.title === 'Untitled Event') {
-			throw new Error('❌ Could not extract event title from the URL');
-		}
-		if (!eventData.startDate || !eventData.startTime) {
-			throw new Error('❌ Could not extract event date/time from the URL');
-		}
-		if (!eventData.venue || eventData.venue === 'TBD') {
-			console.warn('⚠️  Could not extract venue information from the URL');
-		}
-
-		console.log('\n🤖 Using automated event data for CI mode');
-		return eventData;
-	}
-
-	private createEventFile(eventData: EventData): void {
-
-		const eventSlug = this.generateEventSlug(eventData);
-		const eventDir = path.join(process.cwd(), 'src', 'content', 'events', eventData.org, eventSlug);
-		const eventFile = path.join(eventDir, 'index.md');
-
-		try {
-			// Create directory if it doesn't exist
-			fs.mkdirSync(eventDir, { recursive: true });
-
-			// Generate markdown content
-			const fileContent = this.generateEventFile(eventData);
-
-			// Write the file
-			fs.writeFileSync(eventFile, fileContent, 'utf8');
-
-			// if got hero image, copy it to the event directory
-			if (eventData.heroImage && !eventData.heroImage.startsWith('http')) {
-				const heroImageFilename = path.basename(eventData.heroImage);
-				const heroImageDest = path.join(eventDir, heroImageFilename);
-				fs.copyFileSync(eventData.heroImage, heroImageDest);
-				console.log(`Hero image copied to: ${heroImageDest}`);
-			}
-
-			console.log('\n✅ Event created successfully!');
-			console.log(`📁 Location: ${eventFile}`);
-			console.log(`🔗 Event slug: ${eventSlug}`);
-			console.log('\n🎉 Your event is ready to be committed to the repository!');
-		} catch (error) {
-			console.error('Error creating event file:', error);
-			throw error;
-		}
-	}
-
-	private generateEventSlug(eventData: EventData): string {
-
-		// generate slug from event start date + title
-		// e.g. "2023-10-01_my-awesome-event"
-		let title = eventData.title || 'untitled-event';
-
-		// prepend the start date to the title if it exists
-		const datePart = eventData.startDate ? eventData.startDate.replace(/-/g, '') : '';
-		if (datePart) {
-			title = `${datePart}-${title}`;
-		}
-
-		// replace spaces and special characters with hyphens, and convert to lowercase
-		title = title
-			.toLowerCase()
-			.replace(/[^a-z0-9\s-]/g, '') // remove special characters
-			.replace(/\s+/g, '-') // replace spaces with hyphens
-			.replace(/-+/g, '-') // replace multiple hyphens with a single hyphen
-			.replace(/^-|-$/g, ''); // trim leading and trailing hyphens
-
-		// ensure the slug is not too long
-		if (title.length > 100) {
-			title = title.substring(0, 100);
-			console.warn(`Event slug is too long, truncating to 100 characters: ${title}`);
-		}
-
-		// ensure the slug is not empty
-		if (!title) {
-			console.warn(`Event title is empty, using default slug "untitled-event"`);
-			title = 'untitled-event';
-		}
-
-		return title;
-
-	}
-
-	private generateEventFile(eventData: EventData): string {
-
-		let content = '';
-
-		// start of front matter
-		content += '---\n';
-		content += `org: "${eventData.org}"\n`;
-		content += `title: "${eventData.title}"\n`;
-
-		// description is used for SEO and card preview, truncate to 160 characters
-		if (eventData.description) {
-			// replace newlines with spaces 
-			const seoDescription = eventData.description.replace(/\n/g, ' ').substring(0, 160);
-			content += `description: "${seoDescription}"\n`;
-		} else {
-			content += `description: ""\n`;
-		}
-
-		// venue and address (reuired)
-		content += `venue: "${eventData.venue}"\n`;
-		content += `venueAddress: "${eventData.venueAddress}"\n`;
-
-		// start date and time are required
-		content += `startDate: "${eventData.startDate}"\n`;
-		content += `startTime: "${eventData.startTime}"\n`;
-
-		// end date and time are optional
-		if (eventData.endDate) {
-			content += `endDate: "${eventData.endDate}"\n`;
-		}
-
-		if (eventData.endTime) {
-			content += `endTime: "${eventData.endTime}"\n`;
-		}
-
-		// if hero image is a file path, use only the filename
-		if (eventData.heroImage.startsWith('http')) {
-			content += `heroImage: "${eventData.heroImage}"\n`;
-		} else {
-			const heroImageFilename = path.basename(eventData.heroImage);
-			content += `heroImage: "${heroImageFilename}"\n`;
-		}
-
-		// event tags
-		if (eventData.tags && eventData.tags.length > 0) {
-			content += `tags: [${eventData.tags.map(tag => `"${tag}"`).join(', ')}]\n`;
-		} else {
-			content += `tags: []\n`;
-		}
-
-		// event rsvp button
-		if (eventData.rsvpButtonUrl) {
-			content += `rsvpButtonUrl: "${eventData.rsvpButtonUrl}"\n`;
-			content += `rsvpButtonText: "${eventData.rsvpButtonText}"\n`;
-		}
-
-		// end of front matter
-		content += '---\n\n';
-
-		// add event content
-		content += eventData.content ? eventData.content : '';
-
-		return content;
 	}
 
 	private validateOrganization(org: string): void {
