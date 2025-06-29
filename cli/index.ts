@@ -963,10 +963,11 @@ class EventCLI {
 		return /^(www\.)?meetup\.com$/i.test(hostname)
 	}
 }
+cliOptions.outputDir = SCRAPER_OUTPUT_DIR
 
 // Run the CLI
 if (import.meta.url === `file://${process.argv[1]}`) {
-	const cli = new EventCLI(SCRAPER_OUTPUT_DIR);
+	const cli = new EventCLI();
 	cli.run(cliOptions).catch(console.error);
 }
 
