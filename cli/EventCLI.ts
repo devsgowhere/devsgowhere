@@ -141,7 +141,6 @@ export class EventCLI {
 			if (method === 'manual') {
 				await this.handleManualInput();
 			} else {
-				this.validateOrganization(this.options.orgID!);
 				await this.handleUrlScraping_manual();
 			}
 		} catch (error) {
