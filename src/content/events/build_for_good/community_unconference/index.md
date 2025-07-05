@@ -20,4 +20,15 @@ rsvpButtonUrl: "https://lu.ma/baaofmyf"
 rsvpButtonText: "RSVP on Luma"
 ---
 
-An unconference to explore how we can use technology to deliver public good. Expect meaningful conversations, fresh ideas, and new collaborations. Come with an open mind, and maybe a post-it or two.
+Join us in the evening for Build for Good's Community Conversations at Open Government Products. Organised in the style of an Unconference, the agenda here is shaped by you. Whether you're a coder, UX designer or just curious about using tech for good, this is your platform.
+
+You get to decide if you’d like to host a conversation circle, or explore conversations with people that share the same passion as you. This session is the space for you to explore pressing themes like:
+
+- Environmental Sustainability (e.g. climate action, circular economy, conservation)
+- Social Inequality & Inclusion (e.g. income disparity, racial equity, disability inclusion)
+- Future of Education (e.g. access, digital literacy, lifelong learning)
+- Healthcare & Aging Population (e.g. access, mental health, eldercare)
+- Trust & Safety (e.g. transparency, misinformation)
+- Tech Ethics & Responsible AI (e.g. algorithmic bias, data privacy, ethical innovation)
+
+Expect meaningful conversations, fresh ideas, and new collaborations. Come with an open mind, and maybe a post-it or two.
