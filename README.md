@@ -23,7 +23,7 @@ make new-org
 
 To abort or exit the script, press `Ctrl`+`C`.
 
-> **Note:** If you don't have Make installed, you can run the bash script directly `bash scripts/new-org.sh`.
+> **Note:** If you don't have Make installed, you can run the bash script directly `bash scripts/create-org.sh`.
 
 ### Manual Steps
 
@@ -54,7 +54,7 @@ make new-event
 
 To abort or exit the script, press `Ctrl`+`C`.
 
-> **Note:** If you don't have Make installed, you can run the bash script directly `bash scripts/new-event.sh`.
+> **Note:** If you don't have Make installed, you can run the bash script directly `bash scripts/create-event.sh`.
 
 
 ### Manual Steps
