@@ -481,7 +481,7 @@ class EventCLI {
 			}
 
 			// if url contains meetup.com, use specific scraping logic
-			if (url.includes('meetup.com')) {
+			if (this.isMeetupCom(url)) {
 				console.log(`Scraping Meetup event data...`);
 				return await this.scrapeEventDataFromMeetup(page);
 			} else {
@@ -766,7 +766,7 @@ class EventCLI {
 		if (specifiedOrgId) {
 			org = specifiedOrgId;
 			console.log(`📋 Using specified organization ID: ${org}`);
-		} else if (originalUrl.includes('meetup.com')) {
+		} else if (this.isMeetupCom(originalUrl)) {
 			// Second priority: try to extract organization from meetup URL
 			const urlParts = originalUrl.split('/');
 			const meetupGroupIndex = urlParts.findIndex(part => part === 'meetup.com') + 1;
@@ -953,6 +953,16 @@ class EventCLI {
 		content += eventData.content ? eventData.content : '';
 
 		return content;
+	}
+
+	/**
+	 * Determines if the url is a Meetup.com event page
+	 * @param {string} url a string representing the url to be checked
+	 * @returns {boolean} true if the url is a Meetup.com event page, false otherwise
+	 */
+	private isMeetupCom(url: string): boolean {
+		const { hostname } = new URL(url)
+		return /^(www\.)?meetup\.com$/i.test(hostname)
 	}
 }
 
