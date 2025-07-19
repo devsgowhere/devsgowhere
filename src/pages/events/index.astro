@@ -83,11 +83,11 @@ const filteredTags = uniqueTags
         <!-- Left panel: Tags -->
         <aside class="tags-panel">
           <h2 class="tags-header">Popular Topics</h2>
-            <ul class="tags-list" style="align-items: flex-start;">            
+          <ul class="tags-list" style="align-items: flex-start;">            
             {mergedTags.map(tag => (
               <li class="tag-item" tabindex="0" data-tag={tag} style="text-align: left;">#{tag}</li>
             ))}
-            </ul>        
+          </ul>        
         </aside>
         <!-- Main content: Events -->
       <div class="container">
@@ -238,6 +238,12 @@ const filteredTags = uniqueTags
       document.querySelectorAll('.tag-item').forEach(el => el.classList.remove('selected'));
     });    
     
+    document.getElementById('tags-clear-btn').addEventListener('click', () => {
+      selectedTags = [];
+      document.querySelectorAll('.tag-item').forEach(el => el.classList.remove('selected'));
+      filterByTags();
+    });
+
     // Search implementation
     const performSearch = () => {
       const query = searchInput.value.toLowerCase().trim();
@@ -477,6 +483,8 @@ const filteredTags = uniqueTags
     gap: 0.5rem;
   }
   .tag-item {
+    display: block;
+    width: 100%;
     border-radius: 5px;
     padding: 0.4rem 0.8rem;
     color: #2d3748;
@@ -486,13 +494,14 @@ const filteredTags = uniqueTags
     outline: none;
     border: none;
     &:hover, &:focus {
-      background: #e2e8f0;
-      color: #1a202c;
+      background: #e3d6ef;
+      color: var(--text-accent-color);
     }
   }
     .tag-item.selected {
-    background: #3182ce;
-    color: #fff;
+    max-width: 100%;
+    background: #e3d6ef;
+    color: var(--text-accent-color);
   }
   .container {
     flex: 1 1 0%;
