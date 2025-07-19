@@ -1,23 +1,27 @@
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { Glob } from 'glob';
 import { pathToFileURL } from 'url';
+import { z } from "zod";
+
+import { parseFrontmatter } from '../../src/utils/fileUtils';
 
 const DEFAULT_PATH = 'cli/org-lookup/lookup_data.tsv';
+const FRONTMATTER_SCHEMA = z.object({ meetup: z.string().url().optional().nullable() });
+const URL_REGEX = /https:\/\/(?:www\.)?([^\/\s"']+(\/[^\/\s"']+)?)/;
 
 export function generateOrgLookupMap(): Map<string, string> {
   const lookup = new Map<string, string>();
   // search through all org pages
   const files = new Glob('src/content/orgs/**/*.{md,mdx}', {});
   for (const file of files.iterateSync()) {
-    const content = readFileSync(file, { encoding: 'utf8' });
+    const orgId = file.split("/")[3];
+    // get meetup url from frontmatter
+    const rawData = parseFrontmatter(file);
+    const { meetup: meetupUrl } = FRONTMATTER_SCHEMA.parse(rawData);
     // extract domain and optional path from meetup url
-    const match = content.match(/meetup:\s*["']?https:\/\/(?:www\.)?([^\/\s"']+(\/[^\/\s"']+)?)/);
-    if (match) {
-      const orgSlug = file.split("/")[3];
-      const orgUrl = match[1];
-      if (!lookup.has(orgUrl)) {
-        lookup.set(orgUrl, orgSlug);
-      }
+    const orgUrl = meetupUrl?.match(URL_REGEX)?.[1];
+    if (orgUrl && !lookup.has(orgUrl)) {
+      lookup.set(orgUrl, orgId);
     }
   }
   return lookup;
