@@ -14,8 +14,8 @@ build: ## Build the application
 install-dependencies: ## Install dependencies
 	npm install
 
-new-org: ## Create a new organization
+create-org: ## Create a new organization
 	@./scripts/create-org.sh
 
-new-event: ## Create a new event
+create-event: ## Create a new event
 	@./scripts/create-event.sh
