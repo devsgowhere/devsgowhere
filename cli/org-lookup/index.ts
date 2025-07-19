@@ -79,6 +79,25 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
         },
       })
       .command(
+        "lookup <url>",
+        "Lookup an org id from an event url",
+        (yargs) => {
+          return yargs.positional("url", {
+            describe: "Event url to lookup",
+            type: "string",
+            demandOption: true,
+          })
+        },
+        argv => {
+          const orgId = lookupOrgId(argv.url)
+          if (!orgId) {
+            console.log("🧐 Org not found")
+          } else {
+            console.log(`🔍 The org id for that url is: ${orgId}`)
+          }
+        }
+      )
+      .command(
         'generate',
         'Generate a new org lookup map and save it',
         () => {},

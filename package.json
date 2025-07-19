@@ -8,6 +8,7 @@
     "preview": "astro preview",
     "astro": "astro",
     "create-event": "tsx cli/index.ts",
+    "org-lookup": "tsx cli/org-lookup/index.ts lookup",
     "org-lookup:print": "tsx cli/org-lookup/index.ts print",
     "org-lookup:generate": "tsx cli/org-lookup/index.ts generate"
   },
