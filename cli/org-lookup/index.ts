@@ -41,21 +41,21 @@ export function readOrgLookupTsv(path = DEFAULT_PATH): Map<string, string> {
     throw new Error('The path must end with a .tsv extension');
   }
   if (!existsSync(path)) {
-    throw new Error("Lookup file not found")
+    throw new Error("Lookup file not found");
   }
   const tsvString = readFileSync(path, 'utf-8');
-  const entries = tsvString.split("\n").slice(1).map(line => line.split("\t", 2) as [string, string])
+  const entries = tsvString.split("\n").slice(1).map(line => line.split("\t", 2) as [string, string]);
   return new Map(entries);
 }
 
 export function lookupOrgId(url: string): string | null {
-  const lookup = readOrgLookupTsv()
-  const orgUrl = url.match(URL_REGEX)?.[1]
-  let orgId: string | null = null
+  const lookup = readOrgLookupTsv();
+  const orgUrl = url.match(URL_REGEX)?.[1];
+  let orgId: string | null = null;
   if (orgUrl) {
-    orgId = lookup.get(orgUrl) || null
+    orgId = lookup.get(orgUrl) || null;
   }
-  return orgId
+  return orgId;
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
