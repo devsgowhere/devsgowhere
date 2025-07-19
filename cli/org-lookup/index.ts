@@ -6,12 +6,12 @@ const DEFAULT_PATH = 'cli/org-lookup/lookup_data.tsv';
 
 export function generateOrgLookupMap(): Map<string, string> {
   const lookup = new Map<string, string>();
-  // search through all event pages
-  const files = new Glob('src/content/events/**/*.{md,mdx}', {});
+  // search through all org pages
+  const files = new Glob('src/content/orgs/**/*.{md,mdx}', {});
   for (const file of files.iterateSync()) {
     const content = readFileSync(file, { encoding: 'utf8' });
-    // extract domain and optional path from rsvpButtonUrl
-    const match = content.match(/rsvpButtonUrl:\s*["']https:\/\/(?:www\.)?([^\/\s"']+(\/[^\/\s"']+)?)/);
+    // extract domain and optional path from meetup url
+    const match = content.match(/meetup:\s*["']?https:\/\/(?:www\.)?([^\/\s"']+(\/[^\/\s"']+)?)/);
     if (match) {
       const orgSlug = file.split("/")[3];
       const orgUrl = match[1];
@@ -65,8 +65,8 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
         },
       })
       .command(
-        'create',
-        'Create a new org lookup map and write it to the filesystem',
+        'generate',
+        'Generate a new org lookup map and save it',
         () => {},
         argv => {
           const lookup = generateOrgLookupMap();
@@ -75,8 +75,8 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
         }
       )
       .command(
-        'read',
-        'Read the org lookup map from the filesystem',
+        'print',
+        'Print out the current org lookup map',
         () => {},
         argv => {
           const lookup = readOrgLookupTsv(argv.path);
