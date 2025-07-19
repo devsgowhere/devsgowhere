@@ -7,7 +7,10 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "create-event": "tsx cli/index.ts"
+    "create-event": "tsx cli/index.ts",
+    "org-lookup": "tsx cli/org-lookup/index.ts lookup",
+    "org-lookup:print": "tsx cli/org-lookup/index.ts print",
+    "org-lookup:generate": "tsx cli/org-lookup/index.ts generate"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.2.6",
@@ -22,6 +25,7 @@
     "add-to-calendar-button": "^2.8.9",
     "add-to-calendar-button-react": "^2.8.9",
     "astro": "^5.10.0",
+    "glob": "^11.0.3",
     "inquirer": "^12.6.3",
     "node": "^24.2.0",
     "puppeteer": "^24.10.1",
@@ -32,6 +36,7 @@
     "yargs": "^18.0.0"
   },
   "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
     "@types/turndown": "^5.0.5",
     "tsx": "^4.20.3"
   }
