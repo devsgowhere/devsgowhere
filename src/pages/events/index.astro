@@ -215,7 +215,7 @@ const filteredTags = uniqueTags
 
       // Filter events by any selected tag
       const matches = events.filter(event =>
-        (event.tags ?? []).some(tag => selectedTags.includes(tag.tolowerCase()))
+        (event.tags ?? []).some(tag => selectedTags.includes(tag.toLowerCase()))
       );
       //console.log(`Filtered by tags: ${selectedTags.join(', ')}`);
 
