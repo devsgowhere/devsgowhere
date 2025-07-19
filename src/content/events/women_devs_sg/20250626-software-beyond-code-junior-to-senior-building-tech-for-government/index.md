@@ -5,7 +5,8 @@ description: "DetailsTalk #1: From Junior to Senior: Engineering Clarity and Str
 venue: "Open Government Products"
 venueAddress: "51 Bras Basah Rd, #04-08 Lazada One · Singapore"
 startDate: "2025-06-26"
-startTime: "10:30"
+startTime: "18:30"
+endTime: "20:30"
 heroImage: "hero-1749915291435.webp"
 tags: ["Events in Singapore, SG", "Education & Technology", "Technology", "Information Technology", "Social Coding", "Women in Technology"]
 rsvpButtonUrl: "https://www.meetup.com/women-devs-sg/events/308408476"
