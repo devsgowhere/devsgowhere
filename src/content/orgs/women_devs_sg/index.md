@@ -12,7 +12,7 @@ telegram: https://t.me/+hh3Fts4oDG41NzQ1
 instagram: womendevssg
 linkedin: https://www.linkedin.com/company/women-devs-sg
 facebook: https://www.facebook.com/groups/womendevssg/
-
+meetup: https://www.meetup.com/women-devs-sg/
 ---
 
 Join us by attending an event or join our Telegram group to keep in touch:
