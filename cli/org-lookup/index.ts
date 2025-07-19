@@ -28,7 +28,7 @@ export function writeOrgLookupTsv(lookup: Map<string, string>, path = DEFAULT_PA
     throw new Error('The path must end with a .tsv extension');
   }
   const entries = Array.from(lookup.entries());
-  const tsvString = entries.reduce((acc, [url, orgid]) => `${acc}\n${url}\t${orgid}`, 'url\torgid');
+  const tsvString = entries.reduce((acc, [url, org_id]) => `${acc}\n${url}\t${org_id}`, 'url\torg_id');
   writeFileSync(path, tsvString, 'utf-8');
 }
 
