@@ -2,6 +2,7 @@ import path from 'path';
 import puppeteer from 'puppeteer';
 import type { ScrapedEventData, EventData } from '../types';
 import { MeetupParser } from './MeetupParser';
+import { LumaParser } from './LumaParser';
 
 export class PageScraper {
 	public scraperOutputDir: string = path.join(process.cwd(), 'scraper-output');
@@ -48,9 +49,14 @@ export class PageScraper {
 			console.log(`Scraping event data...`);
 			switch (true) {
 				case url.includes('meetup.com'):
-					const parser = new MeetupParser();
-					parser.scraperOutputDir = this.scraperOutputDir;
-					result = await parser.scrapeEventDataFromPage(page);
+					const meetupParser = new MeetupParser();
+					meetupParser.scraperOutputDir = this.scraperOutputDir;
+					result = await meetupParser.scrapeEventDataFromPage(page);
+					break;
+				case url.includes('lu.ma'):
+					const lumaParser = new LumaParser();
+					lumaParser.scraperOutputDir = this.scraperOutputDir;
+					result = await lumaParser.scrapeEventDataFromPage(page);
 					break;
 				default:
 					throw new Error('Sorry! This event platform is not supported yet.');
