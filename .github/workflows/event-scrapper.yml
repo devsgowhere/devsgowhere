@@ -11,12 +11,20 @@ on:
         description: 'Organization ID to associate with the event'
         required: true
         type: string
+      timezone:
+        description: 'Timezone to use for the event'
+        required: false
+        type: string
+        default: 'Asia/Singapore'
 
 jobs:
   create-event:
     # use official Puppeteer image for headless Chrome
     runs-on: ubuntu-latest
     steps:
+      - uses: szenius/set-timezone@v2.0
+        with:
+          timezoneLinux: ${{ github.event.inputs.timezone }}
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
