@@ -48,6 +48,16 @@ export function readOrgLookupTsv(path = DEFAULT_PATH): Map<string, string> {
   return new Map(entries);
 }
 
+export function lookupOrgId(url: string): string | null {
+  const lookup = readOrgLookupTsv()
+  const orgUrl = url.match(URL_REGEX)?.[1]
+  let orgId: string | null = null
+  if (orgUrl) {
+    orgId = lookup.get(orgUrl) || null
+  }
+  return orgId
+}
+
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   (async () => {
     const yargs = (await import('yargs')).default;
