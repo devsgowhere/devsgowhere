@@ -28,10 +28,10 @@ Following the success of our April edition, we’re bringing back the **AI Start
 **⏰ Time:** 2:00 PM – 5:00 PM<br/>
 **📍 Location:** SMU Greenhouse
 
-**✨ What’s in Store?**
-**• 🚀 AI Startup Pitching –** Discover exciting AI startups/projects founded by the brightest youths and passionate AI innovators.
-**• 💻 Live Demos & Insights –** See AI tech SASS products in action and learn about the journey behind them.
-**• 🤝 Networking & Collaboration –** Connect with like-minded innovators, exchange ideas, and find potential investors
+**✨ What’s in Store?**<br/>
+**• 🚀 AI Startup Pitching –** Discover exciting AI startups/projects founded by the brightest youths and passionate AI innovators.<br/>
+**• 💻 Live Demos & Insights –** See AI tech SASS products in action and learn about the journey behind them.<br/>
+**• 🤝 Networking & Collaboration –** Connect with like-minded innovators, exchange ideas, and find potential investors<br/>
 
 **📋 Event Schedule**<br/>
 **2:00 – 2:15 PM:** Registration<br/>
