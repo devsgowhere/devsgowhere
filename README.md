@@ -18,7 +18,7 @@ Discover events for engineers in Singapore!
 Run this command in the main folder and follow the prompts:
 
 ```bash
-make new-org
+make create-org
 ```
 
 To abort or exit the script, press `Ctrl`+`C`.
@@ -49,7 +49,7 @@ To abort or exit the script, press `Ctrl`+`C`.
 Run this command in the main folder and follow the prompts:
 
 ```bash
-make new-event
+make create-event
 ```
 
 To abort or exit the script, press `Ctrl`+`C`.
