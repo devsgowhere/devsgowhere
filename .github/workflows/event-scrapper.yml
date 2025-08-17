@@ -53,13 +53,59 @@ jobs:
       # Create and switch to new branch
       # - name: Create branch
       #   run: git checkout -b ${{ steps.branch-name.outputs.branch }}
+      - name: Install Puppeteer dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            ca-certificates \
+            fonts-liberation \
+            libappindicator3-1 \
+            libasound2 \
+            libatk-bridge2.0-0 \
+            libatk1.0-0 \
+            libc6 \
+            libcairo2 \
+            libcups2 \
+            libdbus-1-3 \
+            libexpat1 \
+            libfontconfig1 \
+            libgbm1 \
+            libgcc1 \
+            libglib2.0-0 \
+            libgtk-3-0 \
+            libnspr4 \
+            libnss3 \
+            libpango-1.0-0 \
+            libpangocairo-1.0-0 \
+            libstdc++6 \
+            libx11-6 \
+            libx11-xcb1 \
+            libxcb1 \
+            libxcomposite1 \
+            libxcursor1 \
+            libxdamage1 \
+            libxext6 \
+            libxfixes3 \
+            libxi6 \
+            libxrandr2 \
+            libxrender1 \
+            libxss1 \
+            libxtst6 \
+            lsb-release \
+            wget \
+            xdg-utils
       # Install node dependencies
       - name: Install dependencies
         run: npm ci
       # Run the event scrapper
       - name: Run event scrapper
-        run: npm run create-event -- --eventURL=${{ github.event.inputs.eventURL || inputs.eventURL }} --orgID=${{ github.event.inputs.orgID || inputs.orgID }} --headless --no-sandbox
-      # Use git status to check if there are any changes
+        env:
+          PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: false
+        run: |
+          npm run create-event -- \
+            --eventURL=${{ github.event.inputs.eventURL || inputs.eventURL }} \
+            --orgID=${{ github.event.inputs.orgID || inputs.orgID }} --headless \
+            --no-sandbox
       # Use git status to check if there are any changes
       - name: Check for changes
         id: check-changes
