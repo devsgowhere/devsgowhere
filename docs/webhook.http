@@ -1,7 +1,8 @@
 POST https://api.github.com/repos/devsgowhere/devsgowhere/dispatches HTTP/1.1
 content-type: application/json
 Accept: application/vnd.github.v3+json
-Authorization: "Bearer {{ secrets.GITHUB_TOKEN }}"
+Authorization: Bearer GH_TOKEN
+X-GitHub-Api-Version: 2022-11-28
 
 {
   "event_type": "create_event_webhook",

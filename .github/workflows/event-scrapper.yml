@@ -1,6 +1,21 @@
 name: (Manual) Event Scrapper
 
 on:
+  workflow_call:
+    inputs:
+      eventURL:
+        description: 'Event URL to scrape'
+        required: true
+        type: string
+      orgID:
+        description: 'Organization ID to associate with the event'
+        required: true
+        type: string
+      timezone:
+        description: 'Timezone to use for the event'
+        required: false
+        type: string
+        default: 'Asia/Singapore'
   workflow_dispatch:
     inputs:
       eventURL:
