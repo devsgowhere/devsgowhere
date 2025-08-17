@@ -1,0 +1,19 @@
+name: Google Form Webhook Triggered Workflow
+
+on:
+  repository_dispatch:
+    types: [create_event_webhook]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: szenius/set-timezone@v2.0
+        with:
+          timezoneLinux: "Asia/Singapore"
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Run script
+        env:
+          MESSAGE: "Event URL is ${{ github.event.client_payload['Event URL'] }}. Group ID: ${{ github.event.client_payload['Group ID'] }}."
+        run: echo "$MESSAGE"

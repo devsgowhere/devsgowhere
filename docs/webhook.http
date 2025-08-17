@@ -1,0 +1,12 @@
+POST https://api.github.com/repos/devsgowhere/devsgowhere/dispatches HTTP/1.1
+content-type: application/json
+Accept: application/vnd.github.v3+json
+Authorization: "Bearer {{ secrets.GITHUB_TOKEN }}"
+
+{
+  "event_type": "create_event_webhook",
+  "client_payload": {
+    "Event URL": "https://example.com/event",
+    "Group ID": "12345"
+  }
+}
