@@ -390,7 +390,7 @@ export class EventCLI {
 				type: 'input',
 				name: 'rsvpButtonText',
 				message: 'RSVP button text:',
-				default: 'RSVP on Meetup'
+				default: scrapedData.rsvpButtonText || 'RSVP on Meetup'
 			}
 		]);
 
