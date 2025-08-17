@@ -61,16 +61,12 @@ jobs:
         run: npx puppeteer browsers install chrome
       # Run the event scrapper
       - name: Run event scrapper
-        uses: mujo-code/puppeteer-headful@18.9.0
-        env:
-          CI: "true"
-          PUPPETEER_CACHE_DIR: "/home/runner/.cache/puppeteer"
-        with:
-          args: |
-            npm run create-event -- \
-              --eventURL=${{ github.event.inputs.eventURL || inputs.eventURL }} \
-              --orgID=${{ github.event.inputs.orgID || inputs.orgID }} \
-              --no-sandbox
+        run: |
+          npm run create-event -- \
+            --eventURL=${{ github.event.inputs.eventURL || inputs.eventURL }} \
+            --orgID=${{ github.event.inputs.orgID || inputs.orgID }} \
+            --headless true \
+            --no-sandbox
       # Use git status to check if there are any changes
       - name: Check for changes
         id: check-changes
