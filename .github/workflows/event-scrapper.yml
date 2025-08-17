@@ -55,8 +55,6 @@ jobs:
       #   run: git checkout -b ${{ steps.branch-name.outputs.branch }}
       # Install node dependencies
       - name: Install dependencies
-        env:
-          PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
         run: npm ci
       # Run the event scrapper
       - name: Run event scrapper
