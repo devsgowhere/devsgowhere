@@ -64,6 +64,7 @@ jobs:
         uses: mujo-code/puppeteer-headful@18.9.0
         env:
           CI: "true"
+          PUPPETEER_CACHE_DIR: "/home/runner/.cache/puppeteer"
         with:
           args: |
             npm run create-event -- \
