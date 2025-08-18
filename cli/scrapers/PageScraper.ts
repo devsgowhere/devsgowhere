@@ -52,13 +52,12 @@ export class PageScraper {
 				case url.includes('meetup.com'):
 					const meetupParser = new MeetupParser();
 					meetupParser.scraperOutputDir = this.scraperOutputDir;
-					const $ = await cheerio.fromURL(url);
-					result = await meetupParser.scrapeEventDataFromCheerio($, url);
+					result = await meetupParser.scrapeEventDataFromCheerio(await cheerio.fromURL(url), url);
 					break;
 				case url.includes('lu.ma'):
 					const lumaParser = new LumaParser();
 					lumaParser.scraperOutputDir = this.scraperOutputDir;
-					result = await lumaParser.scrapeEventDataFromPage(page);
+					result = await lumaParser.scrapeEventDataFromCheerio(await cheerio.fromURL(url), url);
 					break;
 				default:
 					throw new Error('Sorry! This event platform is not supported yet.');

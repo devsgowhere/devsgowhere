@@ -1,8 +1,10 @@
-import path from 'path';
-import { beforeEach, describe, expect, test } from 'vitest'
+import * as cheerio from 'cheerio'
+import { describe, expect, test } from 'vitest'
 import { LumaParser } from './LumaParser'
 import puppeteer from 'puppeteer';
 import { Page } from 'puppeteer';
+
+const getCheerio = async (url: string): Promise<cheerio.CheerioAPI> => await cheerio.fromURL(url)
 
 const getPage = async (url: string): Promise<Page> => {
   const browser = await puppeteer.launch({
@@ -23,11 +25,12 @@ describe('LumaParser', () => {
   describe('single day event', () => {
     test('GeekBrunchSG 2025', async () => {
       const parser = new LumaParser()
-  
-      const page = await getPage('https://lu.ma/85nuq71f');
-  
-      const result = await parser.scrapeEventDataFromPage(page)
-  
+
+      const url = 'https://lu.ma/85nuq71f'
+      const $ = await getCheerio(url);
+
+      const result = await parser.scrapeEventDataFromCheerio($, url)
+
       expect(result).toMatchObject({
         title: 'GeekBrunchSG 2025',
         startDate: '2025-08-02', // YYYY-MM-DD
@@ -41,7 +44,7 @@ describe('LumaParser', () => {
         tags: [],
         // heroImage: 'path/to/devsgowhere/scraper-output/hero-1752914046954.png',
         rsvpButtonText: 'Register on Luma',
-        rsvpButtonUrl: page.url()
+        rsvpButtonUrl: url
       })
   
       expect(result?.content?.length).toBeGreaterThan(0);
