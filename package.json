@@ -22,6 +22,7 @@
     "add-to-calendar-button": "^2.8.9",
     "add-to-calendar-button-react": "^2.8.9",
     "astro": "^5.10.0",
+    "cheerio": "^1.1.2",
     "inquirer": "^12.6.3",
     "luxon": "^3.7.1",
     "node": "^24.2.0",

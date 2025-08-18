@@ -1,4 +1,5 @@
 import path from 'path';
+import * as cheerio from 'cheerio'
 import puppeteer from 'puppeteer';
 import type { ScrapedEventData, EventData } from '../types';
 import { MeetupParser } from './MeetupParser';
@@ -51,7 +52,8 @@ export class PageScraper {
 				case url.includes('meetup.com'):
 					const meetupParser = new MeetupParser();
 					meetupParser.scraperOutputDir = this.scraperOutputDir;
-					result = await meetupParser.scrapeEventDataFromPage(page);
+					const $ = await cheerio.fromURL(url);
+					result = await meetupParser.scrapeEventDataFromCheerio($, url);
 					break;
 				case url.includes('lu.ma'):
 					const lumaParser = new LumaParser();
