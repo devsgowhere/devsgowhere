@@ -1,0 +1,35 @@
+---
+import BaseHead from "../components/BaseHead.astro";
+import Header from "../components/Header.astro";
+import Theme from "../layouts/Theme.astro";
+import Footer from "../components/Footer.astro";
+
+import { SITE_TITLE, SITE_DESCRIPTION } from "../consts";
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+  </head>
+  <Theme>
+    <Header />
+    <main class="events-list-page pt-xl pb-3xl">
+      <h1 class="text-3xl text-bold text-accent mb-xl">
+        Create Event Form
+      </h1>      
+      <div class="container">
+        <section>
+          <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSd0RcGSghYsOk7FBiAehH4JBIZ4k_rwbU2XuiNuwUFVrORJDw/viewform?embedded=true" width="640" height="1513" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
+        </section>
+      </div>
+    </main>
+    <Footer />
+  </Theme>
+</html>
+
+<style lang="scss">
+  .events-list-page {
+    text-align: center;
+  }
+</style>
