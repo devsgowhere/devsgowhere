@@ -17,17 +17,6 @@ const argv = yargs(hideBin(process.argv))
 		type: 'string',
 		description: 'Organization ID for the event'
 	})
-	.option('headless', {
-		alias: 'H',
-		type: 'boolean',
-		default: true,
-		description: 'Run browser in headless mode'
-	})
-    .option('sandbox', {
-        type: 'boolean',
-        default: true,
-		description: 'Run browser in sandbox mode (should be disabled for CI environments)'
-    })
 	.option('output-dir', {
 		type: 'string',
 		default: 'scraper-output',
@@ -40,16 +29,12 @@ const argv = yargs(hideBin(process.argv))
 const cliOptions: EventCLIOptions = {
 	eventURL: argv.eventURL as string | undefined,
 	orgID: argv.orgID as string | undefined,
-	headlessMode: argv.headless as boolean,
-	noSandbox: argv.sandbox as boolean,
 	outputDir: argv['output-dir'] as string
 }
 
 // Check if we are in auto-scrape mode?
 cliOptions.autoScrapeMode = !!cliOptions.eventURL && !!cliOptions.orgID; // true if both eventUrl and orgId are provided
 
-console.log(`Headless mode: ${cliOptions.headlessMode}`);
-console.log(`No sandbox mode: ${cliOptions.noSandbox}`);
 console.log(`Output directory: ${cliOptions.outputDir}`);
 
 // configure location for scraper output
