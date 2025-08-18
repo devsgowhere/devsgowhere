@@ -1,6 +1,5 @@
 import path from 'path';
 import * as cheerio from 'cheerio'
-import puppeteer from 'puppeteer';
 import type { ScrapedEventData, EventData } from '../types';
 import { MeetupParser } from './MeetupParser';
 import { LumaParser } from './LumaParser';
@@ -14,37 +13,10 @@ export class PageScraper {
 	 * @param headless Whether to run the browser in headless mode (for CI environments).
 	 * @returns A promise that resolves to an object containing the scraped event data.
 	 */
-	 async scrapeEventData(url: string, headless: boolean = false, noSandbox: boolean = false): Promise<ScrapedEventData> {
-		// browser launch options
-		let args = [];
-		if (noSandbox) {
-			args.push('--no-sandbox', '--disable-setuid-sandbox');
-		}
-
-		// launch the browser
-		console.log(`Launching browser...`)
-		const browser = await puppeteer.launch({
-			headless,
-			args
-		});
-
-		console.log(`Opening new page...`)
-		const page = await browser.newPage();
-
-		// set default page navigation timeout to 10 seconds
-		page.setDefaultNavigationTimeout(10000);
-		// set default page timeout to 10 seconds
-		page.setDefaultTimeout(10000);
-
+	 async scrapeEventData(url: string): Promise<ScrapedEventData> {
 		try {
-
-			console.log(`Navigating to ${url}...`)
-			try {
-				await page.goto(url);
-				console.log(`Page loaded successfully.`);
-			} catch (error: any) {
-				console.warn(`Error loading page: ${error.message}`);
-			}
+			console.log(`Fetching ${url}...`)
+			const $ = await cheerio.fromURL(url)
 
 			let result: ScrapedEventData
 			console.log(`Scraping event data...`);
@@ -52,22 +24,21 @@ export class PageScraper {
 				case url.includes('meetup.com'):
 					const meetupParser = new MeetupParser();
 					meetupParser.scraperOutputDir = this.scraperOutputDir;
-					result = await meetupParser.scrapeEventDataFromCheerio(await cheerio.fromURL(url), url);
+					result = await meetupParser.scrapeEventDataFromPage($, url);
 					break;
 				case url.includes('lu.ma'):
 					const lumaParser = new LumaParser();
 					lumaParser.scraperOutputDir = this.scraperOutputDir;
-					result = await lumaParser.scrapeEventDataFromCheerio(await cheerio.fromURL(url), url);
+					result = await lumaParser.scrapeEventDataFromPage($, url);
 					break;
 				default:
 					throw new Error('Sorry! This event platform is not supported yet.');
-					break;
 			}
 
 			return result
-		} finally {
-			console.log(`Closing browser...`);
-			await browser.close();
+		} catch (error: any) {
+			console.error(`Error scraping event data: ${error.message}`);
+			throw error;
 		}
 	}
 

@@ -35,13 +35,11 @@ export interface ScrapedEventData {
 export type EventCLIOptions ={
   eventURL?: string;
   orgID?: string;
-  headlessMode: boolean;
-  noSandbox: boolean;
   outputDir?: string;
   autoScrapeMode?: boolean; // true if both eventURL and orgID are provided
 }
 
-import type { Page } from 'puppeteer';
+import type { CheerioAPI } from 'cheerio'
 export interface PageParser {
-  scrapeEventDataFromPage(page: Page): Promise<ScrapedEventData>
+  scrapeEventDataFromPage($: CheerioAPI, url: string): Promise<ScrapedEventData>
 }

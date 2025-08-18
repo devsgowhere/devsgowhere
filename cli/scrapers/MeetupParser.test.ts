@@ -10,10 +10,10 @@ describe('MeetupParser', () => {
       const parser = new MeetupParser();
       
       const url = 'https://www.meetup.com/junior-developers-singapore/events/310333625';
-      const page = await getPage(url);
+      const $ = await getPage(url);
 
-      const result = await parser.scrapeEventDataFromCheerio(page, url)
-  
+      const result = await parser.scrapeEventDataFromPage($, url)
+
       expect(result).toMatchObject({
         title: "Developer's Gym - Architectural Kata (Let's Practice System Design)",
         startDate: '2025-08-23', // YYYY-MM-DD

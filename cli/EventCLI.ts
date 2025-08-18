@@ -9,10 +9,7 @@ export class EventCLI {
 	private availableOrgs: string[] = [];
 	private eventWriter = new EventWriter();
 	private pageScraper = new PageScraper();
-  private options: EventCLIOptions = {
-		headlessMode: true,
-		noSandbox: true,
-	}
+  private options: EventCLIOptions = {};
 
 	constructor() {
 		this.loadAvailableOrgs();
@@ -104,7 +101,7 @@ export class EventCLI {
 				// Validate URL
 				new URL(url);
 
-				const scrapedData = await this.pageScraper.scrapeEventData(url, this.options.headlessMode, this.options.noSandbox);
+				const scrapedData = await this.pageScraper.scrapeEventData(url);
 				const eventData = await this.pageScraper.createEventDataFromScrapedData(scrapedData, url, this.options.orgID);
 				this.eventWriter.createEventFile(eventData);
 
@@ -143,7 +140,7 @@ export class EventCLI {
 		console.log('🔍 Scraping event data from URL...');
 
 		try {
-			const scrapedData = await this.pageScraper.scrapeEventData(url, this.options.headlessMode, this.options.noSandbox);
+			const scrapedData = await this.pageScraper.scrapeEventData(url);
 			const eventData = await this.collectEventDataWithDefaults(scrapedData, url);
 			this.eventWriter.createEventFile(eventData);
 		} catch (error) {
