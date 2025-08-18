@@ -34,7 +34,6 @@ on:
 
 jobs:
   create-event:
-    # use official Puppeteer image for headless Chrome
     runs-on: ubuntu-latest
     steps:
       - uses: szenius/set-timezone@v2.0
@@ -50,9 +49,6 @@ jobs:
         id: branch-name
         run: |
           echo "branch=event-scrapper/${{ github.run_id }}-${{ github.run_attempt }}" >> $GITHUB_OUTPUT
-      # Create and switch to new branch
-      # - name: Create branch
-      #   run: git checkout -b ${{ steps.branch-name.outputs.branch }}
       # Install node dependencies
       - name: Install dependencies
         run: npm ci
@@ -74,15 +70,6 @@ jobs:
           else
             echo "changes=false" >> $GITHUB_OUTPUT
           fi
-      # If there are changes, commit them
-      # - name: Commit changes
-      #   if: steps.check-changes.outputs.changes == 'true'
-      #   run: |
-      #     git config --local user.email "github-actions[bot]@users.noreply.github.com"
-      #     git config --local user.name "GitHub Actions"
-      #     git add src/content/
-      #     git commit -m "Add event for ${{ github.event.inputs.orgID }} from ${{ github.event.inputs.eventURL }}"
-      #     git push --set-upstream origin ${{ steps.branch-name.outputs.branch }}
       # Create pull request
       - name: Create Pull Request
         id: create-pull-request
@@ -97,13 +84,13 @@ jobs:
           add-paths: |
             src/content/
           # commit message
-          commit-message: "Add event for ${{ github.event.inputs.orgID }} from ${{ github.event.inputs.eventURL }}"
+          commit-message: "Add event for ${{ github.event.inputs.orgID || inputs.orgID }} from ${{ github.event.inputs.eventURL || inputs.eventURL}}"
           # title of the pull request
-          title: "Add event for ${{ github.event.inputs.orgID }} from ${{ github.event.inputs.eventURL }}"
+          title: "Add event for ${{ github.event.inputs.orgID || inputs.orgID }} from ${{ github.event.inputs.eventURL || inputs.eventURL}}"
           # body of the pull request
           body: |
             This pull request was automatically created by the event scrapper workflow.
-            It adds an event for organization ID `${{ github.event.inputs.orgID }}` from the URL `${{ github.event.inputs.eventURL }}`.
+            It adds an event for organization ID `${{ github.event.inputs.orgID || inputs.orgID }}` from the URL `${{ github.event.inputs.eventURL || inputs.eventURL }}`.
           # labels: event
           labels: event
           # draft mode?
