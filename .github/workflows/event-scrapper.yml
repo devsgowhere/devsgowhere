@@ -56,17 +56,12 @@ jobs:
       # Install node dependencies
       - name: Install dependencies
         run: npm ci
-      # Install Chrome for Puppeteer
-      - name: Install Chrome
-        run: npx puppeteer browsers install chrome
       # Run the event scrapper
       - name: Run event scrapper
         run: |
           npm run create-event -- \
             --eventURL=${{ github.event.inputs.eventURL || inputs.eventURL }} \
-            --orgID=${{ github.event.inputs.orgID || inputs.orgID }} \
-            --headless true \
-            --no-sandbox
+            --orgID=${{ github.event.inputs.orgID || inputs.orgID }}
       # Use git status to check if there are any changes
       - name: Check for changes
         id: check-changes

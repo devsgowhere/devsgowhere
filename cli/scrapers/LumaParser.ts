@@ -1,7 +1,7 @@
+import * as cheerio from 'cheerio'
 import fs from 'fs';
 import path from 'path';
 import TurndownService from 'turndown';
-import { Page } from 'puppeteer';
 import type { PageParser, ScrapedEventData } from '../types';
 import { DateTime } from 'luxon';
 
@@ -13,16 +13,17 @@ export class LumaParser implements PageParser {
     this.initializeTurndownService();
   }
 
-  async scrapeEventDataFromPage(page: Page): Promise<ScrapedEventData> {
+  async scrapeEventDataFromPage($: cheerio.CheerioAPI, url: string): Promise<ScrapedEventData> {
     const scrapedData: ScrapedEventData = {};
+
+    let defaultData: any = {}
+    const nextData = $('#__NEXT_DATA__').text()
+    if (nextData) defaultData = JSON.parse(nextData)
 
     // =======================================================================
     // Extract event title
     console.log(`Extracting event title...`);
-    const eventTitle = await page.evaluate(() => {
-      const titleElement = document.querySelector('h1');
-      return titleElement ? titleElement.textContent?.trim() || '' : '';
-    });
+    const eventTitle = $('h1').text().trim();
     if (eventTitle) {
       console.log(`Event title: ${eventTitle}`);
       scrapedData.title = eventTitle;
@@ -35,68 +36,38 @@ export class LumaParser implements PageParser {
     // Extract event date and time from the time element
     console.log(`Extracting event date and time...`);
 
-    const dateTag = await page.$eval('.meta .row-container:first-child .title', el => el.textContent)
-    const timeTag = await page.$eval('.meta .row-container:first-child .desc', el => el.textContent)
+    const startDateTimeStr = defaultData.props.pageProps.initialData.data.event.start_at
+    const endDateTimeStr = defaultData.props.pageProps.initialData.data.event.end_at
+    const eventTimeZone = defaultData.props.pageProps.initialData.data.event.timezone
+    // const dateTag = $('.meta .row-container:first-child .title').text().trim();
+    // const timeTag = $('.meta .row-container:first-child .desc').text().trim();
 
-    const startEndDateTime = `${dateTag}, ${timeTag}`.trim().split('-');
+    console.log(`Event start date time: ${startDateTimeStr}`);
+    console.log(`Event end date time: ${endDateTimeStr}`);
 
-    const interval = {
-      start: startEndDateTime[0].trim(),
-      end: startEndDateTime[1] ? startEndDateTime[1].trim() : startEndDateTime[0].trim()
-    }
+    const startDateTime = DateTime.fromISO(startDateTimeStr).setZone(eventTimeZone);
+    const endDateTime = DateTime.fromISO(endDateTimeStr).setZone(eventTimeZone);
 
-    const startDateTime = DateTime.fromFormat(interval.start, 'EEEE, MMMM d, t', { locale: 'en' })
-
-    if (interval.end.match(/^(0?[1-9]|1[0-2]):([0-5][0-9])\s*(AM|PM)$/)) {
-      interval.end = `${startDateTime.toFormat('MMM d')}, ${interval.end}`;
-    }
-    const endDateTime = DateTime.fromFormat(interval.end, 'MMM d, t', { locale: 'en' })
-
-    scrapedData.startDate = `${startDateTime.setZone('Asia/Singapore').toFormat('yyyy-MM-dd')}`; // YYYY-MM-DD
-    scrapedData.startTime = `${startDateTime.setZone('Asia/Singapore').toFormat('HH:mm')}`; // HH:MM
-    scrapedData.endDate = `${endDateTime.setZone('Asia/Singapore').toFormat('yyyy-MM-dd')}`; // YYYY-MM-DD
-    scrapedData.endTime = `${endDateTime.setZone('Asia/Singapore').toFormat('HH:mm')}`; // HH:MM
+    scrapedData.startDate = `${startDateTime.toFormat('yyyy-MM-dd')}`; // YYYY-MM-DD
+    scrapedData.startTime = `${startDateTime.toFormat('HH:mm')}`; // HH:MM
+    scrapedData.endDate = `${endDateTime.toFormat('yyyy-MM-dd')}`; // YYYY-MM-DD
+    scrapedData.endTime = `${endDateTime.toFormat('HH:mm')}`; // HH:MM
 
     // =======================================================================
     // Extract venue information
     console.log(`Extracting venue information...`);
 
-    const venueValues = await page.evaluate(() => {
-      let locEl_res = document.evaluate("//div[text()='Location']", document.body, null, 0, null)
-      let locEl = locEl_res.iterateNext()
-      // @ts-ignore 
-      let contentCardEl = locEl?.closest(".content-card")
-      let addressInfo = contentCardEl?.innerText
-      let lines = addressInfo?.split("\n")
-      let venue = lines?.[1];
-      let address = lines?.slice(2, lines.length).join(" ")
-
-      return {
-        info: addressInfo,
-        venue: venue,
-        address: address
-      }
-    })
-
-    scrapedData.venue = `${venueValues?.venue}`
-    scrapedData.venueAddress = `${venueValues?.address}`
+    scrapedData.venue = defaultData.props.pageProps.initialData.data.event.geo_address_info.address
+    scrapedData.venueAddress = defaultData.props.pageProps.initialData.data.event.geo_address_info.full_address.replace(`${defaultData.props.pageProps.initialData.data.event.geo_address_info.address}, `, '')
 
     // =======================================================================
     // Extract event description and content
     console.log(`Extracting event description and content...`);
 
-    const descriptionTag = await page.$eval('.event-about-card .content', el => el.innerHTML)
-    scrapedData.content = `${this.convertHtmlToMarkdown(descriptionTag)}`
+    const descriptionTag = $('.event-about-card .content').html();
+    scrapedData.content = `${this.convertHtmlToMarkdown(descriptionTag!)}`;
 
-    const ogHeaderDescription = await page.evaluate(() => {
-      const metaTags = Array.from(document.querySelectorAll('meta'))
-      for (const metaEl of metaTags) {
-          const metaProperty = metaEl.getAttribute('property');
-          if (metaProperty == 'og:description') {
-            return metaEl.getAttribute('content');
-          }
-        }
-    })
+    const ogHeaderDescription = $('meta[property="og:description"]').attr('content');
     scrapedData.description = ogHeaderDescription || '';
 
     // =======================================================================
@@ -107,28 +78,15 @@ export class LumaParser implements PageParser {
     // =======================================================================
     // Extract hero image
     console.log(`Extracting hero image...`);
-    const heroImageUrl = await page.evaluate(() => {
-      // Look for event cover image or main image
-      const imageSelectors = [
-        'img[src*="event-covers"]',
-        'img[src*="lumacdn.com"]',
-        '[data-testid="event-image"] img',
-        '.event-image img',
-        'main img'
-      ];
+    const heroImageUrl = $('img[src*="event-covers"], img[src*="lumacdn.com"], [data-testid="event-image"] img').attr('src');
 
-      for (const selector of imageSelectors) {
-        const imgElement = document.querySelector(selector);
-        if (imgElement) {
-          const src = imgElement.getAttribute('src');
-          if (src && src.includes('http')) {
-            return src;
-          }
-        }
-      }
-
-      return '';
-    });
+    if (heroImageUrl) {
+      console.log(`Hero image found: ${heroImageUrl}`);
+      scrapedData.heroImage = heroImageUrl;
+    } else {
+      console.warn(`No hero image found for the event.`);
+      scrapedData.heroImage = '';
+    }
 
     // Download the hero image if found
     if (heroImageUrl) {
@@ -172,7 +130,7 @@ export class LumaParser implements PageParser {
     // =======================================================================
     // Set RSVP button information
     scrapedData.rsvpButtonText = 'Register on Luma';
-    scrapedData.rsvpButtonUrl = page.url();
+    scrapedData.rsvpButtonUrl = url;
 
     return scrapedData;
   }

@@ -1,8 +1,9 @@
 import fs from 'fs';
 import path from 'path';
 import TurndownService from 'turndown';
-import { Page } from 'puppeteer';
 import type { PageParser, ScrapedEventData } from '../types';
+import * as cheerio from 'cheerio'
+import { DateTime } from 'luxon';
 
 export class MeetupParser implements PageParser {
   private turndownService!: TurndownService;
@@ -12,26 +13,19 @@ export class MeetupParser implements PageParser {
     this.initializeTurndownService();
   }
 
-  async scrapeEventDataFromPage(page: Page): Promise<ScrapedEventData> {
+  async scrapeEventDataFromPage($: cheerio.CheerioAPI, url: string): Promise<ScrapedEventData> {
     const scrapedData: ScrapedEventData = {};
 
     // event title: get text content from `//main//h1` 
     console.log(`Extracting event title...`);
-    const eventTitle = await page.evaluate(() => {
-      const titleElement = document.querySelector('main h1');
-      return titleElement ? titleElement.textContent?.trim() || '' : '';
-    })
+    const eventTitle = $('main h1').text().trim();
     console.log(`Event title: ${eventTitle}`);
     scrapedData.title = eventTitle;
 
     // event start time from "main #event-info time"
     console.log(`Extracting event start time...`);
-    const eventStartTime = await page.evaluate(() => {
-      const timeElement = document.querySelector('main #event-info time');
-      return timeElement ? timeElement.getAttribute('datetime')?.trim() || '' : '';
-    })
-
-    // event start time is in ISO format, e.g. "2023-10-01T10:00:00+02:00"
+    const eventStartTime = $('main #event-info time').attr('datetime')?.trim() || '';
+    
     if (eventStartTime) {
       console.log(`Event start time: ${eventStartTime}`);
       const date = new Date(eventStartTime);
@@ -45,12 +39,24 @@ export class MeetupParser implements PageParser {
       scrapedData.startTime = '';
     }
 
+    // event end time from "main #event-info time". The text content is formatted: Saturday, August 23, 2025 10:00 AM to 1:00 PM SST
+    console.log(`Extracting event end time...`);
+    const eventEndTime = $('main #event-info time').text().trim();
+    if (eventEndTime) {
+      console.log(`Event end time: ${eventEndTime}`);
+      const [_, end] = eventEndTime.split(' to ');
+      const timeOnly = end.substring(0, end.length-3).trim();
+
+      const endDate = DateTime.fromFormat(timeOnly, 'h:mm a').setZone('Asia/Singapore');
+      scrapedData.endTime = endDate.toFormat('HH:mm'); // HH:MM
+    } else {
+      console.warn(`No end time found for the event.`);
+      scrapedData.endTime = '';
+    }
+
     // event venue name from "main #event-info a[data-testid='venue-name-link']"
     console.log(`Extracting event venue name...`);
-    const eventVenue = await page.evaluate(() => {
-      const venueElement = document.querySelector('main #event-info *[data-testid="venue-name-link"]');
-      return venueElement ? venueElement.textContent?.trim() || '' : '';
-    })
+    const eventVenue = $('main #event-info *[data-testid="venue-name-link"]').text().trim();
     if (eventVenue) {
       console.log(`Event venue: ${eventVenue}`);
       scrapedData.venue = eventVenue;
@@ -61,10 +67,7 @@ export class MeetupParser implements PageParser {
 
     // event venue address from "main #event-info div[data-testid='location-info']"
     console.log(`Extracting event venue address...`);
-    const eventVenueAddress = await page.evaluate(() => {
-      const addressElement = document.querySelector('main #event-info *[data-testid="location-info"]');
-      return addressElement ? addressElement.textContent?.trim() || '' : '';
-    })
+    const eventVenueAddress = $('main #event-info *[data-testid="location-info"]').text().trim();
     if (eventVenueAddress) {
       console.log(`Event venue address: ${eventVenueAddress}`);
       scrapedData.venueAddress = eventVenueAddress;
@@ -73,27 +76,20 @@ export class MeetupParser implements PageParser {
       scrapedData.venueAddress = '';
     }
 
-    // get event description from "main #event-details" using text content (truncate to 160 characters for SEO)
+    // get event description from "main #event-details"
     console.log(`Extracting event description...`);
-    const eventDescription = await page.evaluate(() => {
-      const descriptionElement = document.querySelector('main #event-details');
-      return descriptionElement ? descriptionElement.textContent?.trim() || '' : '';
-    })
+    const eventDescription = $('main #event-details').text().trim();
     if (eventDescription) {
-      console.log(`Event description extracted.`);
-      // Truncate description to 160 characters for SEO
-      scrapedData.description = eventDescription.length > 160 ? eventDescription.substring(0, 160) + '...' : eventDescription;
+      console.log(`Event description: ${eventDescription}`);
+      scrapedData.description = eventDescription.substring(0, 160); // truncate to 160 characters for SEO
     } else {
-      console.warn(`No description found for the event.`);
+      console.warn(`No event description found.`);
       scrapedData.description = '';
     }
 
     // get event details from "main #event-details" as html
     console.log(`Extracting event content...`);
-    const eventContent = await page.evaluate(() => {
-      const descriptionElement = document.querySelector('main #event-details');
-      return descriptionElement ? descriptionElement.innerHTML.trim() || '' : '';
-    })
+    const eventContent = $('main #event-details').html();
     if (eventContent) {
       console.log(`Event content extracted.`);
       // Convert HTML description to markdown
@@ -106,10 +102,7 @@ export class MeetupParser implements PageParser {
     // get tags from "main .tag--topic" 
     // - there may be multiple tags, so we need to get all of them and put them in an array
     console.log(`Extracting event tags...`);
-    const eventTags = await page.evaluate(() => {
-      const tagElements = Array.from(document.querySelectorAll('main .tag--topic'));
-      return tagElements.map(tag => tag.textContent?.trim() || '').filter(tag => tag);
-    })
+    const eventTags = $('main .tag--topic').map((i, el) => $(el).text().trim()).get();
     if (eventTags.length > 0) {
       console.log(`Event tags: ${eventTags.join(', ')}`);
       scrapedData.tags = eventTags;
@@ -120,11 +113,8 @@ export class MeetupParser implements PageParser {
 
     // get the src for hero image from "main picture[data-testid="event-description-image" img"
     console.log(`Extracting hero image...`);
-    const heroImageUrl = await page.evaluate(() => {
-      const imgElement = document.querySelector('main picture[data-testid="event-description-image"] img');
-      return imgElement ? imgElement.getAttribute('src')?.trim() || '' : '';
-    })
-    // download the hero image to 'scraper-output' folder 
+    const heroImageUrl = $('main picture[data-testid="event-description-image"] img').attr('src')?.trim() || '';
+    // download the hero image to 'scraper-output' folder
     if (heroImageUrl) {
 
       // drop any query parameters from the image URL
@@ -151,10 +141,9 @@ export class MeetupParser implements PageParser {
 
     // set rsvp button url to the original url
     scrapedData.rsvpButtonText = 'RSVP on Meetup';
-    scrapedData.rsvpButtonUrl = page.url();
+    scrapedData.rsvpButtonUrl = url;
 
     return scrapedData;
-
   }
 
   /**
