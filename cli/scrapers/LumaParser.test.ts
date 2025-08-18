@@ -63,6 +63,36 @@ describe('LumaParser', () => {
       expect(result?.description?.length).toBeGreaterThan(0);
       expect(result?.heroImage?.length).toBeGreaterThan(0);
     })
+
+    test('Manual venue', async () => {
+      const parser = new LumaParser()
+
+      const url = 'https://lu.ma/i1sng2wi'
+      const $ = await getPage(url);
+  
+      const result = await parser.scrapeEventDataFromPage($, url)
+  
+      expect(result).toMatchObject({
+        title: 'Are We Living in a Black Mirror Episode Now?',
+        startDate: '2025-08-19', // YYYY-MM-DD
+        startTime: '15:00', // HH:MM
+        endDate: '2025-08-19', // YYYY-MM-DD
+        endTime: '17:00', // HH:MM
+        venue: 'Lorong AI (WeWork@22 Cross St.)',
+        venueAddress: '',
+        // description: '',
+        // content: '',
+        tags: [],
+        // heroImage: 'path/to/devsgowhere/scraper-output/hero-1752914046954.png',
+        rsvpButtonText: 'Register on Luma',
+        rsvpButtonUrl: url
+      })
+  
+      expect(result?.content?.length).toBeGreaterThan(0);
+      expect(result?.description?.length).toBeGreaterThan(0);
+      expect(result?.heroImage?.length).toBeGreaterThan(0);
+    })
+
   })
 
   describe('multi day event', () => {
