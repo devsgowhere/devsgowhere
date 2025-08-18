@@ -19,6 +19,8 @@ export class LumaParser implements PageParser {
     let defaultData: any = {}
     const nextData = $('#__NEXT_DATA__').text()
     if (nextData) defaultData = JSON.parse(nextData)
+    
+    // console.log('Event Data', nextData)
 
     // =======================================================================
     // Extract event title
@@ -58,7 +60,9 @@ export class LumaParser implements PageParser {
     console.log(`Extracting venue information...`);
 
     scrapedData.venue = defaultData.props.pageProps.initialData.data.event.geo_address_info.address
-    scrapedData.venueAddress = defaultData.props.pageProps.initialData.data.event.geo_address_info.full_address.replace(`${defaultData.props.pageProps.initialData.data.event.geo_address_info.address}, `, '')
+    scrapedData.venueAddress = defaultData.props.pageProps.initialData.data.event.geo_address_info.full_address ? 
+       defaultData.props.pageProps.initialData.data.event.geo_address_info.full_address.replace(`${defaultData.props.pageProps.initialData.data.event.geo_address_info.address}, `, '') :
+       ''
 
     // =======================================================================
     // Extract event description and content
