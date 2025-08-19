@@ -28,11 +28,9 @@ export class MeetupParser implements PageParser {
     
     if (eventStartTime) {
       console.log(`Event start time: ${eventStartTime}`);
-      const date = new Date(eventStartTime);
-      scrapedData.startDate = date.toISOString().split('T')[0]; // YYYY-MM-DD
-      scrapedData.startTime = date.toTimeString().split(' ')[0]; // HH:MM:SS
-      // drop seconds from start time
-      scrapedData.startTime = scrapedData.startTime.substring(0, 5); // HH:MM
+      const startDateTime = DateTime.fromISO(eventStartTime).setZone('Asia/Singapore');
+      scrapedData.startDate = `${startDateTime.toFormat('yyyy-MM-dd')}`; // YYYY-MM-DD
+      scrapedData.startTime = `${startDateTime.toFormat('HH:mm')}`; // HH:MM
     } else {
       console.warn(`No start time found for the event.`);
       scrapedData.startDate = '';
@@ -47,7 +45,7 @@ export class MeetupParser implements PageParser {
       const [_, end] = eventEndTime.split(' to ');
       const timeOnly = end.substring(0, end.length-3).trim();
 
-      const endDate = DateTime.fromFormat(timeOnly, 'h:mm a').setZone('Asia/Singapore');
+      const endDate = DateTime.fromFormat(timeOnly, 'h:mm a');
       scrapedData.endTime = endDate.toFormat('HH:mm'); // HH:MM
     } else {
       console.warn(`No end time found for the event.`);
