@@ -5,8 +5,8 @@ description: "Details🔥 Interview Prep Series: System Design 📅 10 Sept 2025
 venue: "Open Government Products"
 venueAddress: "51 Bras Basah Rd, #04-08 Lazada One · Singapore"
 startDate: "2025-09-10"
-startTime: "11:00"
-endTime: "05:00"
+startTime: "19:00"
+endTime: "21:00"
 heroImage: "hero-1755568549927.webp"
 tags: ["Events in Singapore, SG", "Career", "Job Interview Prep", "Software Architecture", "Women in Technology", "Technology"]
 rsvpButtonUrl: "https://www.meetup.com/women-devs-sg/events/310580396//?utm_medium=referral&utm_campaign=-&utm_source=link&utm_version=v2"
