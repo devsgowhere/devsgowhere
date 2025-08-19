@@ -2,7 +2,7 @@ import * as cheerio from 'cheerio'
 import fs from 'fs';
 import path from 'path';
 import TurndownService from 'turndown';
-import type { PageParser, ScrapedEventData } from '../types';
+import type { DownloadResult, PageParser, ScrapedEventData } from '../types';
 import { DateTime } from 'luxon';
 
 export class LumaParser implements PageParser {
@@ -84,59 +84,68 @@ export class LumaParser implements PageParser {
     console.log(`Extracting hero image...`);
     const heroImageUrl = $('img[src*="event-covers"], img[src*="lumacdn.com"], [data-testid="event-image"] img').attr('src');
 
+    // download the hero image to 'scraper-output' folder
     if (heroImageUrl) {
       console.log(`Hero image found: ${heroImageUrl}`);
       scrapedData.heroImage = heroImageUrl;
+
+      const downloadResult = await this.downloadImage(heroImageUrl)
+      if (downloadResult.filePath) scrapedData.heroImage = downloadResult.filePath
     } else {
       console.warn(`No hero image found for the event.`);
       scrapedData.heroImage = '';
     }
 
-    // Download the hero image if found
-    if (heroImageUrl) {
-      try {
-        // Clean the URL by removing query parameters
-        const cleanHeroImageUrl = heroImageUrl.split('?')[0];
-        scrapedData.heroImage = cleanHeroImageUrl;
-
-        // Get the image extension from the URL
-        const imageExtension = path.extname(cleanHeroImageUrl).replace('.', '') || 'webp';
-
-        console.log(`Hero image found: src=${cleanHeroImageUrl}`);
-        console.log(`Downloading hero image...`);
-        
-        const response = await fetch(cleanHeroImageUrl);
-        if (!response.ok) {
-          throw new Error(`Failed to download hero image: ${response.statusText}`);
-        }
-        
-        const arrayBuffer = await response.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
-        
-        // Ensure scraper output directory exists
-        if (!fs.existsSync(this.scraperOutputDir)) {
-          fs.mkdirSync(this.scraperOutputDir, { recursive: true });
-        }
-        
-        const imagePath = path.join(this.scraperOutputDir, `hero-${Date.now()}.${imageExtension}`);
-        fs.writeFileSync(imagePath, buffer);
-        console.log(`Hero image downloaded to ${imagePath}`);
-        scrapedData.heroImage = imagePath;
-      } catch (error) {
-        console.warn(`Error downloading hero image: ${error}`);
-        scrapedData.heroImage = heroImageUrl; // Keep the URL if download fails
-      }
-    } else {
-      console.warn(`No hero image found for the event.`);
-      scrapedData.heroImage = '';
-    }
-    
     // =======================================================================
     // Set RSVP button information
     scrapedData.rsvpButtonText = 'Register on Luma';
     scrapedData.rsvpButtonUrl = url;
 
     return scrapedData;
+  }
+
+  private async downloadImage(imageUrl: string): Promise<DownloadResult> {
+    const result: DownloadResult = {
+      originalUrl: imageUrl,
+      fileName: null,
+      filePath: null
+    };
+    try {
+      // Clean the URL by removing query parameters
+      const cleanHeroImageUrl = imageUrl.split('?')[0];
+      console.log(`Hero image found: src=${cleanHeroImageUrl}`);
+
+      // Get file name from cleanHeroImageUrl
+      let fileName = path.basename(cleanHeroImageUrl);
+
+      // No file extension to the URL, insert an extension.
+      if (path.extname(cleanHeroImageUrl) === '') fileName += '.webp';
+
+      result.fileName = fileName;
+
+      console.log(`Downloading hero image...`);
+      const response = await fetch(cleanHeroImageUrl);
+      if (!response.ok) throw new Error(`Failed to download hero image: ${response.statusText}`);
+
+      const arrayBuffer = await response.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+
+      const targetFolder = path.join(this.scraperOutputDir, `hero-${Date.now()}`);
+      // Ensure scraper output directory exists
+      if (!fs.existsSync(targetFolder)) {
+        fs.mkdirSync(targetFolder, { recursive: true });
+      }
+      
+      const imagePath = path.join(targetFolder, fileName);
+      fs.writeFileSync(imagePath, buffer);
+      console.log(`Hero image downloaded to ${imagePath}`);
+      result.filePath = imagePath;
+    } catch (error) {
+      console.warn(`Error downloading hero image: ${error}`);
+      result.filePath = imageUrl; // Keep the URL if download fails
+    }
+
+    return result;
   }
 
   /**
