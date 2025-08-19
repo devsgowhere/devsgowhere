@@ -7,9 +7,9 @@ venueAddress: "51 Bras Basah Rd, #04-08 Lazada One · Singapore"
 startDate: "2025-09-10"
 startTime: "19:00"
 endTime: "21:00"
-heroImage: "hero-1755568549927.webp"
+heroImage: "hero-1755582659632.webp"
 tags: ["Events in Singapore, SG", "Career", "Job Interview Prep", "Software Architecture", "Women in Technology", "Technology"]
-rsvpButtonUrl: "https://www.meetup.com/women-devs-sg/events/310580396//?utm_medium=referral&utm_campaign=-&utm_source=link&utm_version=v2"
+rsvpButtonUrl: "https://www.meetup.com/women-devs-sg/events/310580396"
 rsvpButtonText: "RSVP on Meetup"
 ---
 
@@ -34,3 +34,7 @@ Instead of memorizing patterns, you’ll learn a repeatable method you can apply
 You’ll also get **hands-on practice**: work through your own system design problem alongside other attendees, applying the framework in real time.
 
 🎯 **For**: Engineers, job seekers, and professionals preparing for technical interviews who want to build confidence in tackling system design questions.
+
+✨ **About Open Government Products (OGP)**
+
+OGP is an experimental sandbox unit of the Singapore Government that builds tech for public good. Learn more about their products and career opportunities at [https://careers.open.gov.sg/](https://careers.open.gov.sg/)
