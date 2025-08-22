@@ -8,8 +8,8 @@ startDate: "2025-09-10"
 startTime: "19:00"
 endTime: "21:00"
 heroImage: "highres_529706475.webp"
-tags: ["Events in Singapore", "SG", "Career", "Job Interview Prep", "Software Architecture", "Women in Technology", "Technology"]
-rsvpButtonUrl: "https://www.meetup.com/women-devs-sg/events/310580396"
+tags: ["Events in Singapore, SG", "Career", "Job Interview Prep", "Software Architecture", "Women in Technology", "Technology"]
+rsvpButtonUrl: "https://www.meetup.com/women-devs-sg/events/310580396/"
 rsvpButtonText: "RSVP on Meetup"
 ---
 
