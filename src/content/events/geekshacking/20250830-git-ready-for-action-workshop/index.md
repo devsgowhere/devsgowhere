@@ -9,7 +9,7 @@ startTime: "13:00"
 endDate: "2025-08-30"
 endTime: "17:00"
 heroImage: "./cicd workshop.jpg"
-tags: ["CI/CD Workshop Git GitHub Actions Developer DevOps"]
+tags: ["CI/CD", "Workshop", "Git", "GitHub", "Actions", "Developer", "DevOps"]
 rsvpButtonUrl: "https://gitready.eventbrite.sg"
 rsvpButtonText: "RSVP on Eventbrite"
 ---
