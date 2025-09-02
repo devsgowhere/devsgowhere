@@ -7,8 +7,8 @@ venueAddress: "11 Orchard Road, Dhoby Ghaut MRT, #B1- 13, Singapore 238826 · Si
 startDate: "2025-09-15"
 startTime: "19:00"
 endTime: "21:00"
-heroImage: "highres_529828523.webp"
-tags: ["Events in Singapore, SG", "Artificial Intelligence", "Technology", "PaaS (Platform as a Service)", "Digital Marketing", "Software Development"]
+heroImage: "highres_529829368.webp"
+tags: ["Events in Singapore, SG", "Artificial Intelligence", "Banking", "Machine Learning", "PaaS (Platform as a Service)", "Software Development"]
 rsvpButtonUrl: "https://www.meetup.com/junior-developers-singapore/events/310695684"
 rsvpButtonText: "RSVP on Meetup"
 ---
@@ -24,20 +24,17 @@ rsvpButtonText: "RSVP on Meetup"
 \---------------------------------  
 **Presentations**
 
-**Topic: How I build an App with AI**
+**Topic: Getting Started with Feature Engineering and Fine-Tuning for Classification Tasks**
 
 **Speaker:**  
-Vivienne Khoo, Cloud Solutions Analyst, Ollion Pte Ltd  
-LinkedIn: [https://www.linkedin.com/in/vivienne-khoo-yy/](https://www.linkedin.com/in/vivienne-khoo-yy/)
+Maryana Hermawan, Software Engineer, PayPal  
+LinkedIn: [https://www.linkedin.com/in/maryanahermawan/](https://www.linkedin.com/in/maryanahermawan/)
 
-**Description**
+**Description**  
+Curious about how machine learning models make predictions like spam detection or product recommendations? In this 30-minute session, we’ll walk through the basics of classification, one of the most common ML tasks. You’ll learn how to prepare your data through feature engineering, and how to improve your model’s accuracy using simple fine-tuning techniques. Designed for beginner software engineers, this talk will focus on practical steps you can apply with Python and common ML libraries like scikit-learn.
 
-1.  Vibe coding.
-2.  Why AI isn’t everything
-3.  Intention when building an application
-
-**About Vivienne**  
-Pivoted myself across industries from railway, finance, banking, fintech
+**About Maryana**  
+I'm Maryana, a software engineer at PayPal focused on payment systems and merchant onboarding. In my spare time, I dive into machine learning, large language models, and how emerging tech can be applied in real-world software.
 
 \------------------------------------
 
