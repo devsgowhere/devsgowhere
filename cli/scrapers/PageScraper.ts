@@ -16,14 +16,16 @@ export class PageScraper {
   async scrapeEventData(url: string): Promise<ScrapedEventData> {
     try {
       console.log(`Fetching ${url}...`);
-      const $ = await cheerio.fromURL(url, {
+      const $ = await cheerio.fromURL(url, url.includes('meetup.com') ? {
         requestOptions: {
           method: "GET",
           headers: {
+            // Accept header to improve consistency when scraping Meetup.com
+            // https://github.com/devsgowhere/devsgowhere/pull/186
             accept: "*/*",
           },
         },
-      });
+      } : undefined);
 
       let result: ScrapedEventData
       console.log(`Scraping event data...`);
