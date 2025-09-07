@@ -42,6 +42,7 @@ export class PageScraper {
           result = await lumaParser.scrapeEventDataFromPage($, url);
           break;
         case url.includes('eventbrite.com'):
+        case url.includes('eventbrite.sg'):
           const eventbriteParser = new EventbriteParser();
           eventbriteParser.scraperOutputDir = this.scraperOutputDir;
           result = await eventbriteParser.scrapeEventDataFromPage($, url);

@@ -188,8 +188,8 @@ export class EventbriteParser implements PageParser {
       // Get file name from cleanHeroImageUrl
       let fileName = path.basename(cleanHeroImageUrl);
 
-      // No file extension to the URL, insert an extension.
-      if (path.extname(cleanHeroImageUrl) === '') fileName += '.webp';
+      // Add file extension
+      fileName += '.webp';
 
       result.fileName = fileName;
 
