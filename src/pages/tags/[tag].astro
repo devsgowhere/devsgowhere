@@ -65,24 +65,6 @@ const groupedEvents = events.reduce((acc: any, event) => {
       </h1>      
       <div class="container">
         <section>
-              <div class="event-search form-control">
-                <i class="form-control__prepend fa fa-search"></i>
-                <input
-                  id="event-search__input"
-                  type="text"
-                  class="form-control__input"
-                  placeholder="Search events by name, tags, organizer..."
-                />
-                <button id="event-search__clear" class="form-control__append" style="display: none;">
-                  <i class="fa fa-times"></i>
-                </button>
-                <div id="search-loader" class="search-loader" style="display: none;">
-                  <div class="search-loader__spinner"></div>
-                </div>
-              </div>
-              <div class="search-results-info mb-m">
-                <p>Showing <span id="results-count" class="results-count">{Object.keys(groupedEvents).length}</span> results</p>
-              </div>
           { Object.keys(groupedEvents).length > 0 ? (
             Object.keys(groupedEvents).map((date) => (
               <div class="event-date">
@@ -95,7 +77,7 @@ const groupedEvents = events.reduce((acc: any, event) => {
                 <ul class="event-list">
                   {
                     groupedEvents[date].map((event) => (
-                      <li class="event-list-item" data-id={event.id}>
+                      <li class="event-list-item loaded" data-id={event.id}>
                         <EventCard event={event} />
                       </li>
                     ))
@@ -104,7 +86,7 @@ const groupedEvents = events.reduce((acc: any, event) => {
               </div>
             ))
           ) : (
-            <p class="text-gray-5 text-2xl">No upcoming events found for tag "{tag}".</p>
+            <p class="text-gray-5 text-2xl">No events found for tag "{tag}".</p>
           )}
 
           <div class="event-list__empty hide">
@@ -115,102 +97,6 @@ const groupedEvents = events.reduce((acc: any, event) => {
     </main>
     <Footer />
   </Theme>
-  <script>
-    // Import search utilities
-    import { normalize, debounce, filterEvents, animateElement, animateNumber } from '../../utils/searchUtils.js';
-
-    // Fetch search index
-    const events = [];
-    fetch('/events/search-index.json')
-      .then(response => response.json())
-      .then(data => {
-        // Filter events by current tag
-        const filteredEvents = data.filter(event => 
-          event.tags && event.tags.includes('{tag}')
-        );
-        events.push(...filteredEvents);
-        // Show total count on initial load
-        updateResultsCount(events.length);
-        // Add animation class after initial load
-        document.querySelectorAll('.event-list-item').forEach(item => {
-          item.classList.add('loaded');
-        });
-      })
-      .catch(error => console.error('Error fetching search index:', error));
-
-    // DOM elements
-    const searchInput = document.querySelector('#event-search__input');
-    const clearButton = document.querySelector('#event-search__clear');
-    const emptyState = document.querySelector('.event-list__empty');
-    const resultsInfo = document.querySelector('.search-results-info');
-    const resultsCount = document.querySelector('#results-count');
-    const eventItems = document.querySelectorAll('.event-list-item');
-    const searchLoader = document.querySelector('#search-loader');
-
-    // Initialize results count with the total number from DOM
-    updateResultsCount(eventItems.length);
-
-    // Helper function to update results count display
-    function updateResultsCount(count) {
-      // Animate count change
-      const currentCount = parseInt(resultsCount.textContent);
-      animateNumber(resultsCount, currentCount, count, 300);
-      resultsInfo.style.display = 'block';
-    }
-
-    // Search implementation
-    const performSearch = () => {
-      const query = searchInput.value.toLowerCase().trim();
-      
-      // Toggle clear button visibility
-      clearButton.style.display = query ? 'block' : 'none';
-      
-      // If empty query, show all events
-      if (!query) {
-        animateElement(emptyState, false);
-        eventItems.forEach(item => {
-          animateElement(item, true);
-        });
-        updateResultsCount(eventItems.length);
-        return;
-      }
-
-      // Filter events using the utility function
-      const matches = filterEvents(events, query);
-
-      // Update UI based on results
-      updateResultsCount(matches.length);
-      animateElement(emptyState, matches.length === 0);
-      
-      // Show/hide matching events with staggered animation
-      eventItems.forEach((item, index) => {
-        const eventId = item.getAttribute('data-id');
-        const visible = matches.some(event => event.id === eventId);
-        
-        // Add slight delay based on index for staggered effect
-        setTimeout(() => {
-          animateElement(item, visible);
-        }, index % 5 * 50); // Stagger in groups of 5
-      });
-    };
-
-    // Set up event listeners with loading indicator
-    const debouncedSearch = debounce(() => {
-      searchLoader.style.display = 'none';
-      performSearch();
-    }, 400);
-    
-    searchInput.addEventListener('input', () => {
-      searchLoader.style.display = 'block';
-      debouncedSearch();
-    });
-    
-    clearButton.addEventListener('click', () => {
-      searchInput.value = '';
-      performSearch();
-      searchInput.focus();
-    });
-  </script>
 </html>
 
 <style lang="scss">
