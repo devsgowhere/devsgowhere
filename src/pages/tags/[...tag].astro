@@ -19,7 +19,7 @@ export async function getStaticPaths() {
   
   const paramList = Array.from(uniqueTags).map((tag) => {
     return {
-      params: { tag: tag },
+      params: { tag },
     };
   });
   return paramList;
