@@ -1,0 +1,185 @@
+---
+import BaseHead from "../../../components/BaseHead.astro";
+import Header from "../../../components/Header.astro";
+import Theme from "../../../layouts/Theme.astro";
+import Footer from "../../../components/Footer.astro";
+
+import { SITE_TITLE, SITE_DESCRIPTION } from "../../../consts";
+import { getCollection } from "astro:content";
+import EventCard from "../../../components/EventCard.astro";
+import { Settings, DateTime } from "luxon";
+Settings.defaultZone = "Asia/Singapore";
+export async function getStaticPaths() {
+  const events = await getCollection("events");
+
+  const allTags = events?.flatMap((event) => event.data?.tags || []);
+  const uniqueTags = [...new Set(allTags)].filter(Boolean); 
+
+  return uniqueTags.map((tag) => { 
+    const lowerCaseTag = tag.toLowerCase(); 
+    const filteredEvents = events.filter((event) =>
+      event.data.tags?.map(t => t.toLowerCase())?.includes(lowerCaseTag)
+    ).sort(
+    (a, b) =>
+      new Date(a.data.startDate).valueOf() -
+      new Date(b.data.startDate).valueOf()
+  );
+    return {
+      params: { slug: tag },
+      props: { events: filteredEvents,tag },
+    };
+  });
+}
+
+const beginningOfDay = DateTime.now().set({
+  hour: 0,
+  minute: 0,
+  second: 0,
+  millisecond: 0,
+});
+const { events,tag } = Astro.props;    
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+    <script
+      src="https://app.unpkg.com/framer-motion@12.12.1/dist/framer-motion.min.js"
+    ></script>
+  </head>
+  <Theme>
+    <Header />
+    <main class="events-list-page pt-xl pb-3xl">
+      <h1 class="text-3xl text-bold text-accent mb-xl">
+        #{tag} Events
+      </h1>
+      <div class="container">
+        <section> 
+          {
+            events.length > 0 ? (
+              <ul class="event-list">
+                {events.map((event) => (
+                  <li class="event-list-item loaded" data-id={event.id}>
+                    <EventCard event={event} />
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p class="text-gray-5 text-2xl">
+                No events found with given tag.
+              </p>
+            )
+          } 
+        </section>
+      </div>
+    </main>
+    <Footer />
+  </Theme>
+</html>
+
+<style lang="scss">
+  .events-list-page {
+    text-align: center;
+  }
+
+  ul.event-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .form-control__append {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #999;
+    cursor: pointer;
+    padding: 5px;
+
+    &:hover {
+      color: #666;
+    }
+  }
+
+  .event-list-item {
+    transition:
+      transform 0.3s ease-out,
+      opacity 0.4s ease-out,
+      height 0.5s ease-out;
+    opacity: 0;
+    transform: translateY(20px);
+    height: auto;
+    overflow: hidden;
+
+    &.loaded {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    &.hide {
+      opacity: 0;
+      height: 0;
+      margin: 0;
+      padding: 0;
+      transform: translateY(10px);
+    }
+  }
+
+  .hide {
+    display: none;
+  }
+
+  .search-results-info {
+    text-align: center;
+    color: #666;
+    font-size: 0.9rem;
+    margin-top: 1rem;
+    transition: opacity 0.3s ease;
+
+    .results-count {
+      font-weight: bold;
+      color: #555;
+    }
+  }
+
+  .event-list__empty {
+    text-align: center;
+    margin: 3rem 0;
+    transition:
+      opacity 0.3s ease,
+      transform 0.4s ease;
+    opacity: 0;
+    transform: scale(0.95);
+
+    &:not(.hide) {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .search-loader {
+    position: absolute;
+    right: 40px;
+    top: 50%;
+    transform: translateY(-50%);
+
+    &__spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(0, 0, 0, 0.1);
+      border-top-color: #767676;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+</style>
