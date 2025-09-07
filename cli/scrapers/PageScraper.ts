@@ -3,6 +3,7 @@ import * as cheerio from 'cheerio'
 import type { ScrapedEventData, EventData } from '../types';
 import { MeetupParser } from './MeetupParser';
 import { LumaParser } from './LumaParser';
+import { EventbriteParser } from './EventbriteParser';
 
 export class PageScraper {
   public scraperOutputDir: string = path.join(process.cwd(), 'scraper-output');
@@ -39,6 +40,11 @@ export class PageScraper {
           const lumaParser = new LumaParser();
           lumaParser.scraperOutputDir = this.scraperOutputDir;
           result = await lumaParser.scrapeEventDataFromPage($, url);
+          break;
+        case url.includes('eventbrite.com'):
+          const eventbriteParser = new EventbriteParser();
+          eventbriteParser.scraperOutputDir = this.scraperOutputDir;
+          result = await eventbriteParser.scrapeEventDataFromPage($, url);
           break;
         default:
           throw new Error('Sorry! This event platform is not supported yet.');
