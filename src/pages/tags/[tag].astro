@@ -22,7 +22,6 @@ export async function getStaticPaths() {
       params: { tag: tag },
     };
   });
-  console.log("Param List:", paramList);
   return paramList;
 }
 
@@ -42,7 +41,6 @@ const events = (await getCollection("events"))
 // Group events by date
 const groupedEvents = events.reduce((acc: any, event) => {
   const date = DateTime.fromISO(event.data.startDate).toFormat('ccc, d LLLL y')
-  console.log("Event Date:", date, "Event ID:", event.id);
   if (!acc[date]) {
     acc[date] = [];
   }
