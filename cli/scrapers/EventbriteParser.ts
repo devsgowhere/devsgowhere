@@ -125,6 +125,19 @@ export class EventbriteParser implements PageParser {
         result.endDate = result.startDate;
       }
       result.endTime = this.convertTo24HourFormat(endTime, endPeriod);
+    } else {
+      // Try another format: 'Wed, 8 Apr 2026 10:00 - Thu, 9 Apr 2026 17:00 GMT+8'
+      const altDateTimeRegex = /([\d]{0,2}) ([\w]*) ([\d]{4}) ([\d]{1,2}[:]*[\d]{0,2})([am|pm]*) - ([\d]{0,2})[ ]?([\w]*)[ ]?([\d]{4})[ · ]*([\d]{1,2}[:]*[\d]{0,2})([am|pm]*)/
+      const match2 = dateTimeStr.match(altDateTimeRegex);
+      if (match2) {
+        const [_, startDay, startMonth, startYear, startTime, startPeriod, endDay, endMonth, endYear, endTime, endPeriod] = match2;
+        result.startDate = `${startYear}-${this.getMonthNumber(startMonth)}-${startDay.padStart(2, '0')}`;
+        result.startTime = this.convertTo24HourFormat(startTime, startPeriod);
+        result.endDate = `${endYear}-${this.getMonthNumber(endMonth)}-${endDay.padStart(2, '0')}`;
+        result.endTime = this.convertTo24HourFormat(endTime, endPeriod);
+      } else {
+        console.warn(`Unable to parse date and time from string: ${dateTimeStr}`);
+      }
     }
 
     return result
@@ -135,10 +148,12 @@ export class EventbriteParser implements PageParser {
    */
   private getMonthNumber(monthName: string): string {
     const months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
     ];
-    const monthIndex = months.findIndex(m => m.toLowerCase() === monthName.toLowerCase());
+    // Index of string with the first 3 characters matched
+    const monthAbbr = monthName.substring(0, 3);
+    const monthIndex = months.findIndex(m => m.toLowerCase() === monthAbbr.toLowerCase());
     return monthIndex !== -1 ? String(monthIndex + 1).padStart(2, '0') : '01';
   }
 
