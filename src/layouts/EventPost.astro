@@ -103,7 +103,7 @@ let orgUrl = `/orgs/${org.id}`;
             <ul class="tag-list mb-l">
               { Astro.props.tags?.slice(0, 10).map((tag) => (
                 <li class="tag">
-                  # {tag}
+                  <a href={`/tags/${tag}`}># {tag}</a>
                 </li>
               )) }
             </ul>
