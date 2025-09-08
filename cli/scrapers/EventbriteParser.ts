@@ -108,35 +108,63 @@ export class EventbriteParser implements PageParser {
     // Replace the weekday names with empty string
     dateTimeStr = dateTimeStr.replaceAll(/(Monday|Mon|Tuesday|Tue|Wednesday|Wed|Thursday|Thu|Friday|Fri|Saturday|Sat|Sunday|Sun),?\s*/ig, '').trim();
 
-    const dateTimeRegex = /([\w]*) ([\d]{0,2}) · ([\d]{1,2}[:]*[\d]{0,2})([am|pm]*) - ([\w]*)[ ]?([\d]{0,2})[ · ]*([\d]{1,2}[:]*[\d]{0,2})([am|pm]*)/
-    const match = dateTimeStr.match(dateTimeRegex);
-    if (match) {
-      const [_, startMonth, startDay, startTime, startPeriod, endMonth, endDay, endTime, endPeriod] = match;
-      const year = new Date().getFullYear();
-      result.startDate = `${year}-${this.getMonthNumber(startMonth)}-${startDay.padStart(2, '0')}`;
+    if (dateTimeStr.includes('·')) {
+      // Format with '·'
+      const dateTimeRegex = /([\w]*) ([\d]{0,2}) · ([\d]{1,2}[:]*[\d]{0,2})([am|pm]*) - ([\w]*)[ ]?([\d]{0,2})[ · ]*([\d]{1,2}[:]*[\d]{0,2})([am|pm]*)/
+      const match = dateTimeStr.match(dateTimeRegex);
+      if (match) {
+        const [_, startMonth, startDay, startTime, startPeriod, endMonth, endDay, endTime, endPeriod] = match;
+        const year = new Date().getFullYear();
+        result.startDate = `${year}-${this.getMonthNumber(startMonth)}-${startDay.padStart(2, '0')}`;
 
-      result.startTime = this.convertTo24HourFormat(startTime, (startPeriod || endPeriod));
+        result.startTime = this.convertTo24HourFormat(startTime, (startPeriod || endPeriod));
 
-      // If endMonth and endDay are present, it's a multi-day event
-      if (endMonth && endDay) {
-        result.endDate = `${year}-${this.getMonthNumber(endMonth)}-${endDay.padStart(2, '0')}`;
-      } else {
-        // Single day event, end date is same as start date
-        result.endDate = result.startDate;
-      }
-      result.endTime = this.convertTo24HourFormat(endTime, endPeriod);
-    } else {
-      // Try another format: 'Wed, 8 Apr 2026 10:00 - Thu, 9 Apr 2026 17:00 GMT+8'
-      const altDateTimeRegex = /([\d]{0,2}) ([\w]*) ([\d]{4}) ([\d]{1,2}[:]*[\d]{0,2})([am|pm]*) - ([\d]{0,2})[ ]?([\w]*)[ ]?([\d]{4})[ · ]*([\d]{1,2}[:]*[\d]{0,2})([am|pm]*)/
-      const match2 = dateTimeStr.match(altDateTimeRegex);
-      if (match2) {
-        const [_, startDay, startMonth, startYear, startTime, startPeriod, endDay, endMonth, endYear, endTime, endPeriod] = match2;
-        result.startDate = `${startYear}-${this.getMonthNumber(startMonth)}-${startDay.padStart(2, '0')}`;
-        result.startTime = this.convertTo24HourFormat(startTime, startPeriod);
-        result.endDate = `${endYear}-${this.getMonthNumber(endMonth)}-${endDay.padStart(2, '0')}`;
+        // If endMonth and endDay are present, it's a multi-day event
+        if (endMonth && endDay) {
+          result.endDate = `${year}-${this.getMonthNumber(endMonth)}-${endDay.padStart(2, '0')}`;
+        } else {
+          // Single day event, end date is same as start date
+          result.endDate = result.startDate;
+        }
         result.endTime = this.convertTo24HourFormat(endTime, endPeriod);
       } else {
         console.warn(`Unable to parse date and time from string: ${dateTimeStr}`);
+      }
+    } else {
+      // Try another format: 
+      // Single day: 'Tue, 28 Oct 2025 08:00 - 11:10 GMT+8'
+      // Multi day: 'Wed, 8 Apr 2026 10:00 - Thu, 9 Apr 2026 17:00 GMT+8'
+
+      // Look for instance of 'GMT' and trim to that position
+      const gmtIndex = dateTimeStr.indexOf('GMT');
+      if (gmtIndex !== -1) dateTimeStr = dateTimeStr.substring(0, gmtIndex).trim()
+      
+      const [startDateTimeStr, endDateTimeStr] = dateTimeStr.split(' - ')
+
+      const startDateTime = DateTime.fromFormat(startDateTimeStr.trim(), 'd LLL yyyy HH:mm', { zone: 'Asia/Singapore' });
+      if (startDateTime.isValid) {
+        result.startDate = startDateTime.toFormat('yyyy-MM-dd');
+        result.startTime = startDateTime.toFormat('HH:mm');
+      } else {
+        console.warn(`Unable to parse start date and time from string: ${startDateTimeStr}`);
+      }
+
+      // Check if endDateTimeStr contains a date (i.e., has a day and month)
+      const endDateTimeHasDate = /\d{1,2} \w+ \d{4}/.test(endDateTimeStr.trim());
+      let endDateTime: DateTime;
+      if (endDateTimeHasDate) {
+        endDateTime = DateTime.fromFormat(endDateTimeStr.trim(), 'd LLL yyyy HH:mm', { zone: 'Asia/Singapore' });
+      } else {
+        // If no date, assume same date as start
+        const startDateStr = startDateTime.toFormat('d LLL yyyy');
+        endDateTime = DateTime.fromFormat(`${startDateStr} ${endDateTimeStr.trim()}`, 'd LLL yyyy HH:mm', { zone: 'Asia/Singapore' });
+      }
+
+      if (endDateTime.isValid) {
+        result.endDate = endDateTime.toFormat('yyyy-MM-dd');
+        result.endTime = endDateTime.toFormat('HH:mm');
+      } else {
+        console.warn(`Unable to parse end date and time from string: ${endDateTimeStr}`);
       }
     }
 

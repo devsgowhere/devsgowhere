@@ -46,24 +46,31 @@ describe('EventbriteParser', () => {
       })
     })
 
-    test('should parse multi day event date and time that crosses over to new year', () => {
+    test('should parse alternative format', () => {
       const parser = new EventbriteParser()
-
+      
       const result1 = parser.dateTimeParser('Wed, 8 Apr 2026 10:00 - Thu, 9 Apr 2026 17:00 GMT+8')
-      // const result4 = parser.dateTimeParser('Thu, 9 Apr 2026 10:00 - Fri, 10 Apr 2026 17:00 GMT+8')
       expect(result1).toEqual({
         startDate: '2026-04-08',
         startTime: '10:00',
         endDate: '2026-04-09',
         endTime: '17:00'
       })
-
+      
       const result2 = parser.dateTimeParser('Thu, 9 Apr 2026 10:00 - Fri, 10 Apr 2026 17:00 GMT+8')
       expect(result2).toEqual({
         startDate: '2026-04-09',
         startTime: '10:00',
         endDate: '2026-04-10',
         endTime: '17:00'
+      })
+
+      const result3 = parser.dateTimeParser('Tue, 28 Oct 2025 08:00 - 11:10 GMT+8')
+      expect(result3).toEqual({
+        startDate: '2025-10-28',
+        startTime: '08:00',
+        endDate: '2025-10-28',
+        endTime: '11:10'
       })
     })
   })
