@@ -1,8 +1,6 @@
-import * as cheerio from 'cheerio'
 import { describe, expect, test } from 'vitest'
 import { MeetupParser } from './MeetupParser'
-
-const getPage = async (url: string): Promise<cheerio.CheerioAPI> => await cheerio.fromURL(url)
+import { PageScraper } from './PageScraper'
 
 describe('MeetupParser', () => {
   describe('single day event', () => {
@@ -10,7 +8,7 @@ describe('MeetupParser', () => {
       const parser = new MeetupParser();
       
       const url = 'https://www.meetup.com/junior-developers-singapore/events/310333625';
-      const $ = await getPage(url);
+      const $ = await PageScraper.getPage(url);
 
       const result = await parser.scrapeEventDataFromPage($, url)
 

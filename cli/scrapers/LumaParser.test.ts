@@ -1,8 +1,6 @@
-import * as cheerio from 'cheerio'
 import { describe, expect, test } from 'vitest'
 import { LumaParser } from './LumaParser'
-
-const getPage = async (url: string): Promise<cheerio.CheerioAPI> => await cheerio.fromURL(url)
+import { PageScraper } from './PageScraper'
 
 describe('LumaParser', () => {
   describe('single day event', () => {
@@ -10,7 +8,7 @@ describe('LumaParser', () => {
       const parser = new LumaParser()
 
       const url = 'https://lu.ma/85nuq71f'
-      const $ = await getPage(url);
+      const $ = await PageScraper.getPage(url);
 
       const result = await parser.scrapeEventDataFromPage($, url)
 
@@ -39,8 +37,8 @@ describe('LumaParser', () => {
       const parser = new LumaParser()
   
       const url = 'https://lu.ma/y79r0r4g'
-      const $ = await getPage(url);
-  
+      const $ = await PageScraper.getPage(url);
+
       const result = await parser.scrapeEventDataFromPage($, url)
   
       expect(result).toMatchObject({
@@ -68,8 +66,8 @@ describe('LumaParser', () => {
       const parser = new LumaParser()
 
       const url = 'https://lu.ma/i1sng2wi'
-      const $ = await getPage(url);
-  
+      const $ = await PageScraper.getPage(url);
+
       const result = await parser.scrapeEventDataFromPage($, url)
   
       expect(result).toMatchObject({
@@ -100,7 +98,7 @@ describe('LumaParser', () => {
       const parser = new LumaParser()
   
       const url = 'https://lu.ma/lesssg2025'
-      const $ = await getPage(url);
+      const $ = await PageScraper.getPage(url);
 
       const result = await parser.scrapeEventDataFromPage($, url)
 

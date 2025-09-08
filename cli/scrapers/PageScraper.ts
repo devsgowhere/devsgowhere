@@ -17,16 +17,7 @@ export class PageScraper {
   async scrapeEventData(url: string): Promise<ScrapedEventData> {
     try {
       console.log(`Fetching ${url}...`);
-      const $ = await cheerio.fromURL(url, url.includes('meetup.com') ? {
-        requestOptions: {
-          method: "GET",
-          headers: {
-            // Accept header to improve consistency when scraping Meetup.com
-            // https://github.com/devsgowhere/devsgowhere/pull/186
-            accept: "*/*",
-          },
-        },
-      } : undefined);
+      const $ = await PageScraper.getPage(url);
 
       let result: ScrapedEventData
       console.log(`Scraping event data...`);
@@ -126,5 +117,15 @@ export class PageScraper {
 
     console.log('\n🤖 Using automated event data for CI mode');
     return eventData;
+  }
+
+  public static async getPage(url: string): Promise<cheerio.CheerioAPI> {
+    const request = await fetch(url)
+  
+    if (!request.ok)
+      throw new Error(`Failed to fetch page: ${request.status} ${request.statusText}`)
+  
+    const body = await request.text()
+    return cheerio.load(body)
   }
 }
