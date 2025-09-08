@@ -1,8 +1,6 @@
-import * as cheerio from 'cheerio'
 import { describe, expect, test } from 'vitest'
 import { EventbriteParser } from './EventbriteParser'
-
-const getPage = async (url: string): Promise<cheerio.CheerioAPI> => await cheerio.fromURL(url)
+import { PageScraper } from './PageScraper'
 
 describe('EventbriteParser', () => {
   describe('dateTimeParser', () => {
@@ -80,7 +78,7 @@ describe('EventbriteParser', () => {
       const parser = new EventbriteParser()
 
       const url = 'https://www.eventbrite.sg/e/tech-talks-club-street-the-future-of-aging-tickets-1599917078049'
-      const $ = await getPage(url);
+      const $ = await PageScraper.getPage(url);
 
       const result = await parser.scrapeEventDataFromPage($, url)
 
@@ -124,7 +122,7 @@ describe('EventbriteParser', () => {
       const parser = new EventbriteParser()
 
       const url = 'https://www.eventbrite.com/e/tech-week-singapore-2025-tickets-1604379886429'
-      const $ = await getPage(url);
+      const $ = await PageScraper.getPage(url);
 
       const result = await parser.scrapeEventDataFromPage($, url)
 
