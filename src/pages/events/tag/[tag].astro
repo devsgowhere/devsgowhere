@@ -8,13 +8,16 @@ import { SITE_TITLE, SITE_DESCRIPTION } from "../../../consts";
 import { getCollection } from "astro:content";
 import EventCard from "../../../components/EventCard.astro";
 import { Settings, DateTime } from "luxon";
+import { toSlug } from "../../../utils/helpers";
 
 Settings.defaultZone = "Asia/Singapore";
 
 export async function getStaticPaths() {
   const events = await getCollection("events");
 
-  const allTags = events?.flatMap((event) => event.data?.tags || []);
+  const allTags = events
+    ?.flatMap((event) => event.data?.tags || [])
+    .map(toSlug);
   const uniqueTags = [...new Set(allTags)].filter(Boolean);
 
   return uniqueTags.map((tag) => {
@@ -28,7 +31,7 @@ const { tag } = Astro.params;
 
 const events = (await getCollection("events"))
   .filter((event) => {
-    return event.data.tags && event.data.tags.includes(tag);
+    return event.data.tags && event.data.tags.map(toSlug).includes(tag);
   })
   .sort(
     (a, b) =>
