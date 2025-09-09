@@ -9,6 +9,7 @@ import Theme from "./Theme.astro";
 import SummaryCard from "../components/SummaryCard.astro";
 import FormattedEventDate from "../components/FormattedEventDate.astro";
 import AddToCalendarButton from "../components/AddToCalendarButton.tsx";
+import { toSlug } from "../utils/helpers";
 
 type Props = CollectionEntry<"events">["data"];
 
@@ -31,7 +32,6 @@ const {
 const orgData = await getEntry(org);
 
 let orgUrl = `/orgs/${org.id}`;
-
 ---
 
 <html lang="en">
@@ -49,28 +49,41 @@ let orgUrl = `/orgs/${org.id}`;
                 <Image width={1020} height={510} src={heroImage} alt="" />
               )
             }
-          </div>              
-            <div class="pt-l px-l pb-xl">
-              {org && <div class="org-name mb-xs pl-0 text-s text-gray-6">Hosted by: {orgData.data.title}</div>}
-              <h1 class="event-title text-3xl text-accent">{title}</h1>
-              <hr class="mb-l"/>   
-              <ul class="date mb-m">
-                <i class="fa-solid fa-clock mr-xs"></i>      
-                <FormattedEventDate
-                  startDate={startDate}
-                  startTime={startTime}                  
-                  endDate={endDate ?? ""}
-                  endTime={endTime ?? ""}
-                />
-              </ul>
-                <ul style="display: flex; align-items: baseline; gap: 0.5rem;">
-                <i class="fa-solid fa-location-dot mr-xs"></i>
-                <div style="display: flex; flex-direction: column; align-items:baseline;">
-                  <p class="mt-0 mb-xs" style="font-weight: bold;">{venue}</p>
-                  <p class="text-capitalise mt-0 mb-0">{(venueAddress ?? '').toLowerCase()}</p>
+          </div>
+          <div class="pt-l px-l pb-xl">
+            {
+              org && (
+                <div class="org-name mb-xs pl-0 text-s text-gray-6">
+                  Hosted by: {orgData.data.title}
                 </div>
-                </ul>
-              <div class="ml-s" style={{display: "flex", gap: "1rem", alignItems: "center" }}>
+              )
+            }
+            <h1 class="event-title text-3xl text-accent">{title}</h1>
+            <hr class="mb-l" />
+            <ul class="date mb-m">
+              <i class="fa-solid fa-clock mr-xs"></i>
+              <FormattedEventDate
+                startDate={startDate}
+                startTime={startTime}
+                endDate={endDate ?? ""}
+                endTime={endTime ?? ""}
+              />
+            </ul>
+            <ul style="display: flex; align-items: baseline; gap: 0.5rem;">
+              <i class="fa-solid fa-location-dot mr-xs"></i>
+              <div
+                style="display: flex; flex-direction: column; align-items:baseline;"
+              >
+                <p class="mt-0 mb-xs" style="font-weight: bold;">{venue}</p>
+                <p class="text-capitalise mt-0 mb-0">
+                  {(venueAddress ?? "").toLowerCase()}
+                </p>
+              </div>
+            </ul>
+            <div
+              class="ml-s"
+              style={{ display: "flex", gap: "1rem", alignItems: "center" }}
+            >
               {
                 rsvpButtonUrl && (
                   <a
@@ -82,10 +95,10 @@ let orgUrl = `/orgs/${org.id}`;
                     {rsvpButtonText ?? "Link"}
                   </a>
                 )
-              }                       
-              <AddToCalendarButton        
+              }
+              <AddToCalendarButton
                 client:only="react"
-                label="Add to Calendar" 
+                label="Add to Calendar"
                 name={title}
                 options="'Apple','Google'"
                 location={venueAddress ?? ""}
@@ -96,16 +109,18 @@ let orgUrl = `/orgs/${org.id}`;
                 timeZone={timezone ?? "Asia/Singapore"}
               />
             </div>
-              <hr class="mb-l mt-m"/>   
+            <hr class="mb-l mt-m" />
             <div class="event-markup">
-            <slot />
+              <slot />
             </div>
             <ul class="tag-list mb-l">
-              { Astro.props.tags?.slice(0, 10).map((tag) => (
-                <li class="tag">
-                  # {tag}
-                </li>
-              )) }
+              {
+                Astro.props.tags?.map((tag) => (
+                  <li class="tag">
+                    <a href={`/events/tag/${toSlug(tag)}`}># {tag}</a>
+                  </li>
+                ))
+              }
             </ul>
           </div>
         </article>
@@ -130,7 +145,13 @@ let orgUrl = `/orgs/${org.id}`;
                 {
                   // if logoImage is defined, use it
                   orgData.data.logoImage && (
-                    <Image style="object-fit: contain;" width={360} height={360} src={orgData.data.logoImage} alt={title} />
+                    <Image
+                      style="object-fit: contain;"
+                      width={360}
+                      height={360}
+                      src={orgData.data.logoImage}
+                      alt={title}
+                    />
                   )
                 }
               </a>
@@ -147,29 +168,32 @@ let orgUrl = `/orgs/${org.id}`;
                   }
                 </p>
                 <div>
-                  <a href={orgUrl}><i class="fa fa-arrow-right"></i> More events</a>
+                  <a href={orgUrl}
+                    ><i class="fa fa-arrow-right"></i> More events</a
+                  >
                 </div>
               </div>
             </div>
-            </div>
+          </div>
         </aside>
       </div>
     </main>
     <Footer />
-    </Theme>
+  </Theme>
 </html>
 
 <style lang="scss">
   .event-page {
-
     $article-width: 800px;
     $aside-width: 400px;
     $gap: 2rem;
     $padding-x: 1rem;
     padding: 4rem 0;
-    
+
     .container {
-      width: calc(#{$article-width} + #{$aside-width} + #{$gap} + 2 * #{$padding-x});
+      width: calc(
+        #{$article-width} + #{$aside-width} + #{$gap} + 2 * #{$padding-x}
+      );
       max-width: 100%;
       display: flex;
       flex-direction: row;
@@ -178,7 +202,7 @@ let orgUrl = `/orgs/${org.id}`;
       gap: $gap;
       padding: 0 $padding-x;
 
-      // >>> article      
+      // >>> article
       article {
         width: $article-width;
         min-width: 560px;
@@ -200,7 +224,7 @@ let orgUrl = `/orgs/${org.id}`;
         padding: 0 1rem;
         > div {
           max-width: 100%; // prevent contents (e.g. long link text, like urls) from exceeding the container
-        }        
+        }
       }
     }
     .sticky-aside {
@@ -212,17 +236,15 @@ let orgUrl = `/orgs/${org.id}`;
     //
     // mobile layout
     //
-  
-    @media (max-width: 768px) {
 
+    @media (max-width: 768px) {
       // remove top padding on main
-      padding-top: 0; 
-      
+      padding-top: 0;
+
       //
       // stack article on top of aside
       //
       .container {
-
         flex-direction: column;
         gap: 0;
         width: 100%;
@@ -238,14 +260,12 @@ let orgUrl = `/orgs/${org.id}`;
         aside {
           width: 100%;
         }
-        
       }
-      
     }
 
     // >>> logo
     .event-panel {
-      // square shape    
+      // square shape
       width: $aside-width;
       //height: $aside-width;
       background-color: transparent;
@@ -256,73 +276,66 @@ let orgUrl = `/orgs/${org.id}`;
         object-fit: cover;
       }
       margin-bottom: 2rem;
-    }  
-      .date {
-        margin-bottom: 0.5em;
-        color: rgb(var(--gray));
-      }
-      .last-updated-on {
-        font-style: italic;
-      }
-      .event-title {
-        margin-bottom: 0.5em;
-        color: rgb(var(--gray));
-      }
-      .rsvp-button {
-        display: inline-block;
-        padding: 0.8em 1.6em;
-        margin: 1em 0;
-        background-color: var(--accent, #007BFF);
-        color: white;
-        text-decoration: none;
-        border-radius: 4px;
-        font-weight: bold;
-        transition: background-color 0.2s ease;
-      }
-      .rsvp-button:hover {
-        background-color: var(--accent,  #0056b3);
-        color: white;
-      }
-      .org-name {
-        color: rgb(var(--gray));
-      }
+    }
+    .date {
+      margin-bottom: 0.5em;
+      color: rgb(var(--gray));
+    }
+    .last-updated-on {
+      font-style: italic;
+    }
+    .event-title {
+      margin-bottom: 0.5em;
+      color: rgb(var(--gray));
+    }
+    .rsvp-button {
+      display: inline-block;
+      padding: 0.8em 1.6em;
+      margin: 1em 0;
+      background-color: var(--accent, #007bff);
+      color: white;
+      text-decoration: none;
+      border-radius: 4px;
+      font-weight: bold;
+      transition: background-color 0.2s ease;
+    }
+    .rsvp-button:hover {
+      background-color: var(--accent, #0056b3);
+      color: white;
+    }
+    .org-name {
+      color: rgb(var(--gray));
+    }
 
-      //
-      // org info
-      //
-      .org-info-container{
+    //
+    // org info
+    //
+    .org-info-container {
+      width: 100%;
 
-        width: 100%;
+      padding: 2rem;
 
+      // >>> logo
+      .org-info__logo {
+        $size: 200px;
+
+        width: $size;
+        height: $size;
+
+        // center the logo horizontally
+        margin: 0 auto;
+
+        background-color: white;
+        border-radius: 10px;
+
+        // center the content
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        // padding to prevent content from touching the edges
         padding: 2rem;
-
-        // >>> logo
-        .org-info__logo{
-
-          $size: 200px;
-          
-          width: $size;
-          height: $size;
-
-          // center the logo horizontally
-          margin: 0 auto;
-          
-          background-color: white;
-          border-radius: 10px;
-
-          // center the content
-          display: flex;
-          justify-content: center;
-          align-items: center;
-
-          // padding to prevent content from touching the edges
-          padding: 2rem;
-          
-        }
-
       }
-
+    }
   }
-
 </style>
-
