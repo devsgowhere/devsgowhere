@@ -35,8 +35,8 @@ const events = (await getCollection("events"))
   })
   .toSorted(
     (a, b) =>
-      new Date(a.data.startDate).valueOf() -
-      new Date(b.data.startDate).valueOf(),
+      new Date(b.data.startDate).valueOf() -
+      new Date(a.data.startDate).valueOf(),
   );
 
 // Group events by date
