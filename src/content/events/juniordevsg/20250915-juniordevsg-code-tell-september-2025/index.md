@@ -7,7 +7,7 @@ venueAddress: "11 Orchard Road, Dhoby Ghaut MRT, #B1- 13, Singapore 238826 · Si
 startDate: "2025-09-15"
 startTime: "19:00"
 endTime: "21:00"
-heroImage: "highres_529829368.webp"
+heroImage: "highres_530130452.webp"
 tags: ["Events in Singapore, SG", "Artificial Intelligence", "Banking", "Machine Learning", "PaaS (Platform as a Service)", "Software Development"]
 rsvpButtonUrl: "https://www.meetup.com/junior-developers-singapore/events/310695684"
 rsvpButtonText: "RSVP on Meetup"
@@ -41,15 +41,13 @@ I'm Maryana, a software engineer at PayPal focused on payment systems and mercha
 **Topic: Building Digital Platforms at Scale: Lessons from Modern Banks - Moving from monoliths to modular, domain-driven architectures (bounded contexts)**
 
 **Speaker:**  
-Darren H., Engagement/Delivery Lead, Ikigai Digital  
-LinkedIn: [https://www.linkedin.com/in/darrenhariharasegaran/](https://www.linkedin.com/in/darrenhariharasegaran/)
+Theo Chiu, Tech Lead, Ikigai Digital  
+LinkedIn: [https://www.linkedin.com/in/theochiu2010/](https://www.linkedin.com/in/theochiu2010/)
 
 Ikigai has worked on many greenfield/brownfield banks and in this talk we'll share our view on the past lessons learned, how we decide and choose the architecture and high level design, and also talk about how we made use of bounded context (DDD)
 
-**About Darren**  
-Seasoned head of data & AI with global experience managing diverse teams. Deep experience in implementing and running data platforms, analytics and AI/ML capabilities.
-
-Built 2 digital banks across 2 different continents. Driven transformation programs including re-platforming programs, core banking migrations, regulatory, compliance, process change, and target operating model changes.
+**About Theo**  
+I am a tech lead with extensive experience in fintech and digital banking. At Ikigai Digital, I focus on building virtual banks globally and integrating thin core banking systems like ThoughtMachine. I have helped deliver innovative digital banks such as Mox, Judo, and Union Digital. Additionally, I am heavily involved in technical recruitment and coaching, fostering talent to drive cutting-edge solutions in the financial sector.
 
 \------------------------------------  
 **Schedule:**  
