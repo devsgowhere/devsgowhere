@@ -44,11 +44,6 @@ export type EventCLIOptions = {
   autoScrapeMode: false;
 })
 
-import type { CheerioAPI } from 'cheerio'
-export interface PageParser {
-  scrapeEventDataFromPage($: CheerioAPI, url: string): Promise<ScrapedEventData>
-}
-
 export type DownloadResult = {
   originalUrl: string
   fileName: string | null

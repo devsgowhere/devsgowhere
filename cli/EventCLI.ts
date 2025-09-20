@@ -7,13 +7,14 @@ import { EventWriter } from './EventWriter';
 
 export class EventCLI {
   private options: EventCLIOptions;
+  private pageScraper: PageScraper;
+  private eventWriter: EventWriter;
   private availableOrgs: string[];
-
-  private eventWriter = new EventWriter();
-  private pageScraper = new PageScraper();
 
   constructor(options: EventCLIOptions) {
     this.options = options;
+    this.pageScraper = new PageScraper(options.outputDir);
+    this.eventWriter = new EventWriter();
     this.availableOrgs = this.loadAvailableOrgs();
   }
 

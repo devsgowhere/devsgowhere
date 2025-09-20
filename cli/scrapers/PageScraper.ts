@@ -1,12 +1,16 @@
-import path from 'path';
-import * as cheerio from 'cheerio'
-import type { ScrapedEventData, EventData } from '../types';
-import { MeetupParser } from './MeetupParser';
-import { LumaParser } from './LumaParser';
+import * as cheerio from 'cheerio';
+import type { EventData, ScrapedEventData } from '../types';
+import type { BaseParser } from './BaseParser';
 import { EventbriteParser } from './EventbriteParser';
+import { LumaParser } from './LumaParser';
+import { MeetupParser } from './MeetupParser';
 
 export class PageScraper {
-  public scraperOutputDir: string = path.join(process.cwd(), 'scraper-output');
+  public scraperOutputDir: string;
+
+  constructor(outputDir: string) {
+    this.scraperOutputDir = outputDir;
+  }
 
   /**
    * Scrapes event data from the provided URL using Puppeteer.
@@ -19,29 +23,24 @@ export class PageScraper {
       console.log(`Fetching ${url}...`);
       const $ = await PageScraper.getPage(url);
 
-      let result: ScrapedEventData
       console.log(`Scraping event data...`);
+      let parser: BaseParser;
       switch (true) {
         case url.includes('meetup.com'):
-          const meetupParser = new MeetupParser();
-          meetupParser.scraperOutputDir = this.scraperOutputDir;
-          result = await meetupParser.scrapeEventDataFromPage($, url);
+          parser = new MeetupParser(this.scraperOutputDir);
           break;
         case url.includes('lu.ma'):
-          const lumaParser = new LumaParser();
-          lumaParser.scraperOutputDir = this.scraperOutputDir;
-          result = await lumaParser.scrapeEventDataFromPage($, url);
+          parser = new LumaParser(this.scraperOutputDir);
           break;
         case url.includes('eventbrite.com'):
         case url.includes('eventbrite.sg'):
-          const eventbriteParser = new EventbriteParser();
-          eventbriteParser.scraperOutputDir = this.scraperOutputDir;
-          result = await eventbriteParser.scrapeEventDataFromPage($, url);
+          parser = new EventbriteParser(this.scraperOutputDir);
           break;
         default:
           throw new Error('Sorry! This event platform is not supported yet.');
       }
 
+      const result = await parser.scrapeEventDataFromPage($, url);
       return result
     } catch (error: any) {
       console.error(`Error scraping event data: ${error.message}`);
@@ -121,10 +120,9 @@ export class PageScraper {
 
   public static async getPage(url: string): Promise<cheerio.CheerioAPI> {
     const request = await fetch(url)
-  
     if (!request.ok)
       throw new Error(`Failed to fetch page: ${request.status} ${request.statusText}`)
-  
+
     const body = await request.text()
     return cheerio.load(body)
   }
