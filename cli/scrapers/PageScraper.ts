@@ -1,5 +1,5 @@
 import * as cheerio from 'cheerio';
-import type { EventData, ScrapedEventData, ScrapedOrgData } from '../types';
+import type { EventData, OrgData, ScrapedEventData, ScrapedOrgData } from '../types';
 import type { BaseParser } from './BaseParser';
 import { EventbriteParser } from './EventbriteParser';
 import { LumaParser } from './LumaParser';
@@ -121,6 +121,63 @@ export class PageScraper {
 
     console.log('\n🤖 Using automated event data for CI mode');
     return eventData;
+  }
+
+  /**
+   * Creates OrgData from scraped data without user input (for CI mode)
+   * @param scrapedData The scraped org data
+   * @param originalUrl The original org URL
+   * @param specifiedOrgId Organization ID specified via --orgID parameter
+   * @returns Complete OrgData object with defaults filled in
+   */
+  async createOrgDataFromScrapedData(scrapedData: ScrapedOrgData, originalUrl: string, specifiedOrgId: string): Promise<OrgData> {
+    console.log('\n✅ Scraped data preview:');
+    if (scrapedData.title) console.log(`Title: ${scrapedData.title}`);
+    if (scrapedData.description) console.log(`Description: ${scrapedData.description.substring(0, 100)}...`);
+    if (scrapedData.tags && scrapedData.tags.length > 0) console.log(`Tags: ${scrapedData.tags.join(', ')}`);
+    if (scrapedData.heroImage) console.log(`Hero Image: ${scrapedData.heroImage}`);
+    if (scrapedData.logoImage) console.log(`Logo Image: ${scrapedData.logoImage}`);
+    if (scrapedData.website) console.log(`Website URL: ${scrapedData.website}`);
+    if (scrapedData.twitter) console.log(`Twitter URL: ${scrapedData.twitter}`);
+    if (scrapedData.facebook) console.log(`Facebook URL: ${scrapedData.facebook}`);
+    if (scrapedData.instagram) console.log(`Instagram URL: ${scrapedData.instagram}`);
+    if (scrapedData.linkedin) console.log(`Linkedin URL: ${scrapedData.linkedin}`);
+    if (scrapedData.youtube) console.log(`Youtube URL: ${scrapedData.youtube}`);
+    if (scrapedData.tiktok) console.log(`Tiktok URL: ${scrapedData.tiktok}`);
+    if (scrapedData.discord) console.log(`Discord URL: ${scrapedData.discord}`);
+    if (scrapedData.github) console.log(`Github URL: ${scrapedData.github}`);
+    if (scrapedData.telegram) console.log(`Telegram URL: ${scrapedData.telegram}`);
+    if (scrapedData.meetup) console.log(`Meetup URL: ${scrapedData.meetup}`);
+
+    // Validate required fields and provide defaults
+    const orgData: OrgData = {
+      org: specifiedOrgId,
+      title: scrapedData.title || 'Untitled Organization',
+      description: scrapedData.description || 'Organization description missing',
+      content: scrapedData.content || '',
+      tags: scrapedData.tags || [],
+      heroImage: scrapedData.heroImage || 'https://placecats.com/300/200?fit=contain&position=top',
+      logoImage: scrapedData.logoImage || 'https://placecats.com/300/200?fit=contain&position=top',
+      website: scrapedData.website || (originalUrl.includes("meetup.com") ? '' : originalUrl),
+      twitter: scrapedData.twitter || '',
+      facebook: scrapedData.facebook || '',
+      instagram: scrapedData.instagram || '',
+      linkedin: scrapedData.linkedin || '',
+      youtube: scrapedData.youtube || '',
+      tiktok: scrapedData.tiktok || '',
+      discord: scrapedData.discord || '',
+      github: scrapedData.github || '',
+      telegram: scrapedData.telegram || '',
+      meetup: scrapedData.meetup || (originalUrl.includes("meetup.com") ? originalUrl : ''),
+    };
+
+    // Validate critical fields
+    if (!orgData.title || orgData.title === 'Untitled Organization') {
+      throw new Error('❌ Could not extract org title from the URL');
+    }
+
+    console.log('\n🤖 Using automated org data for CI mode');
+    return orgData;
   }
 
   public static async getPage(url: string): Promise<cheerio.CheerioAPI> {
