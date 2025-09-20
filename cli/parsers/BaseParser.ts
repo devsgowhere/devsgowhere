@@ -4,11 +4,13 @@ import path from 'path';
 import TurndownService from 'turndown';
 import type { DownloadResult, ScrapedEventData, ScrapedOrgData } from '../types';
 
+const DEFAULT_OUTPUT_DIR = path.join(process.cwd(), 'scraper-output');
+
 export abstract class BaseParser {
   public outputDir: string;
   private turndownService: TurndownService;
 
-  constructor(outputDir: string) {
+  constructor(outputDir = DEFAULT_OUTPUT_DIR) {
     this.outputDir = outputDir
     this.turndownService = this.initializeTurndownService();
   }
