@@ -33,7 +33,24 @@ export interface ScrapedEventData {
 }
 
 export interface OrgData {
-  // todo
+  org: string;
+  title: string;
+  description: string;
+  content?: string;
+  tags: string[]
+  heroImage: string;
+  logoImage: string;
+  website?: string;
+  twitter?: string;
+  facebook?: string;
+  instagram?: string;
+  linkedin?: string;
+  youtube?: string;
+  tiktok?: string;
+  discord?: string;
+  github?: string;
+  telegram?: string;
+  meetup?: string;
 }
 
 export interface ScrapedOrgData {
