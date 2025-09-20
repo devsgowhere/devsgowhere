@@ -5,11 +5,11 @@ import TurndownService from 'turndown';
 import type { DownloadResult, ScrapedEventData, ScrapedOrgData } from '../types';
 
 export abstract class BaseParser {
-  public scraperOutputDir: string;
+  public outputDir: string;
   private turndownService: TurndownService;
 
   constructor(outputDir: string) {
-    this.scraperOutputDir = outputDir
+    this.outputDir = outputDir
     this.turndownService = this.initializeTurndownService();
   }
 
@@ -115,7 +115,7 @@ export abstract class BaseParser {
       const arrayBuffer = await response.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
 
-      const targetFolder = path.join(this.scraperOutputDir, `hero-${Date.now()}`);
+      const targetFolder = path.join(this.outputDir, `hero-${Date.now()}`);
       // Ensure scraper output directory exists
       if (!fs.existsSync(targetFolder)) {
         fs.mkdirSync(targetFolder, { recursive: true });

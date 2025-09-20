@@ -1,26 +1,26 @@
 import * as cheerio from 'cheerio';
-import type { EventData, OrgData, ScrapedEventData, ScrapedOrgData } from '../types';
-import type { BaseParser } from './BaseParser';
-import { EventbriteParser } from './EventbriteParser';
-import { LumaParser } from './LumaParser';
-import { MeetupParser } from './MeetupParser';
+import type { BaseParser } from './parsers/BaseParser';
+import { EventbriteParser } from './parsers/EventbriteParser';
+import { LumaParser } from './parsers/LumaParser';
+import { MeetupParser } from './parsers/MeetupParser';
+import type { EventData, OrgData, ScrapedEventData, ScrapedOrgData } from './types';
 
 export class PageScraper {
-  public scraperOutputDir: string;
+  public outputDir: string;
 
   constructor(outputDir: string) {
-    this.scraperOutputDir = outputDir;
+    this.outputDir = outputDir;
   }
 
   private getParser(url: string): BaseParser {
     switch (true) {
       case url.includes('meetup.com'):
-        return new MeetupParser(this.scraperOutputDir);
+        return new MeetupParser(this.outputDir);
       case url.includes('lu.ma'):
-        return new LumaParser(this.scraperOutputDir);
+        return new LumaParser(this.outputDir);
       case url.includes('eventbrite.com'):
       case url.includes('eventbrite.sg'):
-        return new EventbriteParser(this.scraperOutputDir);
+        return new EventbriteParser(this.outputDir);
       default:
         throw new Error('Sorry! This event platform is not supported yet.');
     }

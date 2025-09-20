@@ -3,7 +3,7 @@ import inquirer from 'inquirer';
 import path from 'path';
 import { EventWriter } from './EventWriter';
 import { OrgWriter } from './OrgWriter';
-import { PageScraper } from './scrapers/PageScraper';
+import { PageScraper } from './PageScraper';
 import type { EventCLIOptions, EventData, ScrapedEventData } from './types';
 
 export class EventCLI {
@@ -31,7 +31,7 @@ export class EventCLI {
   }
 
   async run(): Promise<void> {
-    this.pageScraper.scraperOutputDir = this.options.outputDir;
+    this.pageScraper.outputDir = this.options.outputDir;
 
     // Check if we are in auto-scrape mode
     if (this.options.autoScrapeMode) {
