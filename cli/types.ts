@@ -16,21 +16,7 @@ export interface EventData {
   rsvpButtonUrl: string;
 }
 
-export interface ScrapedEventData {
-  title?: string;
-  startDate?: string;
-  startTime?: string;
-  endDate?: string;
-  endTime?: string;
-  venue?: string;
-  venueAddress?: string;
-  description?: string; // this is used for the event description in the card and SEO description
-  content?: string; // this is the full content of the event, used for the event page
-  tags?: string[];
-  heroImage?: string;
-  rsvpButtonText?: string;
-  rsvpButtonUrl?: string;
-}
+export type ScrapedEventData = Partial<Omit<EventData, "org" | "timezone">>
 
 export interface OrgData {
   org: string;
@@ -53,9 +39,7 @@ export interface OrgData {
   meetup?: string;
 }
 
-export interface ScrapedOrgData {
-  // todo
-}
+export type ScrapedOrgData = Partial<Omit<OrgData, "org">>
 
 export type EventCLIOptions = {
   outputDir: string
