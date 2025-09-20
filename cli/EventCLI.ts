@@ -415,6 +415,10 @@ export class EventCLI {
   }
 
   private async autoCreateNewOrg(url: string, org: string): Promise<void> {
-    // todo
+    // todo:
+    // 1. Get org url from url
+    // 2. Call pageScraper.scrapeOrgData(url)
+    // 3. Create org data from scraped data
+    // 4. Create org file
   }
 }

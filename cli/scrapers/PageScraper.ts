@@ -1,5 +1,5 @@
 import * as cheerio from 'cheerio';
-import type { EventData, ScrapedEventData } from '../types';
+import type { EventData, ScrapedEventData, ScrapedOrgData } from '../types';
 import type { BaseParser } from './BaseParser';
 import { EventbriteParser } from './EventbriteParser';
 import { LumaParser } from './LumaParser';
@@ -44,6 +44,28 @@ export class PageScraper {
       return result
     } catch (error: any) {
       console.error(`Error scraping event data: ${error.message}`);
+      throw error;
+    }
+  }
+
+  /**
+ * Scrapes org data from the provided URL using Puppeteer.
+ * @param url The URL of the org page to scrape.
+ * @param headless Whether to run the browser in headless mode (for CI environments).
+ * @returns A promise that resolves to an object containing the scraped event data.
+ */
+  async scrapeOrgData(url: string): Promise<ScrapedOrgData> {
+    const parser = this.getParser(url);
+
+    console.log(`Fetching ${url}...`);
+    const $ = await PageScraper.getPage(url);
+
+    try {
+      console.log(`Scraping org data...`);
+      const result = await parser.scrapeOrgDataFromPage($, url);
+      return result
+    } catch (error: any) {
+      console.error(`Error scraping org data: ${error.message}`);
       throw error;
     }
   }

@@ -2,7 +2,7 @@ import type { CheerioAPI } from 'cheerio';
 import fs from 'fs';
 import path from 'path';
 import TurndownService from 'turndown';
-import type { DownloadResult, ScrapedEventData } from '../types';
+import type { DownloadResult, ScrapedEventData, ScrapedOrgData } from '../types';
 
 export abstract class BaseParser {
   public scraperOutputDir: string;
@@ -56,6 +56,10 @@ export abstract class BaseParser {
   }
 
   abstract scrapeEventDataFromPage($: CheerioAPI, url: string): Promise<ScrapedEventData>
+
+  async scrapeOrgDataFromPage($: CheerioAPI, url: string): Promise<ScrapedOrgData> {
+    throw new Error(`Scraping org data not implemented in ${this.constructor.name}`)
+  }
 
   /**
   * Convert HTML content to Markdown

@@ -32,6 +32,14 @@ export interface ScrapedEventData {
   rsvpButtonUrl?: string;
 }
 
+export interface OrgData {
+  // todo
+}
+
+export interface ScrapedOrgData {
+  // todo
+}
+
 export type EventCLIOptions = {
   outputDir: string
 } & ({
