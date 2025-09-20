@@ -12,6 +12,20 @@ export class PageScraper {
     this.scraperOutputDir = outputDir;
   }
 
+  private getParser(url: string): BaseParser {
+    switch (true) {
+      case url.includes('meetup.com'):
+        return new MeetupParser(this.scraperOutputDir);
+      case url.includes('lu.ma'):
+        return new LumaParser(this.scraperOutputDir);
+      case url.includes('eventbrite.com'):
+      case url.includes('eventbrite.sg'):
+        return new EventbriteParser(this.scraperOutputDir);
+      default:
+        throw new Error('Sorry! This event platform is not supported yet.');
+    }
+  }
+
   /**
    * Scrapes event data from the provided URL using Puppeteer.
    * @param url The URL of the event page to scrape.
@@ -19,27 +33,13 @@ export class PageScraper {
    * @returns A promise that resolves to an object containing the scraped event data.
    */
   async scrapeEventData(url: string): Promise<ScrapedEventData> {
+    const parser = this.getParser(url);
+
+    console.log(`Fetching ${url}...`);
+    const $ = await PageScraper.getPage(url);
+
     try {
-      console.log(`Fetching ${url}...`);
-      const $ = await PageScraper.getPage(url);
-
       console.log(`Scraping event data...`);
-      let parser: BaseParser;
-      switch (true) {
-        case url.includes('meetup.com'):
-          parser = new MeetupParser(this.scraperOutputDir);
-          break;
-        case url.includes('lu.ma'):
-          parser = new LumaParser(this.scraperOutputDir);
-          break;
-        case url.includes('eventbrite.com'):
-        case url.includes('eventbrite.sg'):
-          parser = new EventbriteParser(this.scraperOutputDir);
-          break;
-        default:
-          throw new Error('Sorry! This event platform is not supported yet.');
-      }
-
       const result = await parser.scrapeEventDataFromPage($, url);
       return result
     } catch (error: any) {
