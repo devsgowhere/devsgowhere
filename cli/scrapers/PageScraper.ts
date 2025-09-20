@@ -74,10 +74,10 @@ export class PageScraper {
    * Creates EventData from scraped data without user input (for CI mode)
    * @param scrapedData The scraped event data
    * @param originalUrl The original event URL
-   * @param specifiedOrgId Optional organization ID specified via --orgID parameter
+   * @param specifiedOrgId Organization ID specified via --orgID parameter
    * @returns Complete EventData object with defaults filled in
    */
-  async createEventDataFromScrapedData(scrapedData: ScrapedEventData, originalUrl: string, specifiedOrgId?: string | null): Promise<EventData> {
+  async createEventDataFromScrapedData(scrapedData: ScrapedEventData, originalUrl: string, specifiedOrgId: string): Promise<EventData> {
     console.log('\n✅ Scraped data preview:');
     if (scrapedData.title) console.log(`Title: ${scrapedData.title}`);
     if (scrapedData.startDate) console.log(`Date: ${scrapedData.startDate}`);
@@ -90,26 +90,9 @@ export class PageScraper {
     if (scrapedData.rsvpButtonUrl) console.log(`RSVP URL: ${scrapedData.rsvpButtonUrl}`);
     if (scrapedData.heroImage) console.log(`Hero Image: ${scrapedData.heroImage}`);
 
-    // Determine organization - prioritize specified orgId, then extract from URL, then use default
-    let org = 'unknown';
-
-    // First priority: use specified orgId if provided
-    if (specifiedOrgId) {
-      org = specifiedOrgId;
-      console.log(`📋 Using specified organization ID: ${org}`);
-    } else if (originalUrl.includes('meetup.com')) {
-      // Second priority: try to extract organization from meetup URL
-      const urlParts = originalUrl.split('/');
-      const meetupGroupIndex = urlParts.findIndex(part => part === 'meetup.com') + 1;
-      if (meetupGroupIndex < urlParts.length) {
-        org = urlParts[meetupGroupIndex].replace(/[^a-z0-9]/gi, '_').toLowerCase();
-        console.log(`🔍 Extracted organization from URL: ${org}`);
-      }
-    }
-
     // Validate required fields and provide defaults
     const eventData: EventData = {
-      org,
+      org: specifiedOrgId,
       title: scrapedData.title || 'Untitled Event',
       description: scrapedData.description || 'Event description not available',
       content: scrapedData.content || '',
