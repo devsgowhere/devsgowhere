@@ -6,24 +6,25 @@ import { PageScraper } from './scrapers/PageScraper';
 import { EventWriter } from './EventWriter';
 
 export class EventCLI {
-  private availableOrgs: string[] = [];
+  private options: EventCLIOptions;
+  private availableOrgs: string[];
+
   private eventWriter = new EventWriter();
   private pageScraper = new PageScraper();
-  private options: EventCLIOptions;
 
   constructor(options: EventCLIOptions) {
     this.options = options;
-    this.loadAvailableOrgs();
+    this.availableOrgs = this.loadAvailableOrgs();
   }
 
-  private loadAvailableOrgs(): void {
+  private loadAvailableOrgs(): string[] {
     try {
       const orgsPath = path.join(process.cwd(), 'src', 'content', 'orgs');
       const orgDirs = fs.readdirSync(orgsPath);
-      this.availableOrgs = orgDirs.filter(dir => !dir.startsWith('.'));
+      return orgDirs.filter(dir => !dir.startsWith('.'));
     } catch (error) {
       console.error('Error loading organizations:', error);
-      this.availableOrgs = [];
+      return [];
     }
   }
 
