@@ -1,9 +1,10 @@
 import fs from 'fs';
-import path from 'path';
 import inquirer from 'inquirer';
-import type { EventCLIOptions, ScrapedEventData, EventData } from './types';
-import { PageScraper } from './scrapers/PageScraper';
+import path from 'path';
 import { EventWriter } from './EventWriter';
+import { OrgWriter } from './OrgWriter';
+import { PageScraper } from './scrapers/PageScraper';
+import type { EventCLIOptions, EventData, ScrapedEventData } from './types';
 
 export class EventCLI {
   private options: EventCLIOptions;
@@ -415,10 +416,24 @@ export class EventCLI {
   }
 
   private async autoCreateNewOrg(url: string, org: string): Promise<void> {
-    // todo:
-    // 1. Get org url from url
-    // 2. Call pageScraper.scrapeOrgData(url)
-    // 3. Create org data from scraped data
-    // 4. Create org file
+    const orgUrl = this.inferOrgUrlFromEventUrl(url);
+    try {
+      // Validate URL
+      new URL(orgUrl)
+
+      const scrapedData = await this.pageScraper.scrapeOrgData(orgUrl);
+      const orgData = await this.pageScraper.createOrgDataFromScrapedData(scrapedData, url, org);
+      new OrgWriter().createOrgFile(orgData)
+
+      console.log('\n✅ Org created successfully in CI mode!');
+    } catch (error) {
+      console.error('❌ Error in CI mode:', error);
+      process.exit(1);
+    }
+  }
+
+  private inferOrgUrlFromEventUrl(url: string): string {
+    // todo 
+    return url
   }
 }
