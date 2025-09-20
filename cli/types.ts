@@ -32,12 +32,17 @@ export interface ScrapedEventData {
   rsvpButtonUrl?: string;
 }
 
-export type EventCLIOptions ={
+export type EventCLIOptions = {
+  outputDir: string
+} & ({
+  eventURL: string;
+  orgID: string;
+  autoScrapeMode: true; // true if both eventURL and orgID are provided
+} | {
   eventURL?: string;
   orgID?: string;
-  outputDir?: string;
-  autoScrapeMode?: boolean; // true if both eventURL and orgID are provided
-}
+  autoScrapeMode: false;
+})
 
 import type { CheerioAPI } from 'cheerio'
 export interface PageParser {
