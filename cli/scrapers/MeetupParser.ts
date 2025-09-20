@@ -1,6 +1,6 @@
 import type { CheerioAPI } from 'cheerio';
 import { DateTime } from 'luxon';
-import type { ScrapedEventData } from '../types';
+import type { ScrapedEventData, ScrapedOrgData } from '../types';
 import { BaseParser } from './BaseParser';
 
 export class MeetupParser extends BaseParser {
@@ -121,5 +121,9 @@ export class MeetupParser extends BaseParser {
     scrapedData.rsvpButtonUrl = url;
 
     return scrapedData;
+  }
+
+  override async scrapeOrgDataFromPage($: CheerioAPI, url: string): Promise<ScrapedOrgData> {
+    throw new Error(`Scraping org data not implemented in ${this.constructor.name}`)
   }
 }

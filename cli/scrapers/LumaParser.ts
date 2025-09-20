@@ -1,7 +1,7 @@
 
 import type { CheerioAPI } from 'cheerio';
 import { DateTime } from 'luxon';
-import type { ScrapedEventData } from '../types';
+import type { ScrapedEventData, ScrapedOrgData } from '../types';
 import { BaseParser } from './BaseParser';
 
 export class LumaParser extends BaseParser {
@@ -11,7 +11,7 @@ export class LumaParser extends BaseParser {
     let defaultData: any = {}
     const nextData = $('#__NEXT_DATA__').text()
     if (nextData) defaultData = JSON.parse(nextData)
-    
+
     // console.log('Event Data', nextData)
 
     // =======================================================================
@@ -52,9 +52,9 @@ export class LumaParser extends BaseParser {
     console.log(`Extracting venue information...`);
 
     scrapedData.venue = defaultData.props.pageProps.initialData.data.event.geo_address_info.address
-    scrapedData.venueAddress = defaultData.props.pageProps.initialData.data.event.geo_address_info.full_address ? 
-       defaultData.props.pageProps.initialData.data.event.geo_address_info.full_address.replace(`${defaultData.props.pageProps.initialData.data.event.geo_address_info.address}, `, '') :
-       ''
+    scrapedData.venueAddress = defaultData.props.pageProps.initialData.data.event.geo_address_info.full_address ?
+      defaultData.props.pageProps.initialData.data.event.geo_address_info.full_address.replace(`${defaultData.props.pageProps.initialData.data.event.geo_address_info.address}, `, '') :
+      ''
 
     // =======================================================================
     // Extract event description and content
@@ -94,5 +94,9 @@ export class LumaParser extends BaseParser {
     scrapedData.rsvpButtonUrl = url;
 
     return scrapedData;
+  }
+
+  override async scrapeOrgDataFromPage($: CheerioAPI, url: string): Promise<ScrapedOrgData> {
+    throw new Error(`Scraping org data not implemented in ${this.constructor.name}`)
   }
 }

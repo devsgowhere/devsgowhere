@@ -57,9 +57,7 @@ export abstract class BaseParser {
 
   abstract scrapeEventDataFromPage($: CheerioAPI, url: string): Promise<ScrapedEventData>
 
-  async scrapeOrgDataFromPage($: CheerioAPI, url: string): Promise<ScrapedOrgData> {
-    throw new Error(`Scraping org data not implemented in ${this.constructor.name}`)
-  }
+  abstract scrapeOrgDataFromPage($: CheerioAPI, url: string): Promise<ScrapedOrgData>
 
   /**
   * Convert HTML content to Markdown

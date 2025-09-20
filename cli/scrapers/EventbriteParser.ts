@@ -1,6 +1,6 @@
 import type { CheerioAPI } from 'cheerio';
 import { DateTime } from 'luxon';
-import type { ScrapedEventData } from '../types';
+import type { ScrapedEventData, ScrapedOrgData } from '../types';
 import { BaseParser } from './BaseParser';
 
 export class EventbriteParser extends BaseParser {
@@ -73,7 +73,7 @@ export class EventbriteParser extends BaseParser {
 
     console.log(`Extracting hero image...`);
     const heroImageUrl = $('img[data-testid="hero-img"]').attr('src')?.trim() || '';
-    
+
     // download the hero image to 'scraper-output' folder
     if (heroImageUrl) {
       console.log(`Hero image found: ${heroImageUrl}`);
@@ -91,6 +91,10 @@ export class EventbriteParser extends BaseParser {
     scrapedData.rsvpButtonUrl = url;
 
     return scrapedData;
+  }
+
+  override async scrapeOrgDataFromPage($: CheerioAPI, url: string): Promise<ScrapedOrgData> {
+    throw new Error(`Scraping org data not implemented in ${this.constructor.name}`)
   }
 
   dateTimeParser(dateTimeStr: string): { startDate?: string; startTime?: string; endDate?: string; endTime?: string; } {
@@ -129,7 +133,7 @@ export class EventbriteParser extends BaseParser {
       // Look for instance of 'GMT' and trim to that position
       const gmtIndex = dateTimeStr.indexOf('GMT');
       if (gmtIndex !== -1) dateTimeStr = dateTimeStr.substring(0, gmtIndex).trim()
-      
+
       const [startDateTimeStr, endDateTimeStr] = dateTimeStr.split(' - ')
 
       const startDateTime = DateTime.fromFormat(startDateTimeStr.trim(), 'd LLL yyyy HH:mm', { zone: 'Asia/Singapore' });
