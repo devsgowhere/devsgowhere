@@ -433,7 +433,14 @@ export class EventCLI {
   }
 
   private inferOrgUrlFromEventUrl(url: string): string {
-    // todo 
+    switch (true) {
+      case url.includes("meetup.com"):
+        const parts = url.split("/");
+        return parts.slice(0, parts.indexOf("meetup.com") + 1).join("/");
+      default:
+        console.warn(`⚠️  Unable to infer org url from: '${url}'.`);
+        return url;
+    }
     return url
   }
 }
