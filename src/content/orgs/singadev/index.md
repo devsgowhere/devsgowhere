@@ -4,7 +4,7 @@ description: "Our group focuses on anything that is relevant for Polyglot Develo
 heroImage: "./singadev-logo.avif"
 logoImage: "./singadev-logo.avif"
 # Add up to 10 tags for your organisation
-tags: ["coding", "singapore"]
+tags: ["coding", "singapore", "polyglot", "java"]
 # (Optional) Links ----------------------------------
 # website: https://devsgowhere.com
 # twitter: <url>
