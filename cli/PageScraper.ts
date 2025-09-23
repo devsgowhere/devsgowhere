@@ -140,7 +140,7 @@ export class PageScraper {
     if (scrapedData.website) console.log(`Website URL: ${scrapedData.website}`);
     if (scrapedData.twitter) console.log(`Twitter URL: ${scrapedData.twitter}`);
     if (scrapedData.facebook) console.log(`Facebook URL: ${scrapedData.facebook}`);
-    if (scrapedData.instagram) console.log(`Instagram URL: ${scrapedData.instagram}`);
+    if (scrapedData.instagram) console.log(`Instagram Handle: ${scrapedData.instagram}`);
     if (scrapedData.linkedin) console.log(`Linkedin URL: ${scrapedData.linkedin}`);
     if (scrapedData.youtube) console.log(`Youtube URL: ${scrapedData.youtube}`);
     if (scrapedData.tiktok) console.log(`Tiktok URL: ${scrapedData.tiktok}`);
