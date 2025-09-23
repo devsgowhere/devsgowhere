@@ -19,14 +19,14 @@ telegram: https://t.me/singadev
 meetup: https://www.meetup.com/singadev
 ---
 
-**What we’re about**
+## What we’re about
 Our group focuses on anything that is relevant for Polyglot Developers in Singapore. Our group is committed to creating a positive and inclusive community where members can connect, learn, and share their experiences.
 
-**Talks guidelines**
+## Talks guidelines**
 
 In general, our talks should be about opensource technologies. We typically do not cover commercial products
 
-**History**
+## History
 We used to be called SingaJUG and used to be a Java User Group
 In 2023, we have decided to open up to anything that would be relevant to polyglot developers in Singapore
 Code of Conduct
