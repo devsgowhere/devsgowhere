@@ -2,8 +2,14 @@ import type { CheerioAPI } from 'cheerio';
 import { DateTime } from 'luxon';
 import type { ScrapedEventData, ScrapedOrgData } from '../types';
 import { BaseParser } from './BaseParser';
+import path from 'path';
 
 export class EventbriteParser extends BaseParser {
+  protected override getImageFileName(imageUrl: string): string {
+    // Hard set the file extension cos there's none in the mark up
+    return `${path.basename(imageUrl)}.webp`;
+  }
+
   override async scrapeEventDataFromPage($: CheerioAPI, url: string): Promise<ScrapedEventData> {
     const scrapedData: ScrapedEventData = {};
 
