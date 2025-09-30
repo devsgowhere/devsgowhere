@@ -90,7 +90,6 @@ export abstract class BaseParser {
     }
   }
 
-
   protected async downloadImage(imageUrl: string): Promise<DownloadResult> {
     const result: DownloadResult = {
       originalUrl: imageUrl,
@@ -103,10 +102,7 @@ export abstract class BaseParser {
       console.log(`Hero image found: src=${cleanHeroImageUrl}`);
 
       // Get file name from cleanHeroImageUrl
-      let fileName = path.basename(cleanHeroImageUrl);
-
-      // No file extension to the URL, insert an extension.
-      if (path.extname(cleanHeroImageUrl) === '') fileName += '.webp';
+      const fileName = this.getImageFileName(cleanHeroImageUrl);
 
       result.fileName = fileName;
 
@@ -133,5 +129,14 @@ export abstract class BaseParser {
     }
 
     return result;
+  }
+
+  protected getImageFileName(imageUrl: string): string {
+    let fileName = path.basename(imageUrl);
+
+    // No file extension to the URL, insert an extension.
+    if (path.extname(imageUrl) === '') fileName += '.webp';
+
+    return fileName;
   }
 }
