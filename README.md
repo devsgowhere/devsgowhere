@@ -106,6 +106,16 @@ To abort or exit the script, press `Ctrl`+`C`.
     npm run build
     ```
 
+### Using a Devcontainer
+
+1. Install [VSCode](https://code.visualstudio.com/) and the [Dev Containers extension](vscode:extension/ms-vscode-remote.remote-containers).
+2. Install [Docker Desktop](https://www.docker.com/products/docker-desktop) or an [alternative](https://code.visualstudio.com/remote/advancedcontainers/docker-options).
+3. Open this repo's folder in VSCode.
+4. Open the VSCode Command Palette (`ctrl`+`shift`+`p` or `Cmd`+`shift`+`p`) and type: `reopen in container`
+5. Select and press enter on the command.
+6. VSCode should reopen and build the [Devcontainer](https://code.visualstudio.com/docs/devcontainers/containers).
+7. Once the Devcontainer is ready, you should be able to run all the commands above in VSCode's Terminal window.
+
 ### Deployment of the Website
 
 This repository is connected to [CloudFlare Pages](https://pages.cloudflare.com/). Any changes made to the `main` branch will be deployed to the website.

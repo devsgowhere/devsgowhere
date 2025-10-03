@@ -4,7 +4,7 @@ on:
   # Trigger the workflow on:
   # - schedule (daily at midnight UTC) on the default branch (which is main)
   schedule:
-    - cron: '0 16 * * *' # Runs daily at midnight +8 GMT (which is 16:00 UTC)
+    - cron: '1 16 * * *' # Runs daily at midnight +8 GMT (which is 16:00 UTC)
 
 jobs:
 
