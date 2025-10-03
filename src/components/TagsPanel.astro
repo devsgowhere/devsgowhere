@@ -1,0 +1,211 @@
+---
+import { getCollection } from "astro:content";
+
+//const { events = [] } = Astro.props;
+//Get ALL events (past and future)
+const eventsAll = (await getCollection("events"))
+//Extract all unique tags from ALL events
+// Get all tags with their counts, filter out tags with count < 5, and sort alphabetically
+const allTags = eventsAll.flatMap(event => (event.data.tags ?? []));  
+const normalisedTags = allTags.map(tag => tag.toLowerCase());
+const tagCounts = normalisedTags.reduce((output: Record<string, number>, tag) => {
+  if(!output[tag]){
+    output[tag] = 0;
+  }
+  output[tag] += 1;
+  return output;
+}, {});
+
+const uniqueTags = Object.keys(tagCounts);
+
+const filteredTags = uniqueTags
+  .filter(tag => tag.length <= 20)
+  //.filter(tag => tagCounts[tag] >= 2)
+  .sort((a, b) => tagCounts[b] - tagCounts[a]);
+  const top20Tags = filteredTags.slice(0, 20).sort();
+  const currentEventTags = eventsAll.flatMap(event => (event.data.tags ?? []));
+  const normalisedCurrentEventTags = currentEventTags.map(tag => tag.toLowerCase());
+  //const mergedTags = Array.from(new Set([...top20Tags, ...normalisedCurrentEventTags])).sort();
+  const mergedTags = Array.from(new Set([...top20Tags, ...uniqueTags])).sort();
+---
+
+<aside class="tags-panel">
+  <h2 class="tags-header">Tags</h2>
+  <ul class="tags-list">
+    {mergedTags.map(tag => (
+        <li class="tag-item" tabindex="0" data-tag={tag} style="text-align: left;">#{tag}</li>
+    ))}
+  </ul>
+</aside>
+
+<script>
+    //let selectedTags: string[] = [];
+    document.querySelectorAll('.tag-item').forEach(el => {
+      el.addEventListener('click', () => {
+        const tag = el.getAttribute('data-tag');
+        if (tag) {
+          // Replace all spaces with dashes for the URL
+          const tagUrl = tag.replace(/\s+/g, '-');
+          window.location.href = `/events/tag/${encodeURIComponent(tagUrl)}`;
+        }
+        // Toggle selection
+        // if (tag && selectedTags.includes(tag)) {
+        //   selectedTags = selectedTags.filter(t => t !== tag);
+        //   el.classList.remove('selected');
+        //   //console.log(`Tag ${tag} deselected`);
+        // } else if (tag) {
+        //   selectedTags.push(tag);
+        //   el.classList.add('selected');
+        //   //console.log(`Tag ${tag} selected`);
+        // }
+        //filterByTags();
+      });
+    });
+
+    // function filterByTags() {
+    //   // If no tags selected, show all events
+    //   if (selectedTags.length === 0) {
+    //     eventItems.forEach(item => animateElement(item, true));
+    //     updateResultsCount(eventItems.length);
+    //     animateElement(emptyState, false);
+    //     return;
+    //   }
+
+    //   // Filter events by any selected tag
+    //   const matches = events.filter(event =>
+    //     (event.tags ?? []).some((tag: string) => selectedTags.includes(tag.toLowerCase()))
+    //   );
+    //   //console.log(`Filtered by tags: ${selectedTags.join(', ')}`);
+
+    //   updateResultsCount(matches.length);
+    //   animateElement(emptyState, matches.length === 0);
+
+    //   eventItems.forEach((item, index) => {
+    //     const eventId = item.getAttribute('data-id');
+    //     const visible = matches.some((event: any) => event.id === eventId);
+
+    //     setTimeout(() => {
+    //       animateElement(item, visible);
+    //     }, index % 5 * 50);
+    //   });
+    // }
+
+    // // Optional: clear tag filter when search input is used
+    // if (searchInput) {
+    //   searchInput.addEventListener('input', () => {
+    //     selectedTags = [];
+    //     document.querySelectorAll('.tag-item').forEach(el => el.classList.remove('selected'));
+    //   });
+    // }
+    
+    // const tagsClearBtn = document.getElementById('tags-clear-btn');
+    // if (tagsClearBtn) {
+    //   tagsClearBtn.addEventListener('click', () => {
+    //     selectedTags = [];
+    //     document.querySelectorAll('.tag-item').forEach(el => el.classList.remove('selected'));
+    //     filterByTags();
+    //   });
+    // }
+</script>
+
+<style lang="scss">
+  .tags-panel {
+    min-width: 180px;
+    max-width: 220px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    padding: 1.5rem 1rem;
+    margin-right: 2rem;
+    max-height: 600px;
+    overflow-y: auto;
+    position: sticky;
+    top: 2rem;
+    transition: transform 0.3s, opacity 0.3s;
+  }
+
+  // Hide tags panel on mobile, show toggle button
+  @media (max-width: 800px) {
+    .tags-panel {
+      position: fixed;
+      left: 0;
+      top: 0;
+      height: 100vh;
+      max-height: none;
+      width: 80vw;
+      min-width: 0;
+      max-width: 320px;
+      margin-right: 0;
+      transform: translateX(-100%);
+      opacity: 0;
+      pointer-events: none;
+      box-shadow: 2px 0 16px rgba(0,0,0,0.08);
+      transition: transform 0.3s, opacity 0.3s;
+    }
+    .tags-panel.open {
+      transform: translateX(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .tags-toggle-btn {
+      display: block;
+    }
+}
+
+// Hide toggle button on desktop
+  .tags-toggle-btn {
+    display: none;
+    position: fixed;
+    left: 1rem;
+    top: 1rem;
+    z-index: 30;
+    background: #3182ce;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 0.6rem 1.2rem;
+    font-size: 1rem;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transition: background 0.2s;
+  }
+  .tags-toggle-btn:active, .tags-toggle-btn:focus {
+    background: #225ea8;
+  }
+  .tags-header {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    color: #444;
+    text-align: left;
+    /* Align with tags-list */
+    padding-left: 0.8rem; // matches .tag-item horizontal padding
+  }
+  .tags-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .tag-item {
+    display: block;
+    width: 100%;
+    border-radius: 5px;
+    padding: 0.4rem 0.8rem;
+    color: #2d3748;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    outline: none;
+    border: none;
+    &:hover, &:focus {
+      background: #e3d6ef;
+      color: var(--text-accent-color);
+    }
+  }
+    .tag-item.selected {
+    max-width: 100%;
+    background: #e3d6ef;
+    color: var(--text-accent-color);
+  }
