@@ -443,7 +443,7 @@ export class EventCLI {
     switch (true) {
       case url.includes("meetup.com"):
         const parts = url.split("/")
-        return parts.slice(0, parts.indexOf("meetup.com") + 1).join("/")
+        return parts.slice(0, parts.indexOf("www.meetup.com") + 2).join("/")
       default:
         console.warn(`⚠️  Unable to infer org url from: '${url}'.`)
         return url
