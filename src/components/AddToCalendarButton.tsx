@@ -1,5 +1,5 @@
-import { AddToCalendarButton } from "add-to-calendar-button-react";
-import type { AddToCalendarButtonType } from "add-to-calendar-button-react";
+import { AddToCalendarButton } from "add-to-calendar-button-react"
+import type { AddToCalendarButtonType } from "add-to-calendar-button-react"
 
 export default function atcb(props: AddToCalendarButtonType) {
   return (
@@ -14,5 +14,5 @@ export default function atcb(props: AddToCalendarButtonType) {
       endTime={props.endTime} //"23:30"
       timeZone={props.timeZone} //"Asia/Singapore"
     ></AddToCalendarButton>
-  );
+  )
 }
