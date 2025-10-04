@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { LumaParser } from './LumaParser'
-import { PageScraper } from './PageScraper'
+import { PageScraper } from '../PageScraper'
 
 describe('LumaParser', () => {
   describe('single day event', () => {

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { EventbriteParser } from './EventbriteParser'
-import { PageScraper } from './PageScraper'
+import { PageScraper } from '../PageScraper'
 
 describe('EventbriteParser', () => {
   describe('dateTimeParser', () => {
