@@ -4,6 +4,7 @@ import { EventbriteParser } from "./parsers/EventbriteParser"
 import { LumaParser } from "./parsers/LumaParser"
 import { MeetupParser } from "./parsers/MeetupParser"
 import type { EventData, OrgData, ScrapedEventData, ScrapedOrgData } from "./types"
+import { saveAsHtml } from "./utils"
 
 export class PageScraper {
   public outputDir: string
@@ -38,6 +39,7 @@ export class PageScraper {
 
     console.log(`Fetching ${url}...`)
     const $ = await PageScraper.getPage(url)
+    saveAsHtml($, url, this.outputDir)
 
     try {
       console.log(`Scraping event data...`)
@@ -60,6 +62,7 @@ export class PageScraper {
 
     console.log(`Fetching ${url}...`)
     const $ = await PageScraper.getPage(url)
+    saveAsHtml($, url, this.outputDir)
 
     try {
       console.log(`Scraping org data...`)
