@@ -3,8 +3,20 @@ title: "Graph Database Singapore"
 description: "Welcome to the Graph Database Singapore User Group, a group for anyone interested in exploring the intersection of graphs, artificial intelligence, machine lear"
 heroImage: "preview_315183756.webp"
 logoImage: "https://placecats.com/300/200?fit=contain&position=top"
-# Add up to 10 tags for your organisationtags: ["Open Source", "Big Data", "Data Analytics", "Data Visualization", "NoSQL", "Neo4j", "Graph Databases", "Neo4j-Social"]
-# (Optional) Links ----------------------------------# website: <url># twitter: <url># facebook: <url># instagram: <handle_without_@># linkedin: <url># youtube: <url># tiktok: <url># discord: <url># github: <url># telegram: <url>meetup: https://www.meetup.com/graphdb-singapore---
+tags: ["Open Source", "Big Data", "Data Analytics", "Data Visualization", "NoSQL", "Neo4j", "Graph Databases", "Neo4j-Social"]
+# (Optional) Links ----------------------------------
+# website: <url>
+# twitter: <url>
+# facebook: <url>
+# instagram: <handle_without_@>
+# linkedin: <url>
+# youtube: <url>
+# tiktok: <url>
+# discord: <url>
+# github: <url>
+# telegram: <url>
+meetup: https://www.meetup.com/graphdb-singapore
+---
 
 Welcome to the **Graph Database Singapore User Group**, a group for anyone interested in exploring the intersection of graphs, artificial intelligence, machine learning, gen-ai big data, and analytics. Our group is powered by [Neo4j](https://neo4j.com/), a leading graph database technology, and our goal is to democratize graphs by discussing and exploring technologies that empower fraud prevention, personalized recommendation, supply-chain optimization, and other analysis capabilities found in today's most critical enterprise applications.
 
