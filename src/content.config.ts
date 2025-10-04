@@ -1,6 +1,6 @@
-import { glob } from "astro/loaders";
-import { defineCollection, reference, z } from "astro:content";
-import { DEFAULT_TIMEZONE } from "./consts";
+import { glob } from "astro/loaders"
+import { defineCollection, reference, z } from "astro:content"
+import { DEFAULT_TIMEZONE } from "./consts"
 
 const events = defineCollection({
   loader: glob({ base: "./src/content/events", pattern: "**/*.{md,mdx}" }),
@@ -12,9 +12,17 @@ const events = defineCollection({
       venueAddress: z.string().optional().nullable(),
       startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format. Use YYYY-MM-DD."),
       startTime: z.string().regex(/^\d{2}:\d{2}$/, "Invalid time format. Use HH:MM in 24-hour format."),
-      endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format. Use YYYY-MM-DD.").optional().nullable(),
-      endTime: z.string().regex(/^\d{2}:\d{2}$/, "Invalid time format. Use HH:MM in 24-hour format.").optional().nullable(),
-      timezone: z.string().optional().default(DEFAULT_TIMEZONE), 
+      endDate: z
+        .string()
+        .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format. Use YYYY-MM-DD.")
+        .optional()
+        .nullable(),
+      endTime: z
+        .string()
+        .regex(/^\d{2}:\d{2}$/, "Invalid time format. Use HH:MM in 24-hour format.")
+        .optional()
+        .nullable(),
+      timezone: z.string().optional().default(DEFAULT_TIMEZONE),
       updatedDate: z.coerce.date().optional().nullable(),
       heroImage: image(),
       rsvpButtonUrl: z.string().url().optional().nullable(),
@@ -22,9 +30,8 @@ const events = defineCollection({
       tags: z.array(z.string()).optional(),
       org: reference("orgs"),
     })
-  }
-});
-
+  },
+})
 
 const orgs = defineCollection({
   loader: glob({ base: "./src/content/orgs", pattern: "**/*.{md,mdx}" }),
@@ -48,6 +55,6 @@ const orgs = defineCollection({
       telegram: z.string().url().optional().nullable(),
       meetup: z.string().url().optional().nullable(),
     }),
-});
+})
 
-export const collections = { events, orgs };
+export const collections = { events, orgs }

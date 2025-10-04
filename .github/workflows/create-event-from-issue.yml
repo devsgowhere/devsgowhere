@@ -4,13 +4,13 @@ on:
   workflow_dispatch:
     inputs:
       issue_number:
-        description: 'GitHub issue containing event details'
+        description: "GitHub issue containing event details"
         required: true
         type: string
 
 jobs:
   experimental:
-    runs-on: ubuntu-latest   
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -35,31 +35,31 @@ jobs:
               repo: context.repo.repo,
               issue_number: ${{ github.event.inputs.issue_number }}
             });
-            
+
             const issueBody = issue.data.body || '';
             console.log('Issue body:', issueBody);
-            
+
             // Parse orgID and eventURL from issue body
             const orgIdMatch = issueBody.match(/^[-*]\s*orgID:\s*(.+)$/m);
             const eventUrlMatch = issueBody.match(/^[-*]\s*eventURL:\s*(.+)$/m);
-            
+
             if (!orgIdMatch || !eventUrlMatch) {
               throw new Error('Could not find orgID and/or eventURL in issue body. Expected format:\n- orgID: your_org_id\n- eventURL: https://meetup.com/...');
             }
-            
+
             const orgId = orgIdMatch[1].trim();
             const eventUrl = eventUrlMatch[1].trim();
-            
+
             console.log('Extracted orgID:', orgId);
             console.log('Extracted eventURL:', eventUrl);
-            
+
             // Validate URL format
             try {
               new URL(eventUrl);
             } catch (error) {
               throw new Error(`Invalid eventURL format: ${eventUrl}`);
             }
-            
+
             return {
               orgId: orgId,
               eventUrl: eventUrl,
@@ -130,27 +130,27 @@ jobs:
 #           # Create a unique branch name
 #           BRANCH_NAME="event/issue-${{ github.event.inputs.issue_number }}-$(date +%s)"
 #           echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
-          
+
 #           # Create and switch to new branch
 #           git checkout -b "$BRANCH_NAME"
-          
+
 #           # Add all new event files
 #           git add src/content/events/
-          
+
 #           # Check if there are changes to commit
 #           if git diff --staged --quiet; then
 #             echo "No changes to commit"
 #             exit 1
 #           fi
-          
+
 #           # Commit changes
 #           git commit -m "Add event from issue #${{ github.event.inputs.issue_number }}
 
 #           - orgID: ${{ fromJson(steps.get-issue.outputs.result).orgId }}
 #           - eventURL: ${{ fromJson(steps.get-issue.outputs.result).eventUrl }}
-          
+
 #           Closes #${{ github.event.inputs.issue_number }}"
-          
+
 #           # Push branch
 #           git push origin "$BRANCH_NAME"
 
@@ -160,7 +160,7 @@ jobs:
 #           script: |
 #             const issueData = ${{ steps.get-issue.outputs.result }};
 #             const branchName = '${{ steps.create-branch.outputs.branch_name }}';
-            
+
 #             const pr = await github.rest.pulls.create({
 #               owner: context.repo.owner,
 #               repo: context.repo.repo,
@@ -190,16 +190,16 @@ jobs:
 # This PR will close issue #${issueData.issueNumber} when merged.`,
 #               draft: false
 #             });
-            
+
 #             console.log(`Created PR #${pr.data.number}: ${pr.data.html_url}`);
-            
+
 #             // Add comment to original issue
 #             await github.rest.issues.createComment({
 #               owner: context.repo.owner,
 #               repo: context.repo.repo,
 #               issue_number: issueData.issueNumber,
 #               body: `🤖 **Event processing completed!**
-              
+
 # I've successfully scraped the event details and created a pull request with the new event page.
 
 # **Pull Request:** #${pr.data.number}
@@ -220,13 +220,13 @@ jobs:
 #         with:
 #           script: |
 #             const issueNumber = ${{ github.event.inputs.issue_number }};
-            
+
 #             await github.rest.issues.createComment({
 #               owner: context.repo.owner,
 #               repo: context.repo.repo,
 #               issue_number: issueNumber,
 #               body: `❌ **Event processing failed**
-              
+
 # There was an error processing the event from this issue. Please check the [workflow run](${context.payload.repository.html_url}/actions/runs/${context.runId}) for details.
 
 # Common issues:
