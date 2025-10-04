@@ -7,35 +7,32 @@ export class MeetupParser extends BaseParser {
   override async scrapeEventDataFromPage($: CheerioAPI, url: string): Promise<ScrapedEventData> {
     const scrapedData: ScrapedEventData = {}
 
-    // event title: get text content from `//main//h1`
     console.log(`Extracting event title...`)
-    const eventTitle = $("main h1").text().trim()
+    const eventTitle = $("main h1").first().text().trim()
     console.log(`Event title: ${eventTitle}`)
     scrapedData.title = eventTitle
 
-    // event start time from "main #event-info time"
     console.log(`Extracting event start time...`)
-    const eventStartTime = $("main #event-info time").attr("datetime")?.trim() || ""
+    const eventStartTime = $("main aside time").attr("datetime")?.trim() || ""
 
     if (eventStartTime) {
       console.log(`Event start time: ${eventStartTime}`)
       const startDateTime = DateTime.fromISO(eventStartTime).setZone("Asia/Singapore")
-      scrapedData.startDate = `${startDateTime.toFormat("yyyy-MM-dd")}` // YYYY-MM-DD
-      scrapedData.startTime = `${startDateTime.toFormat("HH:mm")}` // HH:MM
+      scrapedData.startDate = `${startDateTime.toFormat("yyyy-MM-dd")}`
+      scrapedData.startTime = `${startDateTime.toFormat("HH:mm")}`
     } else {
       console.warn(`No start time found for the event.`)
       scrapedData.startDate = ""
       scrapedData.startTime = ""
     }
 
-    // event end time from "main #event-info time". The text content is formatted: Saturday, August 23, 2025 10:00 AM to 1:00 PM SST
     console.log(`Extracting event end time...`)
-    const eventEndTime = $("main #event-info time").text().trim()
+    const eventEndTime = $("main aside time").text().trim()
     if (eventEndTime) {
+      // Example: Saturday, Aug 23 · 10:00 AM to 1:00 PM SST
       console.log(`Event end time: ${eventEndTime}`)
       const [_, end] = eventEndTime.split(" to ")
       const timeOnly = end.substring(0, end.length - 3).trim()
-
       const endDate = DateTime.fromFormat(timeOnly, "h:mm a")
       scrapedData.endTime = endDate.toFormat("HH:mm") // HH:MM
     } else {
@@ -43,9 +40,8 @@ export class MeetupParser extends BaseParser {
       scrapedData.endTime = ""
     }
 
-    // event venue name from "main #event-info a[data-testid='venue-name-link']"
     console.log(`Extracting event venue name...`)
-    const eventVenue = $('main #event-info *[data-testid="venue-name-link"]').text().trim()
+    const eventVenue = $("main aside p").eq(2).text().trim()
     if (eventVenue) {
       console.log(`Event venue: ${eventVenue}`)
       scrapedData.venue = eventVenue
@@ -54,9 +50,8 @@ export class MeetupParser extends BaseParser {
       scrapedData.venue = ""
     }
 
-    // event venue address from "main #event-info div[data-testid='location-info']"
     console.log(`Extracting event venue address...`)
-    const eventVenueAddress = $('main #event-info *[data-testid="location-info"]').text().trim()
+    const eventVenueAddress = $("main aside p").eq(3).text().trim()
     if (eventVenueAddress) {
       console.log(`Event venue address: ${eventVenueAddress}`)
       scrapedData.venueAddress = eventVenueAddress
@@ -65,9 +60,8 @@ export class MeetupParser extends BaseParser {
       scrapedData.venueAddress = ""
     }
 
-    // get event description from "main #event-details"
     console.log(`Extracting event description...`)
-    const eventDescription = $("main #event-details").text().trim()
+    const eventDescription = $("main section").first().children().eq(1).text().trim()
     if (eventDescription) {
       console.log(`Event description: ${eventDescription}`)
       scrapedData.description = eventDescription.substring(0, 160) // truncate to 160 characters for SEO
@@ -78,7 +72,7 @@ export class MeetupParser extends BaseParser {
 
     // get event details from "main #event-details" as html
     console.log(`Extracting event content...`)
-    const eventContent = $("main #event-details").html()
+    const eventContent = $("main section").first().children().eq(1).html()
     if (eventContent) {
       console.log(`Event content extracted.`)
       // Convert HTML description to markdown
@@ -88,11 +82,13 @@ export class MeetupParser extends BaseParser {
       scrapedData.content = ""
     }
 
-    // get tags from "main .tag--topic"
-    // - there may be multiple tags, so we need to get all of them and put them in an array
     console.log(`Extracting event tags...`)
-    const eventTags = $("main .tag--topic")
-      .map((i, el) => $(el).text().trim())
+    const eventTags = $("main section")
+      .first()
+      .children()
+      .eq(2)
+      .find("span")
+      .map((_i, el) => $(el).text().trim())
       .get()
     if (eventTags.length > 0) {
       console.log(`Event tags: ${eventTags.join(", ")}`)
@@ -102,9 +98,8 @@ export class MeetupParser extends BaseParser {
       scrapedData.tags = []
     }
 
-    // get the src for hero image from "main picture[data-testid="event-description-image" img"
     console.log(`Extracting hero image...`)
-    const heroImageUrl = $('main picture[data-testid="event-description-image"] img').attr("src")?.trim() || ""
+    const heroImageUrl = $("main aside img").attr("src")?.trim() || ""
 
     // download the hero image to 'scraper-output' folder
     if (heroImageUrl) {
