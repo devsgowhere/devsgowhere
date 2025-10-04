@@ -4,5 +4,5 @@
   "editor.renderWhitespace": "all",
   "[javascript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
+  }
 }

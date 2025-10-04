@@ -6,7 +6,6 @@ readers do not read off random characters that represent icons */
 
 @each $name, $icon in $fa-icons {
   .#{$fa-css-prefix}-#{$name} {
-    #{$fa-icon-property}: unquote("\"#{ $icon }\"");
+    #{$fa-icon-property}: unquote('"#{ $icon }"');
   }
 }
-

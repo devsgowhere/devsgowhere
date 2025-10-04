@@ -3,12 +3,11 @@ name: (Pull Request) Preview Builds
 on:
   # Run this workflow on pull requests to main branch
   pull_request:
-    branches: [ main ]
+    branches: [main]
   # Also allow manual triggers
   workflow_dispatch:
 
 jobs:
-
   ##########################################
   # Build job
   # - Builds the project and archives the dist folder as an artifact
@@ -31,5 +30,5 @@ jobs:
     with:
       env_name: preview
       cf_branch: ${{ github.ref_name }}
-    secrets: 
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}   
+    secrets:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}

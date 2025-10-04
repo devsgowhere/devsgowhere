@@ -1,9 +1,7 @@
 {
   "name": "JavaScript Dev",
   "image": "mcr.microsoft.com/devcontainers/typescript-node:22",
-  "forwardPorts": [
-    4321
-  ],
+  "forwardPorts": [4321],
   "postCreateCommand": "npm install",
   "features": {},
   "customizations": {
