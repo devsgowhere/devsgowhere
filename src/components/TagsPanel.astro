@@ -40,10 +40,21 @@ const filteredTags = uniqueTags
 
 <script>
     //let selectedTags: string[] = [];
+    // Highlight the tag matching the current URL
+    const urlParts = window.location.pathname.split('/');
+    const currentTag = urlParts[urlParts.length - 1].replace(/-/g, ' ').toLowerCase();
+
     document.querySelectorAll('.tag-item').forEach(el => {
+      const tag = el.getAttribute('data-tag');
+      if (tag && tag.toLowerCase() === currentTag) {
+        el.classList.add('selected');
+      }
+
       el.addEventListener('click', () => {
-        const tag = el.getAttribute('data-tag');
         if (tag) {
+          // Highlight the clicked tag
+          document.querySelectorAll('.tag-item').forEach(item => item.classList.remove('selected'));
+          el.classList.add('selected');
           // Replace all spaces with dashes for the URL
           const tagUrl = tag.replace(/\s+/g, '-');
           window.location.href = `/events/tag/${encodeURIComponent(tagUrl)}`;
@@ -116,8 +127,8 @@ const filteredTags = uniqueTags
     box-shadow: 0 2px 8px rgba(0,0,0,0.03);
     padding: 1.5rem 1rem;
     margin-right: 2rem;
-    max-height: 600px;
-    overflow-y: auto;
+    max-height: 80vh;    
+    overflow-y: scroll;
     position: sticky;
     top: 2rem;
     transition: transform 0.3s, opacity 0.3s;
