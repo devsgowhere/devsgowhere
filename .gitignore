@@ -21,7 +21,6 @@ pnpm-debug.log*
 
 # settings folder
 .idea/
-.vscode
 
 # scrapper output
 scraper-output
