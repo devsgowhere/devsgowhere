@@ -75,7 +75,7 @@ export class OrgWriter {
     }
 
     // event tags
-    content += "# Add up to 10 tags for your organisation"
+    content += "# Add up to 10 tags for your organisation\n"
     if (orgData.tags && orgData.tags.length > 0) {
       content += `tags: [${orgData.tags.map((tag) => `"${tag}"`).join(", ")}]\n`
     } else {
@@ -83,18 +83,18 @@ export class OrgWriter {
     }
 
     // links
-    content += "# (Optional) Links ----------------------------------"
-    content += orgData.website ? `website: ${orgData.website}` : "# website: <url>"
-    content += orgData.twitter ? `twitter: ${orgData.twitter}` : "# twitter: <url>"
-    content += orgData.facebook ? `facebook: ${orgData.facebook}` : "# facebook: <url>"
-    content += orgData.instagram ? `instagram: ${orgData.instagram}` : "# instagram: <handle_without_@>"
-    content += orgData.linkedin ? `linkedin: ${orgData.linkedin}` : "# linkedin: <url>"
-    content += orgData.youtube ? `youtube: ${orgData.youtube}` : "# youtube: <url>"
-    content += orgData.tiktok ? `tiktok: ${orgData.tiktok}` : "# tiktok: <url>"
-    content += orgData.discord ? `discord: ${orgData.discord}` : "# discord: <url>"
-    content += orgData.github ? `github: ${orgData.github}` : "# github: <url>"
-    content += orgData.telegram ? `telegram: ${orgData.telegram}` : "# telegram: <url>"
-    content += orgData.meetup ? `meetup: ${orgData.meetup}` : "# meetup: <url>"
+    content += "# (Optional) Links ----------------------------------\n"
+    content += orgData.website ? `website: ${orgData.website}\n` : "# website: <url>\n"
+    content += orgData.twitter ? `twitter: ${orgData.twitter}\n` : "# twitter: <url>\n"
+    content += orgData.facebook ? `facebook: ${orgData.facebook}\n` : "# facebook: <url>\n"
+    content += orgData.instagram ? `instagram: ${orgData.instagram}\n` : "# instagram: <handle_without_@>\n"
+    content += orgData.linkedin ? `linkedin: ${orgData.linkedin}\n` : "# linkedin: <url>\n"
+    content += orgData.youtube ? `youtube: ${orgData.youtube}\n` : "# youtube: <url>\n"
+    content += orgData.tiktok ? `tiktok: ${orgData.tiktok}\n` : "# tiktok: <url>\n"
+    content += orgData.discord ? `discord: ${orgData.discord}\n` : "# discord: <url>\n"
+    content += orgData.github ? `github: ${orgData.github}\n` : "# github: <url>\n"
+    content += orgData.telegram ? `telegram: ${orgData.telegram}\n` : "# telegram: <url>\n"
+    content += orgData.meetup ? `meetup: ${orgData.meetup}\n` : "# meetup: <url>\n"
 
     // end of front matter
     content += "---\n\n"
