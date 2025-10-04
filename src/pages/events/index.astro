@@ -3,6 +3,7 @@ import BaseHead from "../../components/BaseHead.astro";
 import Header from "../../components/Header.astro";
 import Theme from "../../layouts/Theme.astro";
 import Footer from "../../components/Footer.astro";
+import TagsPanel from "../../components/TagsPanel.astro";
 
 import { SITE_TITLE, SITE_DESCRIPTION } from "../../consts";
 import { getCollection } from "astro:content";
@@ -21,7 +22,7 @@ const events = (await getCollection("events"))
     (a, b) =>
       new Date(a.data.startDate).valueOf() -
       new Date(b.data.startDate).valueOf(),
-  );
+  );  
 
 // Group events by date
 const groupedEvents = events.reduce((acc: any, event) => {
@@ -44,10 +45,23 @@ const groupedEvents = events.reduce((acc: any, event) => {
   <Theme>
     <Header />
     <main class="events-list-page pt-xl pb-3xl">
+      <div class="events-layout">
+        <TagsPanel/>
+        <!-- Left panel: Tags -->
+        <!--<aside class="tags-panel">
+          <h2 class="tags-header">Popular Topics</h2>
+          <ul class="tags-list" style="align-items: flex-start;">            
+            {mergedTags.map(tag => (
+              <li class="tag-item" tabindex="0" data-tag={tag} style="text-align: left;">#{tag}</li>
+            ))}
+          </ul>        
+        </aside>-->
+        <!-- Main content: Events -->
+      <div class="container">
       <h1 class="text-3xl text-bold text-accent mb-xl">
         Upcoming Events
       </h1>      
-      <div class="container">
+      <!-- <div class="container"> -->
         <section>
               <div class="event-search form-control">
                 <i class="form-control__prepend fa fa-search"></i>
@@ -96,13 +110,13 @@ const groupedEvents = events.reduce((acc: any, event) => {
           </div>
         </section>
       </div>
+      </div>
     </main>
     <Footer />
   </Theme>
   <script>
     // Import search utilities
     import { normalize, debounce, filterEvents, animateElement, animateNumber } from '../../utils/searchUtils.js';
-
     // Fetch search index
     const events = [];
     fetch('/events/search-index.json')
@@ -133,17 +147,17 @@ const groupedEvents = events.reduce((acc: any, event) => {
     // Helper function to update results count display
     function updateResultsCount(count) {
       // Animate count change
-      const currentCount = parseInt(resultsCount.textContent);
+      const currentCount = parseInt(resultsCount?.textContent ?? "0");
       animateNumber(resultsCount, currentCount, count, 300);
-      resultsInfo.style.display = 'block';
+      resultsInfo.style.display = 'block';      
     }
 
     // Search implementation
     const performSearch = () => {
-      const query = searchInput.value.toLowerCase().trim();
+      const query = searchInput ? searchInput.value.toLowerCase().trim() : "";
       
       // Toggle clear button visibility
-      clearButton.style.display = query ? 'block' : 'none';
+        clearButton.style.display = query ? 'block' : 'none';
       
       // If empty query, show all events
       if (!query) {
@@ -166,7 +180,7 @@ const groupedEvents = events.reduce((acc: any, event) => {
       eventItems.forEach((item, index) => {
         const eventId = item.getAttribute('data-id');
         const visible = matches.some(event => event.id === eventId);
-        
+
         // Add slight delay based on index for staggered effect
         setTimeout(() => {
           animateElement(item, visible);
@@ -180,16 +194,16 @@ const groupedEvents = events.reduce((acc: any, event) => {
       performSearch();
     }, 400);
     
-    searchInput.addEventListener('input', () => {
+      searchInput.addEventListener('input', () => {
       searchLoader.style.display = 'block';
-      debouncedSearch();
-    });
+        debouncedSearch();
+      });
     
-    clearButton.addEventListener('click', () => {
-      searchInput.value = '';
-      performSearch();
-      searchInput.focus();
-    });
+      clearButton.addEventListener('click', () => {
+        searchInput.value = '';
+        performSearch();
+        searchInput.focus();
+      });
   </script>
 </html>
 
@@ -290,4 +304,24 @@ const groupedEvents = events.reduce((acc: any, event) => {
   @keyframes spin {
     to { transform: rotate(360deg); }
   }
+
+    .events-list-page {
+    text-align: center;
+    }
+
+    .events-layout {
+    display: flex;
+    align-items: flex-start;
+    width: 100%;
+  }
+    // .events-layout {
+    //   flex-direction: column;
+    // }
+  
+  .container {
+    flex: 1 1 0%;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
 </style>

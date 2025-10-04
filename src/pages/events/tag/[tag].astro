@@ -3,6 +3,7 @@ import BaseHead from "../../../components/BaseHead.astro";
 import Header from "../../../components/Header.astro";
 import Theme from "../../../layouts/Theme.astro";
 import Footer from "../../../components/Footer.astro";
+import TagsPanel from "../../../components/TagsPanel.astro";
 
 import { SITE_TITLE, SITE_DESCRIPTION } from "../../../consts";
 import { getCollection } from "astro:content";
@@ -19,7 +20,7 @@ export async function getStaticPaths() {
     ?.flatMap((event) => event.data?.tags || [])
     .map(toSlug);
   const uniqueTags = [...new Set(allTags)].filter(Boolean);
-
+  
   return uniqueTags.map((tag) => {
     return {
       params: { tag },
@@ -60,11 +61,14 @@ const groupedEvents = events.reduce((acc: any, event) => {
   </head>
   <Theme>
     <Header />
-    <main class="events-list-page pt-xl pb-3xl">
+    <main class="events-list-page pt-xl pb-3xl">      
+      <div class="events-layout">
+      <TagsPanel/>
+      <div class="container">
       <h1 class="text-3xl text-bold text-accent mb-xl">
         Events tagged with "{tag}"
-      </h1>
-      <div class="container">
+      </h1>      
+      <!-- <div class="container"> -->
         <section>
           {
             Object.keys(groupedEvents).length > 0 ? (
@@ -94,6 +98,7 @@ const groupedEvents = events.reduce((acc: any, event) => {
           }
         </section>
       </div>
+    </div>
     </main>
     <Footer />
   </Theme>
@@ -102,6 +107,12 @@ const groupedEvents = events.reduce((acc: any, event) => {
 <style lang="scss">
   .events-list-page {
     text-align: center;
+  }
+
+  .events-layout {
+    display: flex;
+    align-items: flex-start;
+    width: 100%;
   }
 
   ul.event-list {
