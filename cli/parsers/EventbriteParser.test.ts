@@ -77,34 +77,32 @@ describe("EventbriteParser", () => {
     test("Tech Talks @ Club Street", async () => {
       const parser = new EventbriteParser()
 
-      const url = "https://www.eventbrite.sg/e/tech-talks-club-street-the-future-of-aging-tickets-1599917078049"
+      const url = "https://www.eventbrite.sg/e/tech-week-singapore-2025-tickets-1604379886429"
       const $ = await PageScraper.getPage(url)
 
       const result = await parser.scrapeEventDataFromPage($, url)
 
       expect(result).toMatchObject({
-        title: "Tech Talks @ Club Street: The Future of Aging",
-        startDate: "2025-09-11", // YYYY-MM-DD
-        startTime: "17:30", // HH:MM
-        endDate: "2025-09-11", // YYYY-MM-DD
-        endTime: "20:00", // HH:MM
-        venue: "40 Club St",
-        venueAddress: "40 Club Street Singapore, 069419",
+        title: "Tech Week Singapore 2025",
+        startDate: "2025-10-08", // YYYY-MM-DD
+        startTime: "09:00", // HH:MM
+        endDate: "2025-10-09", // YYYY-MM-DD
+        endTime: "17:00", // HH:MM
+        venue: "Sands Expo & Convention Centre",
+        venueAddress: "10 Bayfront Avenue Singapore, 018956",
         // description: '',
         // content: '',
         tags: [
           "Singapore Events",
           "Central Singapore Events",
           "Things to do in Singapore",
-          "Singapore Seminars",
-          "Singapore Science & Tech Seminars",
+          "Singapore Conferences",
+          "Singapore Science & Tech Conferences",
+          "innovation",
+          "digital",
           "singapore",
-          "healthcare",
-          "eldercare",
-          "techtalks",
-          "vertis",
-          "clubstreet",
-          "greytech",
+          "2025",
+          "techweek",
         ],
         // heroImage: 'path/to/devsgowhere/scraper-output/hero-1752914046954.png',
         rsvpButtonText: "RSVP on Eventbrite",
