@@ -1,11 +1,10 @@
 import * as cheerio from "cheerio"
-import fs from "fs"
-import path from "path"
 import type { BaseParser } from "./parsers/BaseParser"
 import { EventbriteParser } from "./parsers/EventbriteParser"
 import { LumaParser } from "./parsers/LumaParser"
 import { MeetupParser } from "./parsers/MeetupParser"
 import type { EventData, OrgData, ScrapedEventData, ScrapedOrgData } from "./types"
+import { saveAsHtml } from "./utils"
 
 export class PageScraper {
   public outputDir: string
@@ -40,7 +39,7 @@ export class PageScraper {
 
     console.log(`Fetching ${url}...`)
     const $ = await PageScraper.getPage(url)
-    this.saveAsHtml($)
+    saveAsHtml($, url, this.outputDir)
 
     try {
       console.log(`Scraping event data...`)
@@ -63,6 +62,7 @@ export class PageScraper {
 
     console.log(`Fetching ${url}...`)
     const $ = await PageScraper.getPage(url)
+    saveAsHtml($, url, this.outputDir)
 
     try {
       console.log(`Scraping org data...`)
@@ -198,11 +198,5 @@ export class PageScraper {
 
     const body = await request.text()
     return cheerio.load(body)
-  }
-
-  private saveAsHtml(api: cheerio.CheerioAPI) {
-    const outputPath = path.join(this.outputDir, "output.html")
-    fs.writeFileSync(outputPath, api.html(), "utf8")
-    console.log("Modified HTML saved to scraper-output/output.html")
   }
 }

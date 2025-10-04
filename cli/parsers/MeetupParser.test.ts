@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest"
-import { MeetupParser } from "./MeetupParser"
 import { PageScraper } from "../PageScraper"
+import { saveAsHtml } from "../utils"
+import { MeetupParser } from "./MeetupParser"
 
 describe("MeetupParser", () => {
   describe("single day event", () => {
@@ -9,6 +10,7 @@ describe("MeetupParser", () => {
 
       const url = "https://www.meetup.com/junior-developers-singapore/events/310333625"
       const $ = await PageScraper.getPage(url)
+      saveAsHtml($, url)
 
       const result = await parser.scrapeEventDataFromPage($, url)
 
@@ -40,6 +42,7 @@ describe("MeetupParser", () => {
 
       const url = "https://www.meetup.com/junior-developers-singapore"
       const $ = await PageScraper.getPage(url)
+      saveAsHtml($, url)
 
       const result = await parser.scrapeOrgDataFromPage($, url)
 
