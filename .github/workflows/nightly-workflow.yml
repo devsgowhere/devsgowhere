@@ -4,10 +4,9 @@ on:
   # Trigger the workflow on:
   # - schedule (daily at midnight UTC) on the default branch (which is main)
   schedule:
-    - cron: '1 16 * * *' # Runs daily at midnight +8 GMT (which is 16:00 UTC)
+    - cron: "1 16 * * *" # Runs daily at midnight +8 GMT (which is 16:00 UTC)
 
 jobs:
-
   ##########################################
   # Build job
   # - Builds the project and archives the dist folder as an artifact
@@ -16,11 +15,11 @@ jobs:
   build:
     uses: ./.github/workflows/build-template.yml
 
-##########################################
-# Nightly deployment job
-# - Deploys the default branch (main) to Cloudflare Pages
-# - Runs daily at midnight UTC
-##########################################
+  ##########################################
+  # Nightly deployment job
+  # - Deploys the default branch (main) to Cloudflare Pages
+  # - Runs daily at midnight UTC
+  ##########################################
   deploy-nightly:
     needs: build
     uses: ./.github/workflows/deploy-template.yml
