@@ -1,4 +1,6 @@
 import * as cheerio from "cheerio"
+import fs from "fs"
+import path from "path"
 import type { BaseParser } from "./parsers/BaseParser"
 import { EventbriteParser } from "./parsers/EventbriteParser"
 import { LumaParser } from "./parsers/LumaParser"
@@ -38,6 +40,7 @@ export class PageScraper {
 
     console.log(`Fetching ${url}...`)
     const $ = await PageScraper.getPage(url)
+    this.saveAsHtml($)
 
     try {
       console.log(`Scraping event data...`)
@@ -195,5 +198,11 @@ export class PageScraper {
 
     const body = await request.text()
     return cheerio.load(body)
+  }
+
+  private saveAsHtml(api: cheerio.CheerioAPI) {
+    const outputPath = path.join(this.outputDir, "output.html")
+    fs.writeFileSync(outputPath, api.html(), "utf8")
+    console.log("Modified HTML saved to scraper-output/output.html")
   }
 }
