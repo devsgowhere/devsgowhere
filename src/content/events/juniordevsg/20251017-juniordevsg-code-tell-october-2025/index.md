@@ -7,9 +7,9 @@ venueAddress: "11 Beach Rd, Singapore 189675 · Singapore"
 startDate: "2025-10-17"
 startTime: "19:00"
 endTime: "21:00"
-heroImage: "highres_530411521.webp"
-tags: ["Events in Singapore", "SG", "Artificial Intelligence", "Machine Learning", "Software Development", "Web Development"]
-rsvpButtonUrl: "https://www.meetup.com/junior-developers-singapore/events/311248436"
+heroImage: "highres_530540254.webp"
+tags: ["Events in Singapore, SG", "Artificial Intelligence", "Machine Learning", "Software Development", "Web Development"]
+rsvpButtonUrl: "https://www.meetup.com/junior-developers-singapore/events/311248436/"
 rsvpButtonText: "RSVP on Meetup"
 ---
 
