@@ -63,7 +63,7 @@ const groupedEvents = events.reduce((acc: any, event) => {
     <Header />
     <main class="events-list-page pt-xl pb-3xl">      
       <div class="events-layout">
-      <TagsPanel/>
+      <TagsPanel currentTag={tag}/>
       <div class="container">
       <h1 class="text-3xl text-bold text-accent mb-xl">
         Events tagged with "{tag}"
