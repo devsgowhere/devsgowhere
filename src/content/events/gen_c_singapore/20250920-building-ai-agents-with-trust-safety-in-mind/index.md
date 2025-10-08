@@ -15,7 +15,7 @@ endTime: "12:30"
 # Optional. Defaults to "Asia/Singapore"
 timezone: "Asia/Singapore"
 heroImage: "./20251018_sharing.png"
-tags: ["Generative AI", "Large Language Models", "Amazon Q Developer", "Kiro", 'Agentic AI", "AWS", "NLB"]
+tags: ["Generative AI", "Large Language Models", "Amazon Q Developer", "Kiro", "Agentic AI", "AWS", "NLB"]
 rsvpButtonUrl: "https://form.gov.sg/68dc7a911a4c5ab735de58b9"
 rsvpButtonText: "RSVP on FormSG"
 ---
