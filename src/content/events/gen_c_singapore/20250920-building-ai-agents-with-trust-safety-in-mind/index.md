@@ -1,11 +1,11 @@
 ---
 org: "gen_c_singapore"
-title: "Gen-C September 2025 Sharing"
-description: "Building AI Agents with Trust & Safety in Mind"
+title: "Gen-C October 2025 Sharing"
+description: "Accelerating Software Development with AI-Powered Productivity"
 venue: "Punggol Regional Library"
 venueAddress: "Programme Room (Level 5)"
 # Required. Format: yyyy-mm-dd, e.g. 2024-05-01
-startDate: "2025-09-20"
+startDate: "2025-10-18"
 # Required. Format (24h): hh:mm, e.g. 09:00 (for 9 AM), 18:00 (for 6 PM) 
 startTime: "10:30"
 # Optional. Format: yyyy-mm-dd, e.g. 2024-05-01
@@ -14,19 +14,19 @@ startTime: "10:30"
 endTime: "12:30"
 # Optional. Defaults to "Asia/Singapore"
 timezone: "Asia/Singapore"
-heroImage: "./20250920_sharing.png"
-tags: ["Generative AI", "Large Language Models", "Agentic AI", "Coding", "AWS", "NLB", "Singapore"]
-rsvpButtonUrl: "https://form.gov.sg/6899502f3ca7580d62115105"
+heroImage: "./20251018_sharing.png"
+tags: ["Generative AI", "Large Language Models", "Amazon Q Developer", "Kiro", "Agentic AI", "AWS", "NLB"]
+rsvpButtonUrl: "https://form.gov.sg/68dc7a911a4c5ab735de58b9"
 rsvpButtonText: "RSVP on FormSG"
 ---
 
 ## Details
 
-🔗 **Building AI Agents with Trust & Safety in Mind**
+🔗 **Accelerating Software Development with AI-Powered Productivity**
 
-Talks by Gen-C (Generative AI Learning Community) - September 2025 edition
+Talks by Gen-C (Generative AI Learning Community) - October 2025 edition
 
-💡 Join us for talks about Generative AI on 20 Sep 2025 (Sat)! Seats are limited so please register early to avoid disappointment! 🙂
+💡 Join us for talks about Generative AI on 18 Oct 2025 (Sat)! Seats are limited so please register early to avoid disappointment! 🙂
 Event details: 
 
 ❗ **IMPORTANT: Registration is only tracked through this FormSG URL. Please sign up using the FormSG URL, thank you.**
@@ -36,32 +36,22 @@ Event details:
 
 **Below is the schedule,**
 
-🧱 **10.30am - 11.00am : Topic - Securing Gen AI from the Ground Up: Infrastructure to Agentic Intelligence**
+🧱 **10.30am - 11.10am : Topic - Graduating from Vibe Coding: Spec‑Driven Development with Kiro**
 
-As Generative AI systems evolve from chatbots to autonomous agents, they are becoming powerful actors in our digital world — capable of learning, reasoning, and taking action. In this talk, we’ll explore how to secure the entire Gen AI lifecycle: from cloud infrastructure to model training, application logic, and agentic AI. 
+Tired of vibe coding that feels like throwing prompts at the wall? Kiro is the AI IDE that transforms ad-hoc AI development into structured, predictable workflows. By turning your prompts into clear requirements, design and implementation tasks, Kiro helps you go from prototype to production without the usual AI coding mess. Learn how this spec-driven approach eliminates guesswork, improves code quality, and gets you from concept to working software faster than ever.
 
 About the Speaker: 
 
-Robin Castro is currently leading an investment trading application engineering team at DBS Bank. With over 18 years of expertise in the banking technology sector, he has built and supported various banking applications throughout his career. He is a certified AWS Solutions Architect and Developer.
+Ray is a Digital Transformation specialist responsible for digital strategy in Global Financial Markets at DBS Bank. Previously, he was also instrumental in leading the delivery of FX, Fixed Income Trading and Core Finance technology at the bank. Ray is a passionate Cloud advocate with deep interest in Serverless services and has multiple AWS Certifications under his belt. He is also active in the Machine Learning & AWS DeepRacer communities.
 
-11.00am - 11.10am : Q&A session
+11.10am - 11.30am : Q&A session
 
-🤖 **11.10am - 11.40pm : Topic - Building Web Apps in the age of Gen AI**
+🤖 **11.30am - 12.10pm : Topic - Supercharging your coding productivity with Amazon Q Developer**
 
-In the era of Generative AI, we’re moving beyond code completion into a new paradigm of development. This session shows how to build web apps using AI agents – agents that spin up their own subtasks, write code, test it, and deploy, like your own mini dev team in the cloud. You’ll discover the AI-native tools that enable this new development style.
-
-About the Speaker:
-
-Sayyid Khan is trained in design and software development, combining creative and full stack skills to solve complex problems. As a volunteer and part-time mentor at the National University of Singapore, he helps undergraduates shape their tech careers and secure valuable internships.
-
-11.40am - 11.50am : Q&A session
-
-🤖 **11.50am - 12.20pm : Topic - AI We can Trust: Making Gen AI Fair, Safe & Understandable**
-
-Generative AI is everywhere – from advanced systems like ChatGPT-5 that can reason and solve problems, to fun, no-code tools like PartyRock that let anyone build their own AI app. We will explore how to make AI fair, safe, and explainable for everyday people. 
+In this presentation, participants will gain a basic understanding of several Gen AI services in AWS. The session will cover the use cases of Amazon Q Developer and how it can help increase coding productivity. Most importantly, the presentation will demonstrate how to do specification-driven development using Amazon Q Dev. Participants will also learn about setting up Amazon Q Dev CLI and using profiles and contexts for different use cases. At the end of the presentation, there will be a demo session on two apps created using Q Dev (IDE) and Q Dev (CLI).
 
 About the Speaker:
 
-Justin De Silva is a registered pharmacist with the Singapore Pharmacy Council with a vast experience of 18 years in the healthcare sector. As a polytechnic lecturer for the Diploma in Pharmaceutical Science, he regularly explores how digital tools can be employed to enhance student learning and to align with industry practice. 
+Jiawei is currently a senior software engineer and AWS Community Builder. He is also one of the leads of Gen-C, a Gen AI learning community. He has over 10 years of experience in building software applications. Jiawei is also an ADPList mentor in the field of Generative AI and software engineering.
 
-12.20pm - 12.30pm : Q&A session
+12.10pm - 12.30am : Q&A session
