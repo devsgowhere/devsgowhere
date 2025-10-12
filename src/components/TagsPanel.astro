@@ -1,7 +1,7 @@
 ---
 import { getCollection } from "astro:content";
 
-//const { events = [] } = Astro.props;
+const { currentTag = "" } = Astro.props;
 //Get ALL events (past and future)
 const eventsAll = (await getCollection("events"))
 //Extract all unique tags from ALL events
@@ -29,7 +29,7 @@ const filteredTags = uniqueTags
   const mergedTags = Array.from(new Set([...top20Tags, ...uniqueTags])).sort();
 ---
 
-<aside class="tags-panel">
+<aside class="tags-panel" data-current-tag={currentTag}>
   <h2 class="tags-header">Tags</h2>
   <ul class="tags-list">
     {mergedTags.map(tag => (
@@ -40,25 +40,28 @@ const filteredTags = uniqueTags
 
 <script>
     //let selectedTags: string[] = [];
-    // Highlight the tag matching the current URL
-    const urlParts = window.location.pathname.split('/');
-    const currentTag = urlParts[urlParts.length - 1].replace(/-/g, ' ').toLowerCase();
-
+    // Highlight the tag matching the current tag 
+    document.addEventListener('DOMContentLoaded', () => {
+    // Get the current tag from the data attribute and normalize to slug
+    const currentTagRaw = document.querySelector('.tags-panel')?.getAttribute('data-current-tag') ?? "";
+    const currentTagSlug = currentTagRaw.replace(/\s+/g, '-').toLowerCase();
+    
     document.querySelectorAll('.tag-item').forEach(el => {
       const tag = el.getAttribute('data-tag');
-      if (tag && tag.toLowerCase() === currentTag) {
+      // Normalize tag to slug for comparison
+      const tagSlug = tag.replace(/\s+/g, '-').toLowerCase();
+
+      // Highlight if matches current tag
+      if (tagSlug === currentTagSlug) {
         el.classList.add('selected');
+      } else {
+        el.classList.remove('selected');
       }
 
       el.addEventListener('click', () => {
-        if (tag) {
-          // Highlight the clicked tag
-          document.querySelectorAll('.tag-item').forEach(item => item.classList.remove('selected'));
-          el.classList.add('selected');
-          // Replace all spaces with dashes for the URL
-          const tagUrl = tag.replace(/\s+/g, '-');
-          window.location.href = `/events/tag/${encodeURIComponent(tagUrl)}`;
-        }
+        // Navigate to tag page
+        window.location.href = `/events/tag/${encodeURIComponent(tagSlug)}`;        
+      });
         // Toggle selection
         // if (tag && selectedTags.includes(tag)) {
         //   selectedTags = selectedTags.filter(t => t !== tag);
@@ -70,8 +73,8 @@ const filteredTags = uniqueTags
         //   //console.log(`Tag ${tag} selected`);
         // }
         //filterByTags();
-      });
     });
+  });
 
     // function filterByTags() {
     //   // If no tags selected, show all events
