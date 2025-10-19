@@ -1,104 +1,97 @@
 ---
-import BaseHead from "../../../components/BaseHead.astro";
-import Header from "../../../components/Header.astro";
-import Theme from "../../../layouts/Theme.astro";
-import Footer from "../../../components/Footer.astro";
-import TagsPanel from "../../../components/TagsPanel.astro";
+import BaseHead from "../../../components/BaseHead.astro"
+import Header from "../../../components/Header.astro"
+import Theme from "../../../layouts/Theme.astro"
+import Footer from "../../../components/Footer.astro"
+import TagsPanel from "../../../components/TagsPanel.astro"
 
-import { SITE_TITLE, SITE_DESCRIPTION } from "../../../consts";
-import { getCollection } from "astro:content";
-import EventCard from "../../../components/EventCard.astro";
-import { Settings, DateTime } from "luxon";
-import { toSlug } from "../../../utils/helpers";
+import { SITE_TITLE, SITE_DESCRIPTION, GTM_MEASUREMENT_ID } from "../../../consts"
+import { getCollection } from "astro:content"
+import EventCard from "../../../components/EventCard.astro"
+import { Settings, DateTime } from "luxon"
+import { toSlug } from "../../../utils/helpers"
+import { GoogleTagmanager, GoogleTagmanagerNoscript } from "@digi4care/astro-google-tagmanager"
 
-Settings.defaultZone = "Asia/Singapore";
+Settings.defaultZone = "Asia/Singapore"
 
 export async function getStaticPaths() {
-  const events = await getCollection("events");
+  const events = await getCollection("events")
 
-  const allTags = events
-    ?.flatMap((event) => event.data?.tags || [])
-    .map(toSlug);
-  const uniqueTags = [...new Set(allTags)].filter(Boolean);
-  
+  const allTags = events?.flatMap((event) => event.data?.tags || []).map(toSlug)
+  const uniqueTags = [...new Set(allTags)].filter(Boolean)
+
   return uniqueTags.map((tag) => {
     return {
       params: { tag },
-    };
-  });
+    }
+  })
 }
 
-const { tag } = Astro.params;
+const { tag } = Astro.params
 
 const events = (await getCollection("events"))
   .filter((event) => {
-    return event.data.tags && event.data.tags.map(toSlug).includes(tag);
+    return event.data.tags && event.data.tags.map(toSlug).includes(tag)
   })
-  .toSorted(
-    (a, b) =>
-      new Date(b.data.startDate).valueOf() -
-      new Date(a.data.startDate).valueOf(),
-  );
+  .toSorted((a, b) => new Date(b.data.startDate).valueOf() - new Date(a.data.startDate).valueOf())
 
 // Group events by date
 const groupedEvents = events.reduce((acc: any, event) => {
-  const date = DateTime.fromISO(event.data.startDate).toFormat("ccc, d LLLL y");
+  const date = DateTime.fromISO(event.data.startDate).toFormat("ccc, d LLLL y")
   if (!acc[date]) {
-    acc[date] = [];
+    acc[date] = []
   }
-  acc[date].push(event);
-  return acc;
-}, {});
+  acc[date].push(event)
+  return acc
+}, {})
 ---
 
 <!doctype html>
 <html lang="en">
   <head>
     <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
-    <script
-      src="https://app.unpkg.com/framer-motion@12.12.1/dist/framer-motion.min.js"
-    ></script>
+    <script src="https://app.unpkg.com/framer-motion@12.12.1/dist/framer-motion.min.js"></script>
+    <GoogleTagmanager id={GTM_MEASUREMENT_ID} />
   </head>
   <Theme>
+    <GoogleTagmanagerNoscript id={GTM_MEASUREMENT_ID} />
     <Header />
-    <main class="events-list-page pt-xl pb-3xl">      
+    <main class="events-list-page pt-xl pb-3xl">
       <div class="events-layout">
-      <TagsPanel currentTag={tag}/>
-      <div class="container">
-      <h1 class="text-3xl text-bold text-accent mb-xl">
-        Events tagged with "{tag}"
-      </h1>      
-      <!-- <div class="container"> -->
-        <section>
-          {
-            Object.keys(groupedEvents).length > 0 ? (
-              Object.keys(groupedEvents).map((date) => (
-                <div class="event-date">
-                  <fieldset
-                    class="mb-s mt-m"
-                    style="border-bottom: 0px; border-left: 0px; border-right: 0px; border-color: var(--gray-7);"
-                  >
-                    <legend class="text-3xl text-bold text-gray-7 px-m">
-                      {date}
-                    </legend>
-                  </fieldset>
+        <TagsPanel currentTag={tag} />
+        <div class="container">
+          <h1 class="text-3xl text-bold text-accent mb-xl">
+            Events tagged with "{tag}"
+          </h1>
+          <!-- <div class="container"> -->
+          <section>
+            {
+              Object.keys(groupedEvents).length > 0 ? (
+                Object.keys(groupedEvents).map((date) => (
+                  <div class="event-date">
+                    <fieldset
+                      class="mb-s mt-m"
+                      style="border-bottom: 0px; border-left: 0px; border-right: 0px; border-color: var(--gray-7);"
+                    >
+                      <legend class="text-3xl text-bold text-gray-7 px-m">{date}</legend>
+                    </fieldset>
 
-                  <ul class="event-list">
-                    {groupedEvents[date].map((event) => (
-                      <li class="event-list-item" data-id={event.id}>
-                        <EventCard event={event} />
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))
-            ) : (
-              <p class="text-gray-5 text-2xl">No upcoming events found.</p>
-            )
-          }
-        </section>
+                    <ul class="event-list">
+                      {groupedEvents[date].map((event) => (
+                        <li class="event-list-item" data-id={event.id}>
+                          <EventCard event={event} />
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))
+              ) : (
+                <p class="text-gray-5 text-2xl">No upcoming events found.</p>
+              )
+            }
+          </section>
+        </div>
       </div>
-    </div>
     </main>
     <Footer />
   </Theme>
