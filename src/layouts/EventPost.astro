@@ -1,17 +1,19 @@
 ---
-import type { CollectionEntry } from "astro:content";
-import { Image } from "astro:assets";
-import { getEntry } from "astro:content";
-import BaseHead from "../components/BaseHead.astro";
-import Header from "../components/Header.astro";
-import Footer from "../components/Footer.astro";
-import Theme from "./Theme.astro";
-import SummaryCard from "../components/SummaryCard.astro";
-import FormattedEventDate from "../components/FormattedEventDate.astro";
-import AddToCalendarButton from "../components/AddToCalendarButton.tsx";
-import { toSlug } from "../utils/helpers";
+import { GTM_MEASUREMENT_ID } from "../consts.ts"
+import type { CollectionEntry } from "astro:content"
+import { Image } from "astro:assets"
+import { getEntry } from "astro:content"
+import BaseHead from "../components/BaseHead.astro"
+import Header from "../components/Header.astro"
+import Footer from "../components/Footer.astro"
+import Theme from "./Theme.astro"
+import SummaryCard from "../components/SummaryCard.astro"
+import FormattedEventDate from "../components/FormattedEventDate.astro"
+import AddToCalendarButton from "../components/AddToCalendarButton.tsx"
+import { toSlug } from "../utils/helpers"
+import { GoogleTagmanager, GoogleTagmanagerNoscript } from "@digi4care/astro-google-tagmanager"
 
-type Props = CollectionEntry<"events">["data"];
+type Props = CollectionEntry<"events">["data"]
 
 const {
   title,
@@ -27,37 +29,29 @@ const {
   org,
   venue,
   venueAddress,
-} = Astro.props;
+} = Astro.props
 
-const orgData = await getEntry(org);
+const orgData = await getEntry(org)
 
-let orgUrl = `/orgs/${org.id}`;
+let orgUrl = `/orgs/${org.id}`
 ---
 
 <html lang="en">
   <head>
     <BaseHead title={title} description={description} image={heroImage} />
+    <GoogleTagmanager id={GTM_MEASUREMENT_ID} />
   </head>
   <Theme>
+    <GoogleTagmanagerNoscript id={GTM_MEASUREMENT_ID} />
     <Header />
     <main class="event-page">
       <div class="container">
         <article class="card">
           <div class="hero-image">
-            {
-              heroImage && (
-                <Image width={1020} height={510} src={heroImage} alt="" />
-              )
-            }
+            {heroImage && <Image width={1020} height={510} src={heroImage} alt="" />}
           </div>
           <div class="pt-l px-l pb-xl">
-            {
-              org && (
-                <div class="org-name mb-xs pl-0 text-s text-gray-6">
-                  Hosted by: {orgData.data.title}
-                </div>
-              )
-            }
+            {org && <div class="org-name mb-xs pl-0 text-s text-gray-6">Hosted by: {orgData.data.title}</div>}
             <h1 class="event-title text-3xl text-accent">{title}</h1>
             <hr class="mb-l" />
             <ul class="date mb-m">
@@ -71,27 +65,17 @@ let orgUrl = `/orgs/${org.id}`;
             </ul>
             <ul style="display: flex; align-items: baseline; gap: 0.5rem;">
               <i class="fa-solid fa-location-dot mr-xs"></i>
-              <div
-                style="display: flex; flex-direction: column; align-items:baseline;"
-              >
+              <div style="display: flex; flex-direction: column; align-items:baseline;">
                 <p class="mt-0 mb-xs" style="font-weight: bold;">{venue}</p>
                 <p class="text-capitalise mt-0 mb-0">
                   {(venueAddress ?? "").toLowerCase()}
                 </p>
               </div>
             </ul>
-            <div
-              class="ml-s"
-              style={{ display: "flex", gap: "1rem", alignItems: "center" }}
-            >
+            <div class="ml-s" style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
               {
                 rsvpButtonUrl && (
-                  <a
-                    href={rsvpButtonUrl}
-                    class="rsvp-button"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
+                  <a href={rsvpButtonUrl} class="rsvp-button" target="_blank" rel="noopener noreferrer">
                     {rsvpButtonText ?? "Link"}
                   </a>
                 )
@@ -168,9 +152,7 @@ let orgUrl = `/orgs/${org.id}`;
                   }
                 </p>
                 <div>
-                  <a href={orgUrl}
-                    ><i class="fa fa-arrow-right"></i> More events</a
-                  >
+                  <a href={orgUrl}><i class="fa fa-arrow-right"></i> More events</a>
                 </div>
               </div>
             </div>
@@ -191,9 +173,7 @@ let orgUrl = `/orgs/${org.id}`;
     padding: 4rem 0;
 
     .container {
-      width: calc(
-        #{$article-width} + #{$aside-width} + #{$gap} + 2 * #{$padding-x}
-      );
+      width: calc(#{$article-width} + #{$aside-width} + #{$gap} + 2 * #{$padding-x});
       max-width: 100%;
       display: flex;
       flex-direction: row;
