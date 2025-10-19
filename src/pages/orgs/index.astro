@@ -1,177 +1,144 @@
 ---
+import BaseHead from "../../components/BaseHead.astro"
+import Header from "../../components/Header.astro"
+import Theme from "../../layouts/Theme.astro"
+import Footer from "../../components/Footer.astro"
 
-import BaseHead from "../../components/BaseHead.astro";
-import Header from "../../components/Header.astro";
-import Theme from "../../layouts/Theme.astro";
-import Footer from "../../components/Footer.astro";
+import { SITE_TITLE, SITE_DESCRIPTION, GTM_MEASUREMENT_ID } from "../../consts"
+import { getCollection } from "astro:content"
+import { Image } from "astro:assets"
+import { GoogleTagmanager, GoogleTagmanagerNoscript } from "@digi4care/astro-google-tagmanager"
 
-import { SITE_TITLE, SITE_DESCRIPTION } from "../../consts";
-import { getCollection } from "astro:content";
-import { Image } from "astro:assets";
-
-const orgs = (await getCollection("orgs")).sort((a, b) =>
-  a.data.title.localeCompare(b.data.title)
-);
+const orgs = (await getCollection("orgs")).sort((a, b) => a.data.title.localeCompare(b.data.title))
 ---
 
 <!doctype html>
 <html lang="en">
   <head>
     <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+    <GoogleTagmanager id={GTM_MEASUREMENT_ID} />
   </head>
   <Theme>
+    <GoogleTagmanagerNoscript id={GTM_MEASUREMENT_ID} />
     <Header />
     <main class="org-list-page pt-xl pb-3xl">
-        <div class="container">
-            <header class="org-list-header mb-l">
-              <h1 class="page-title text-m text-accent">Organisations</h1>
-              <div class="org-search form-control">
-                <i class="form-control__prepend fa fa-search"></i>
-                <input
-                  id="org-search__input"
-                  type="text"
-                  class="form-control__input"
-                  placeholder="Search"
-                />
-              </div>
-            </header>
-            <ul class="org-list">
-              {
-                orgs.map((org) => (
-                  <li class="org-list-item" data-id={org.id}>
-                    <a class="card" href={`/orgs/${org.id}/`}>
-                      {
-                        org.data.logoImage && (
-                        <div class="org-list-item__logo">
-                          <Image
-                              width={360}
-                              height={360}
-                              src={org.data.logoImage ?? org.data.heroImage}
-                              alt=""
-                          />
-                        </div>
-                        )
-                      }
-                      {
-                        !org.data.logoImage && (
-                        <div class="org-list-item__heroImg">
-                          <Image
-                              width={360}
-                              height={360}
-                              src={org.data.heroImage}
-                              alt=""
-                          />
-                        </div>
-                        )
-                      }
-                      <div class="org-list-item__info p-m">
-                        <div class="org-list-item__info__top">
-                          <div class="org-name text-2xl text-bold mb-xs">
-                            {org.data.title}
-                          </div>
-                          <div class="org-description text-gray-5 mb-s">
-                            {org.data.description.slice(0, 100)}...
-                          </div>
-                        </div>
-                        <div class="org-list-item__info__bottom">
-                          <ul class="tag-list mb-0">
-                            { org.data.tags?.slice(0, 5).map((tag) => (
-                              <li class="tag">
-                                # {tag}
-                              </li>
-                            )) }
-                          </ul>
-                        </div>
-                      </div>
-                    </a>
-                  </li>
-                ))
-              }
-            </ul>
-            <div class="org-list__empty" style="display: none;">
-              <p class="text-gray-5 text-2xl">No results found!</p>
-            </div>
+      <div class="container">
+        <header class="org-list-header mb-l">
+          <h1 class="page-title text-m text-accent">Organisations</h1>
+          <div class="org-search form-control">
+            <i class="form-control__prepend fa fa-search"></i>
+            <input id="org-search__input" type="text" class="form-control__input" placeholder="Search" />
+          </div>
+        </header>
+        <ul class="org-list">
+          {
+            orgs.map((org) => (
+              <li class="org-list-item" data-id={org.id}>
+                <a class="card" href={`/orgs/${org.id}/`}>
+                  {org.data.logoImage && (
+                    <div class="org-list-item__logo">
+                      <Image width={360} height={360} src={org.data.logoImage ?? org.data.heroImage} alt="" />
+                    </div>
+                  )}
+                  {!org.data.logoImage && (
+                    <div class="org-list-item__heroImg">
+                      <Image width={360} height={360} src={org.data.heroImage} alt="" />
+                    </div>
+                  )}
+                  <div class="org-list-item__info p-m">
+                    <div class="org-list-item__info__top">
+                      <div class="org-name text-2xl text-bold mb-xs">{org.data.title}</div>
+                      <div class="org-description text-gray-5 mb-s">{org.data.description.slice(0, 100)}...</div>
+                    </div>
+                    <div class="org-list-item__info__bottom">
+                      <ul class="tag-list mb-0">
+                        {org.data.tags?.slice(0, 5).map((tag) => (
+                          <li class="tag"># {tag}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+        <div class="org-list__empty" style="display: none;">
+          <p class="text-gray-5 text-2xl">No results found!</p>
         </div>
-      </section>
+      </div>
     </main>
-    <Footer />
   </Theme>
-  <script>
+  <Footer />
 
+  <script>
     // fetch all orgs from "orgs/search-index.json"
-    const orgs = [];
-    fetch('/orgs/search-index.json')
+    const orgs = []
+    fetch("/orgs/search-index.json")
       .then((response) => response.json())
       .then((data) => {
-        orgs.push(...data);
+        orgs.push(...data)
       })
       .catch((error) => {
-        console.error(`Error fetching search index for 'orgs' collection:`, error);
-      });
+        console.error(`Error fetching search index for 'orgs' collection:`, error)
+      })
 
     // listen for input change on search input
-    const searchInputEl = document.querySelector('#org-search__input');
+    const searchInputEl = document.querySelector("#org-search__input")
 
-    searchInputEl.addEventListener('input', (e) => {
-      
-      const searchValue = e.target.value.toLowerCase().trim();
-      const emptyStateEl = document.querySelector('.org-list__empty');
+    searchInputEl.addEventListener("input", (e) => {
+      const searchValue = e.target.value.toLowerCase().trim()
+      const emptyStateEl = document.querySelector(".org-list__empty")
 
       // if search value is empty, show all orgs
-      if (searchValue === '') {
-        
+      if (searchValue === "") {
         // hide "No results found" message
-        emptyStateEl.style.display = 'none';
-        
+        emptyStateEl.style.display = "none"
+
         // show all orgs
-        document.querySelectorAll('.org-list-item').forEach((item) => {
-          item.classList.remove('hide');
-        });
+        document.querySelectorAll(".org-list-item").forEach((item) => {
+          item.classList.remove("hide")
+        })
 
-        return;
-
+        return
       }
 
       // filter orgs based on search value
       const filteredOrgs = orgs.filter((org) => {
         // check if org name includes search value
         if (org.title.toLowerCase().includes(searchValue)) {
-          return true;
+          return true
         }
         // check if org tags include search value
         if (org.tags.some((tag) => tag.toLowerCase().includes(searchValue))) {
-          return true;
+          return true
         }
-        return false;
-      });
+        return false
+      })
 
       // if no orgs found, show "No results found" message
       if (filteredOrgs.length === 0) {
-        emptyStateEl.style.display = 'block';
+        emptyStateEl.style.display = "block"
       } else {
-        emptyStateEl.style.display = 'none';
+        emptyStateEl.style.display = "none"
       }
-      
-      // show/hide orgs based on search value
-      document.querySelectorAll('.org-list-item').forEach((item) => {
-        const orgId = item.getAttribute('data-id');
-        const show = filteredOrgs.some((org) => org.id === orgId);
-        if (show) {
-          item.classList.remove('hide');
-        } else {
-          item.classList.add('hide');
-        }
-      });
-      
-    });
 
+      // show/hide orgs based on search value
+      document.querySelectorAll(".org-list-item").forEach((item) => {
+        const orgId = item.getAttribute("data-id")
+        const show = filteredOrgs.some((org) => org.id === orgId)
+        if (show) {
+          item.classList.remove("hide")
+        } else {
+          item.classList.add("hide")
+        }
+      })
+    })
   </script>
 </html>
 
 <style lang="scss">
-
   .org-list-header {
-  
     // layout as flex, row, space-between
     display: flex;
     flex-direction: row;
@@ -196,7 +163,6 @@ const orgs = (await getCollection("orgs")).sort((a, b) =>
     // on mobile view
     //
     @media (max-width: 768px) {
-
       // stack the elements
       flex-direction: column;
       align-items: stretch;
@@ -214,13 +180,10 @@ const orgs = (await getCollection("orgs")).sort((a, b) =>
           width: 100%;
         }
       }
-
     }
-
   }
 
   .org-list {
-
     // remove list style
     list-style: none;
     padding: 0;
@@ -255,11 +218,9 @@ const orgs = (await getCollection("orgs")).sort((a, b) =>
         padding: 0; // on desktop, no padding
       }
     }
-    
   }
 
   .org-list-item {
-
     $size: 300px;
     width: 100%;
     min-width: $size;
@@ -269,11 +230,10 @@ const orgs = (await getCollection("orgs")).sort((a, b) =>
     flex-direction: column; // this is to make the card stretch
 
     a {
-
       display: inline-flex;
       flex-direction: column;
-      
-      height: 100%;;
+
+      height: 100%;
 
       text-decoration: none;
       color: inherit;
@@ -283,15 +243,14 @@ const orgs = (await getCollection("orgs")).sort((a, b) =>
 
       // logo image
       .org-list-item__logo {
-
         width: 100%;
-      
+
         // prevent the image from touching the edges
-        padding: 2rem; 
+        padding: 2rem;
 
         // drop shadow
         box-shadow: 0 0 10px 5px rgba(198, 198, 198, 0.3);
-      
+
         // constrain the image to the tile
         img {
           width: 100%;
@@ -299,7 +258,6 @@ const orgs = (await getCollection("orgs")).sort((a, b) =>
           max-width: 100%;
           object-fit: contain;
         }
-
       }
 
       // hero image ( if no logo image )
@@ -323,7 +281,6 @@ const orgs = (await getCollection("orgs")).sort((a, b) =>
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-
       }
 
       &:hover .org-name {
@@ -341,14 +298,11 @@ const orgs = (await getCollection("orgs")).sort((a, b) =>
           padding-bottom: 2rem;
         }
       }
-
     }
 
     // is hidden
     &.hide {
       display: none;
     }
-
   }
-
 </style>
