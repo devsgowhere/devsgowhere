@@ -29,8 +29,8 @@ Talks by Gen-C (Generative AI Learning Community) - November 2025 edition
 💡 Join us for talks about Generative AI on 15 Nov 2025 (Sat)! Seats are limited so please register early to avoid disappointment! 🙂
 Event details: 
 
-❗ **IMPORTANT: Registration is only tracked through this FormSG URL. Please sign up using the FormSG URL, thank you.**
-👉🏻Link: https://form.gov.sg/6899502f3ca7580d62115105
+❗ **IMPORTANT: Registration is only tracked through this URL below. Please sign up using URL below, thank you.**
+👉🏻Link: https://nlb.libcal.com/event/5854983
 
 🏠 **LOCATION: Level 5 Programme Room, Punggol Regional Library, 1 Punggol Drive One, S828629**
 
@@ -55,3 +55,4 @@ About the Speaker:
 Meraldo Antonio is a Data Scientist with a strong focus on time series analysis, large language models, natural language processing, econometrics/macroeconomics, MLOps, and cloud computing (AWS & GCP). He currently works at DBS Bank, where he leverages time series analysis and LLMs to drive macroeconomic insights and analysis.
 
 12.10pm - 12.30am : Q&A session
+
