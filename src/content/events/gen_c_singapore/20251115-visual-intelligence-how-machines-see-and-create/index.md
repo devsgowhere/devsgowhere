@@ -29,8 +29,8 @@ Talks by Gen-C (Generative AI Learning Community) - November 2025 edition
 💡 Join us for talks about Generative AI on 15 Nov 2025 (Sat)! Seats are limited so please register early to avoid disappointment! 🙂
 Event details: 
 
-❗ **IMPORTANT: Registration is only tracked through this FormSG URL. Please sign up using the FormSG URL, thank you.**
-👉🏻Link: https://form.gov.sg/6899502f3ca7580d62115105
+❗ **IMPORTANT: Registration is only tracked through the below URL. Please sign up using the below URL, thank you.**
+👉🏻Link: https://nlb.libcal.com/event/5854983
 
 🏠 **LOCATION: Level 5 Programme Room, Punggol Regional Library, 1 Punggol Drive One, S828629**
 
