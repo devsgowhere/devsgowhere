@@ -1,22 +1,23 @@
 ---
-import FormattedEventDate from "../components/FormattedEventDate.astro";
-import AddToCalendarButton from "../components/AddToCalendarButton.tsx";
-import "../styles/GlobalStyles.astro";
+import FormattedEventDate from "../components/FormattedEventDate.astro"
+import AddToCalendarButton from "../components/AddToCalendarButton.tsx"
+import "../styles/GlobalStyles.astro"
+import OneMap from "../components/OneMap.tsx"
 
 // Props for the SummaryCard component
 export interface Props {
-  title: string;
-  description: string;
-  startDate: string;
-  startTime: string;
-  endDate: string;
-  endTime: string;
-  timezone: string;
-  venue: string;
-  org: string;
-  venueAddress: string;
-  rsvpButtonUrl: string;
-  rsvpButtonText: string;
+  title: string
+  description: string
+  startDate: string
+  startTime: string
+  endDate: string
+  endTime: string
+  timezone: string
+  venue: string
+  org: string
+  venueAddress: string
+  rsvpButtonUrl: string
+  rsvpButtonText: string
 }
 
 let {
@@ -32,7 +33,7 @@ let {
   venueAddress,
   rsvpButtonUrl,
   rsvpButtonText,
-} = Astro.props;
+} = Astro.props
 
 // console.log("props: ", Astro.props);
 ---
@@ -41,39 +42,29 @@ let {
   <h2 class="summary-card__title text-accent mx-l mb-l">{title}</h2>
   <div class="summary-card__details mx-m">
     <div class="event-date ml-m">
-      <i class="fa-solid fa-clock mr-xs"></i>      
-      <FormattedEventDate        
-        startDate={startDate}
-        startTime={startTime}
-        endDate={endDate ?? ""}
-        endTime={endTime ?? ""}
-      />
+      <i class="fa-solid fa-clock mr-xs"></i>
+      <FormattedEventDate startDate={startDate} startTime={startTime} endDate={endDate ?? ""} endTime={endTime ?? ""} />
     </div>
     <div class="event-location m-m">
       <div style="display: flex; align-items: baseline;">
-        <i class="fa-solid fa-location-dot mr-xs"></i>        
+        <i class="fa-solid fa-location-dot mr-xs"></i>
         <div style="display: flex; flex-direction: column; align-items: flex-start;">
-        <p class="ml-xs mt-0" style="font-weight: bold;">{venue}</p>
-        <p class="text-capitalise ml-xs mt-0">{(venueAddress ?? '').toLowerCase()}</p>
+          <p class="ml-xs mt-0" style="font-weight: bold;">{venue}</p>
+          <p class="text-capitalise ml-xs mt-0">{(venueAddress ?? "").toLowerCase()}</p>
         </div>
       </div>
     </div>
     <div style="display: flex; flex-direction: column; align-items: center;">
       {
         rsvpButtonUrl && (
-          <a
-            href={rsvpButtonUrl}
-            class="rsvp-button"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <a href={rsvpButtonUrl} class="rsvp-button" target="_blank" rel="noopener noreferrer">
             {rsvpButtonText ?? "RSVP"}
           </a>
         )
-      }      
-      <AddToCalendarButton        
+      }
+      <AddToCalendarButton
         client:only="react"
-        label="Add to Calendar" 
+        label="Add to Calendar"
         name={title}
         options="'Apple','Google'"
         location={venueAddress ?? ""}
@@ -82,13 +73,18 @@ let {
         startTime={startTime}
         endTime={endTime}
         timeZone={timezone ?? "Asia/Singapore"}
-      />      
+      />
     </div>
+  </div>
+
+  <!-- Map: client-only component; loads OneMap/Leaflet on the client -->
+  <div class="summary-card__map mt-m">
+    {venueAddress && <OneMap client:load height="240px" address={venueAddress} zoomOnAddress={18} />}
   </div>
 
   <style>
     .summary-card__title {
-      font-size: 1.5rem;      
+      font-size: 1.5rem;
     }
 
     .summary-card__details {
@@ -104,7 +100,7 @@ let {
       display: inline-block;
       padding: 0.4em 0.8em;
       margin: 0.5em 0;
-      background-color: var(--accent, #007BFF);
+      background-color: var(--accent, #007bff);
       color: white;
       text-decoration: none;
       border-radius: 4px;
@@ -112,7 +108,7 @@ let {
       transition: background-color 0.2s ease;
     }
     .rsvp-button:hover {
-      background-color: var(--accent,  #0056b3);
+      background-color: var(--accent, #0056b3);
       color: white;
     }
   </style>
