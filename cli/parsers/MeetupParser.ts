@@ -7,6 +7,10 @@ export class MeetupParser extends BaseParser {
   override async scrapeEventDataFromPage($: CheerioAPI, url: string): Promise<ScrapedEventData> {
     const scrapedData: ScrapedEventData = {}
 
+    let defaultData: any = {}
+    const nextData = $("#__NEXT_DATA__").text()
+    if (nextData) defaultData = JSON.parse(nextData)
+
     console.log(`Extracting event title...`)
     const eventTitle = $("main h1").first().text().trim()
     console.log(`Event title: ${eventTitle}`)
@@ -61,45 +65,42 @@ export class MeetupParser extends BaseParser {
     }
 
     console.log(`Extracting event description...`)
-    const eventDescription = $("main section").first().children().eq(1).text().trim()
-    if (eventDescription) {
-      console.log(`Event description: ${eventDescription}`)
-      scrapedData.description = eventDescription.substring(0, 160) // truncate to 160 characters for SEO
-    } else {
-      console.warn(`No event description found.`)
-      scrapedData.description = ""
-    }
+    const ogHeaderDescription = $('meta[property="og:description"]').attr("content")
+    scrapedData.description = ogHeaderDescription || ""
 
     // get event details from "main #event-details" as html
     console.log(`Extracting event content...`)
-    const eventContent = $("main section").first().children().eq(1).html()
+    const eventContent = defaultData.props.pageProps.event.description
     if (eventContent) {
       console.log(`Event content extracted.`)
-      // Convert HTML description to markdown
-      scrapedData.content = this.convertHtmlToMarkdown(eventContent)
+      scrapedData.content = eventContent
     } else {
       console.warn(`No content found for the event.`)
       scrapedData.content = ""
     }
 
     console.log(`Extracting event tags...`)
-    const eventTags = $("main section")
-      .first()
-      .children()
-      .eq(2)
-      .find("span")
-      .map((_i, el) => $(el).text().trim())
-      .get()
-    if (eventTags.length > 0) {
-      console.log(`Event tags: ${eventTags.join(", ")}`)
-      scrapedData.tags = eventTags
-    } else {
-      console.warn(`No tags found for the event.`)
-      scrapedData.tags = []
+    scrapedData.tags = []
+
+    const venueTags = [
+      defaultData.props.pageProps.event.venue?.city,
+      defaultData.props.pageProps.event.venue?.state,
+      defaultData.props.pageProps.event.venue?.country?.toUpperCase(),
+    ].filter((tag) => tag && tag.length > 0).join(", ")
+    if (venueTags && venueTags.length > 0) {
+      scrapedData.tags = [`Events in ${venueTags}`]
     }
 
+    defaultData.props.pageProps.event.topics.edges.forEach((edge: any) => {
+      if (edge.node.name && !scrapedData.tags?.includes(edge.node.name)) {
+        scrapedData.tags = scrapedData.tags || []
+        scrapedData.tags.push(edge.node.name)
+      }
+    })
+
     console.log(`Extracting hero image...`)
-    const heroImageUrl = $("main aside img").attr("src")?.trim() || ""
+    // const heroImageUrl = $("main aside img").attr("src")?.trim() || ""
+    const heroImageUrl = defaultData.props.pageProps.event?.featuredEventPhoto?.source || ""
 
     // download the hero image to 'scraper-output' folder
     if (heroImageUrl) {
