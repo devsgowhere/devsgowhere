@@ -100,7 +100,7 @@ export class MeetupParser extends BaseParser {
 
     console.log(`Extracting hero image...`)
     // const heroImageUrl = $("main aside img").attr("src")?.trim() || ""
-    const heroImageUrl = defaultData.props.pageProps.event?.featuredEventPhoto?.source || ""
+    const heroImageUrl = defaultData.props.pageProps.event?.featuredEventPhoto?.source || defaultData.props.pageProps.event?.group?.groupPhoto?.source || ""
 
     // download the hero image to 'scraper-output' folder
     if (heroImageUrl) {

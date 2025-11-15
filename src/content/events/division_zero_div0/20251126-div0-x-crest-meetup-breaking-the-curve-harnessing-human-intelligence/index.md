@@ -1,14 +1,14 @@
 ---
 org: "division_zero_div0"
 title: "Div0 x CREST Meetup — Breaking the Curve & Harnessing Human Intelligence"
-description: "**⚠️⚠️ To attend, please also fill up the following registration form:** [https://forms.gle/LsmxBUUBMAZDHkFA9](https://forms.gle/LsmxBUUBMAZDHkFA9) **⚠️⚠️**  **"
+description: "Div0 x CREST Meetup — Breaking the Curve & Harnessing Human Intelligence"
 venue: "CyberSG TIG Collaboration Centre (formerly ICE71)"
 venueAddress: "71 Ayer Rajah Crescent · Singapore"
 startDate: "2025-11-26"
 startTime: "18:30"
 endDate: "2025-11-26"
 endTime: "18:30"
-heroImage: "org-placeholder.png"
+heroImage: "highres_494988213.jpeg"
 tags: ["Events in Singapore, SG", "Computer Security", "Cybersecurity", "Penetration Testing", "Ethical Hacking", "Information Security"]
 rsvpButtonUrl: "https://www.meetup.com/div0_sg/events/311850604"
 rsvpButtonText: "RSVP on Meetup"
