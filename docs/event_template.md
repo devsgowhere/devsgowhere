@@ -14,7 +14,7 @@ startTime: "$event_start_time"
 # endTime: "hh:mm"
 # Optional. Defaults to "Asia/Singapore"
 # timezone: "Asia/Singapore"
-heroImage: "https://placecats.com/300/200?fit=contain&position=top"
+heroImage: "../../../../public/org-placeholder.png"
 tags: []
 rsvpButtonUrl: "$event_url"
 rsvpButtonText: "RSVP on Meetup"

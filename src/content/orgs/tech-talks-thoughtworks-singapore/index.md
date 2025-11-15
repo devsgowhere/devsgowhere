@@ -2,7 +2,7 @@
 title: "Tech Talks by Thoughtworks"
 description: "Calling all technologists! This group is for anyone interested in talking about technology - IOT, agile software development, machine learning, security, and an"
 heroImage: "clean_501213423.webp"
-logoImage: "https://placecats.com/300/200?fit=contain&position=top"
+logoImage: "../../../../public/org-placeholder.png"
 # Add up to 10 tags for your organisation
 tags: ["Software Development", "Web Technology", "Web Development", "Agile Project Management", "New Technology", "Mobile Technology", "Computer Programming"]
 # (Optional) Links ----------------------------------

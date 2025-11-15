@@ -2,7 +2,7 @@
 title: "Singapore Robot Operating System(ROS) Meetup"
 description: "It's a group where enthusiasts meet to discuss about ROS and robots! Come join us!"
 heroImage: "clean_512319075.webp"
-logoImage: "https://placecats.com/300/200?fit=contain&position=top"
+logoImage: "../../../../public/org-placeholder.png"
 # Add up to 10 tags for your organisation
 tags: ["Robots", "Personal Robots", "Emerging Robotic Technologies", "Smart Sensors", "Artificial Intelligence", "Autonomous Robots", "ROS"]
 # (Optional) Links ----------------------------------

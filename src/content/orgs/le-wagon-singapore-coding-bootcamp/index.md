@@ -2,7 +2,7 @@
 title: "Le Wagon Singapore - Coding Bootcamp"
 description: "Le Wagon is a coding bootcamp that teaches students to develop web applications from scratch. Our cutting-edge curriculum and world-class teachers give students"
 heroImage: "clean_479701918.webp"
-logoImage: "https://placecats.com/300/200?fit=contain&position=top"
+logoImage: "../../../../public/org-placeholder.png"
 # Add up to 10 tags for your organisation
 tags: ["Software Development", "Web Technology", "Web Development", "Programming Languages", "Entrepreneurship", "Startup Businesses", "Computer Programming", "User Research", "UX Design", "Coders", "UI/UX Design", "Learn to Code", "Coding for Beginners"]
 # (Optional) Links ----------------------------------
