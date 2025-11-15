@@ -2,7 +2,7 @@
 title: "Graph Database Singapore"
 description: "Welcome to the Graph Database Singapore User Group, a group for anyone interested in exploring the intersection of graphs, artificial intelligence, machine lear"
 heroImage: "preview_315183756.webp"
-logoImage: "https://placecats.com/300/200?fit=contain&position=top"
+logoImage: "../../../../public/org-placeholder.png"
 tags: ["Open Source", "Big Data", "Data Analytics", "Data Visualization", "NoSQL", "Neo4j", "Graph Databases", "Neo4j-Social"]
 # (Optional) Links ----------------------------------
 # website: <url>

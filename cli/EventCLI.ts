@@ -234,7 +234,7 @@ export class EventCLI {
         type: "input",
         name: "heroImage",
         message: "Hero image URL:",
-        default: "https://placecats.com/300/200?fit=contain&position=top",
+        default: "../public/org-placeholder.png",
       },
       {
         type: "input",
@@ -369,7 +369,7 @@ export class EventCLI {
         type: "input",
         name: "heroImage",
         message: "Hero image:",
-        default: scrapedData.heroImage || "https://placecats.com/300/200?fit=contain&position=top",
+        default: scrapedData.heroImage || "../public/org-placeholder.png",
       },
       {
         type: "input",
