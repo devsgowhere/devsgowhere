@@ -1,7 +1,7 @@
 ---
 org: "women_devs_sg"
 title: "Boundaries in the Workplace"
-description: "✨ **Disclaimer** **1) This is a women-only event**  **2) Exact Location: *\*SCAPE, 2 Orchard Link, #03-10, Singapore 237978 (Besides L3 Lift)***  🔹 **Synopsis:"
+description: ""
 venue: "*SCAPE"
 venueAddress: "2 Orchard Link, 237978 · Singapore"
 startDate: "2025-11-25"

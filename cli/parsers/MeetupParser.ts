@@ -31,16 +31,16 @@ export class MeetupParser extends BaseParser {
     }
 
     console.log(`Extracting event end time...`)
-    const eventEndTime = $("main aside time").text().trim()
+    const eventEndTime = defaultData.props.pageProps.event?.endTime
     if (eventEndTime) {
       // Example: Saturday, Aug 23 · 10:00 AM to 1:00 PM SST
       console.log(`Event end time: ${eventEndTime}`)
-      const [_, end] = eventEndTime.split(" to ")
-      const timeOnly = end.substring(0, end.length - 3).trim()
-      const endDate = DateTime.fromFormat(timeOnly, "h:mm a")
-      scrapedData.endTime = endDate.toFormat("HH:mm") // HH:MM
+      const endDateTime = DateTime.fromISO(eventStartTime).setZone("Asia/Singapore")
+      scrapedData.endDate = `${endDateTime.toFormat("yyyy-MM-dd")}`
+      scrapedData.endTime = `${endDateTime.toFormat("HH:mm")}`
     } else {
       console.warn(`No end time found for the event.`)
+      scrapedData.endDate = ""
       scrapedData.endTime = ""
     }
 
@@ -65,8 +65,8 @@ export class MeetupParser extends BaseParser {
     }
 
     console.log(`Extracting event description...`)
-    const ogHeaderDescription = $('meta[property="og:description"]').attr("content")
-    scrapedData.description = ogHeaderDescription || ""
+    // const ogHeaderDescription = $('meta[property="og:description"]').attr("content")
+    scrapedData.description = scrapedData.title || ""
 
     // get event details from "main #event-details" as html
     console.log(`Extracting event content...`)

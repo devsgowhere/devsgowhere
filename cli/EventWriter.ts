@@ -19,7 +19,7 @@ export class EventWriter {
       fs.writeFileSync(eventFile, fileContent, "utf8")
 
       // if got hero image, copy it to the event directory
-      if (eventData.heroImage && !eventData.heroImage.startsWith("http")) {
+      if (eventData.heroImage && !eventData.heroImage.startsWith("http") && eventData.heroImage !== "../public/org-placeholder.png") {
         const heroImageFilename = path.basename(eventData.heroImage)
         const heroImageDest = path.join(eventDir, heroImageFilename)
         fs.copyFileSync(eventData.heroImage, heroImageDest)
