@@ -17,6 +17,8 @@ rsvpButtonText: "Register to attend!"
 
 Test Beyond Tomorrow — Skills, Tools & Mindsets for the Next Decade of QA
 
+Website: https://taqelah.sg/lightning-talks-2026.html
+
 Join us for a fast-paced, high-impact online event where 10 speakers deliver 10-minute lightning talks, sharing practical insights on the future of Quality Engineering.
 
 📅 Date: 28 Feb 2026
