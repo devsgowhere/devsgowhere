@@ -369,7 +369,7 @@ export class EventCLI {
         type: "input",
         name: "heroImage",
         message: "Hero image:",
-        default: scrapedData.heroImage || "../public/org-placeholder.png",
+        default: scrapedData.heroImage || "./public/org-placeholder.png",
       },
       {
         type: "input",
