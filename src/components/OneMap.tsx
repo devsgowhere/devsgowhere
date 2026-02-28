@@ -77,6 +77,14 @@ export default function OneMap({ height = '300px', zoom = 16, address = null, zo
       })
 
       basemap.addTo(mapInstance.current)
+
+      // Add marker at the location if coordinates were provided
+      if (centerLatLng) {
+        const marker = L.marker(centerLatLng).addTo(mapInstance.current)
+        if (address) {
+          marker.bindPopup(address)
+        }
+      }
     }
 
     // If an address/postalcode is provided, geocode first; otherwise initialize immediately
