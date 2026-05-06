@@ -440,14 +440,21 @@ export class EventCLI {
   }
 
   private inferOrgUrlFromEventUrl(url: string): string {
-    switch (true) {
-      case url.includes("meetup.com"):
-        const parts = url.split("/")
-        return parts.slice(0, parts.indexOf("www.meetup.com") + 2).join("/")
-      default:
-        console.warn(`⚠️  Unable to infer org url from: '${url}'.`)
-        return url
+    try {
+      const parsedUrl = new URL(url)
+      const host = parsedUrl.hostname.toLowerCase()
+
+      if (host === "meetup.com" || host.endsWith(".meetup.com")) {
+        const firstPathSegment = parsedUrl.pathname.split("/").filter(Boolean)[0]
+        return firstPathSegment
+          ? `${parsedUrl.protocol}//${parsedUrl.host}/${firstPathSegment}`
+          : `${parsedUrl.protocol}//${parsedUrl.host}`
+      }
+    } catch {
+      // Fall through to warning and return original URL.
     }
+
+    console.warn(`⚠️  Unable to infer org url from: '${url}'.`)
     return url
   }
 }
