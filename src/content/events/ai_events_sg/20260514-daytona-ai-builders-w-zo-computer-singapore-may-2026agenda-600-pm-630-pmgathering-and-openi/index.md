@@ -1,6 +1,6 @@
 ---
 org: "ai_events_sg"
-title: "Daytona AI Builders w/ Zo Computer - Singapore, May 2026​​Agenda​​​​​​🕒 6:00 pm – 6:30 pmGathering and Opening Remarks​​​​​​​​🕒 6:30 pm – 6:45 pmTalk "Daytona Sandbox Orchestration: Running Code Agents at Scale"​​​🕒 6:45 pm – 7:00 pmTalk "Rewild the Internet"​​🕒 7:00 pm – 7:10 pmTalk “The Context Graph: Tracing Agents and Improving them with Arize Skills”​​🕒 7:10 pm – 7:20 pmTalk “Stop Asking Your Agent To Behave”​​​​​​​​​​​​🕒 7:20 pm - 9:00 pm​​​Networking"
+title: "Daytona AI Builders w/ Zo Computer - Singapore, May 2026​"
 description: "An event dedicated to exploring all things AI Engineering! Join us one day before AI Engineer Singapore kicks off. Event partners: 65labs & Zo…"
 venue: "TBD"
 venueAddress: ""

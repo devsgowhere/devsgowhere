@@ -1,6 +1,6 @@
 ---
 org: "ai_events_sg"
-title: ""Real-Time Sync" w/ Convex Team in Singapore"
+title: '"Real-Time Sync" w/ Convex Team in Singapore'
 description: "The Convex team is landing at AI Engineer Singapore, and we're throwing a sync-up. Free boba. Free coffee. Merch you can't get anywhere else. Bring your…"
 venue: "TBD"
 venueAddress: ""
