@@ -50,12 +50,12 @@ export class LumaParser extends BaseParser {
     // Extract venue information
     console.log(`Extracting venue information...`)
 
-    scrapedData.venue = defaultData.props.pageProps.initialData.data.event.geo_address_info.address
-    scrapedData.venueAddress = defaultData.props.pageProps.initialData.data.event.geo_address_info.full_address
-      ? defaultData.props.pageProps.initialData.data.event.geo_address_info.full_address.replace(
-          `${defaultData.props.pageProps.initialData.data.event.geo_address_info.address}, `,
-          "",
-        )
+    scrapedData.venue = defaultData.props.pageProps.initialData.data.event.geo_address_info?.address
+    scrapedData.venueAddress = defaultData.props.pageProps.initialData.data.event.geo_address_info?.full_address
+      ? defaultData.props.pageProps.initialData.data.event.geo_address_info?.full_address.replace(
+        `${defaultData.props.pageProps.initialData.data.event.geo_address_info.address}, `,
+        "",
+      )
       : ""
 
     // =======================================================================
