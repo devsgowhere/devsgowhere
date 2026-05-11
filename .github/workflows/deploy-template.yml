@@ -1,0 +1,46 @@
+name: Deploy Template
+
+on:
+  workflow_call:
+    inputs:
+      env_name:
+        required: true
+        type: string
+      cf_branch:
+        type: string
+      artifact_name:
+        required: false
+        type: string
+        default: dist
+
+    secrets:
+      CLOUDFLARE_API_TOKEN:
+        required: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    container: node:22-alpine
+    environment:
+      name: ${{ inputs.env_name }}
+      url: ${{ steps.deploy.outputs.deployment-url }}
+    steps:
+      - name: Download dist artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.artifact_name }}
+          path: dist
+      - name: List files in dist folder
+        run: find dist -type f -exec stat -c "%10s %n" {} \;
+      - name: Deploy to Cloudflare Pages
+        id: deploy # set id, so that we can extract the deployment URL later
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          # if inputs.env_name is 'production' or 'nightly', deploy to production branch
+          # otherwise set the branch to the value of inputs.cf_branch
+          command: pages deploy dist --project-name=devsgowhere ${{ ((inputs.env_name == 'production' || inputs.env_name == 'nightly') && ' ') || format(' --branch={0}', inputs.cf_branch) }}
+      - name: Print deployment URL
+        run: echo $DEPLOYMENT_URL
+        env:
+          DEPLOYMENT_URL: ${{ steps.deploy.outputs.deployment-url }}

@@ -9,6 +9,7 @@ export const GET: APIRoute = async () => {
     const events = (await getCollection("events"))
         .filter((event) => {
             const startDate = new Date(event.data.startDate);
+            startDate.setDate(startDate.getDate() + 1) // Add 1 day
             return startDate >= now;
         })
         .sort(

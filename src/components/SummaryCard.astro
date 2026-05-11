@@ -37,9 +37,9 @@ let {
 // console.log("props: ", Astro.props);
 ---
 
-<div class="card" style="overflow:visible;">
-  <h2 class="summary-card__title text-accent m-l">{title}</h2>
-  <div class="summary-card__details m-m">
+<div class="card pt-l pb-m" style="overflow:visible;">
+  <h2 class="summary-card__title text-accent mx-l mb-l">{title}</h2>
+  <div class="summary-card__details mx-m">
     <div class="event-date ml-m">
       <i class="fa-solid fa-clock mr-xs"></i>      
       <FormattedEventDate        
@@ -58,10 +58,7 @@ let {
         </div>
       </div>
     </div>
-    <div
-      style="display: flex; flex-direction: column; align-items: center;"      
-      class="mb-l"
-    >
+    <div style="display: flex; flex-direction: column; align-items: center;">
       {
         rsvpButtonUrl && (
           <a
