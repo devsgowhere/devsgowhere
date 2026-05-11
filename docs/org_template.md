@@ -1,8 +1,8 @@
 ---
 title: "$org_name"
 description: "$org_description"
-heroImage: "https://placecats.com/300/200?fit=contain&position=top"
-logoImage: "https://placecats.com/300/200?fit=contain&position=top"
+heroImage: "../../../../public/org-placeholder.png"
+logoImage: "../../../../public/org-placeholder.png"
 # Add up to 10 tags for your organisation
 tags: ["coding", "singapore"]
 # (Optional) Links ----------------------------------

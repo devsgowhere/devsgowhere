@@ -3,7 +3,6 @@ name: Build Template
 on:
   workflow_call:
 
-
 jobs:
   ##########################################
   # Build job
@@ -13,21 +12,21 @@ jobs:
     runs-on: ubuntu-latest
     container: node:22-alpine # Use Node.js 22 container
     steps:
-    - run: echo "The job was automatically triggered by a ${{github.event_name}} event."
-    - run: echo "The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
-    # Checkout the repository
-    - name: Check out the repository code
-      uses: actions/checkout@v4
-    - run: echo "The ${{ github.repository }} repository has been cloned to the runner."
-    # Install node dependencies     
-    - name: Install dependencies
-      run: npm ci      
-    # Build the project
-    - name: Build
-      run: npm run build
-    # Upload dist as artifact - so that it can be used in the deploy jobs
-    - name: Archive dist artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: dist
-        path: dist
+      - run: echo "The job was automatically triggered by a ${{github.event_name}} event."
+      - run: echo "The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+      # Checkout the repository
+      - name: Check out the repository code
+        uses: actions/checkout@v4
+      - run: echo "The ${{ github.repository }} repository has been cloned to the runner."
+      # Install node dependencies
+      - name: Install dependencies
+        run: npm ci
+      # Build the project
+      - name: Build
+        run: npm run build
+      # Upload dist as artifact - so that it can be used in the deploy jobs
+      - name: Archive dist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist

@@ -1,0 +1,13 @@
+name: Google Form Webhook Triggered Workflow
+
+on:
+  repository_dispatch:
+    types: [create_event_webhook]
+
+jobs:
+  scrape-event:
+    uses: ./.github/workflows/event-scrapper.yml
+    with:
+      eventURL: ${{ github.event.client_payload['Event URL'] }}
+      orgID: ${{ github.event.client_payload['Group ID'] }}
+      timezone: "Asia/Singapore"

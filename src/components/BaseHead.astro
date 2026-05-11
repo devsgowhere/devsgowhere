@@ -1,32 +1,29 @@
 ---
 // Import the global.css file here so that it is included on
 // all pages through the use of the <BaseHead /> component.
-import "../styles/global.css";
-import { SITE_TITLE } from "../consts";
-import { getImage } from "astro:assets";
-import type { ImageMetadata } from "astro";
-import GlobalStyles from "../styles/GlobalStyles.astro";
+import "../styles/global.css"
+import { SITE_TITLE } from "../consts"
+import { getImage } from "astro:assets"
+import type { ImageMetadata } from "astro"
+import GlobalStyles from "../styles/GlobalStyles.astro"
+import PostHog from "./PostHog.astro"
 
 interface Props {
-  title: string;
-  description: string;
-  image?: ImageMetadata | string;
+  title: string
+  description: string
+  image?: ImageMetadata | string
 }
 
-const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const canonicalURL = new URL(Astro.url.pathname, Astro.site)
 
-const {
-  title,
-  description,
-  image = "/dgw-og-img.png",
-} = Astro.props;
+const { title, description, image = "/dgw-og-img.png" } = Astro.props
 
 const optimizedImage = await getImage({
   src: image,
   format: "png",
   width: 1200,
   height: 630,
-});
+})
 ---
 
 <!-- Global Metadata -->
@@ -34,29 +31,12 @@ const optimizedImage = await getImage({
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <link rel="icon" type="image/svg+xml" href="/favicon-b-256.png" />
 <link rel="sitemap" href="/sitemap-index.xml" />
-<link
-  rel="alternate"
-  type="application/rss+xml"
-  title={SITE_TITLE}
-  href={new URL("rss.xml", Astro.site)}
-/>
+<link rel="alternate" type="application/rss+xml" title={SITE_TITLE} href={new URL("rss.xml", Astro.site)} />
 <meta name="generator" content={Astro.generator} />
 
 <!-- Font preloads -->
-<link
-  rel="preload"
-  href="/fonts/atkinson-regular.woff"
-  as="font"
-  type="font/woff"
-  crossorigin
-/>
-<link
-  rel="preload"
-  href="/fonts/atkinson-bold.woff"
-  as="font"
-  type="font/woff"
-  crossorigin
-/>
+<link rel="preload" href="/fonts/atkinson-regular.woff" as="font" type="font/woff" crossorigin />
+<link rel="preload" href="/fonts/atkinson-bold.woff" as="font" type="font/woff" crossorigin />
 
 <!-- Canonical URL -->
 <link rel="canonical" href={canonicalURL} />
@@ -78,9 +58,9 @@ const optimizedImage = await getImage({
 <meta property="twitter:url" content={Astro.url} />
 <meta property="twitter:title" content={title} />
 <meta property="twitter:description" content={description} />
-<meta
-  property="twitter:image"
-  content={new URL(optimizedImage.src, Astro.url)}
-/>
+<meta property="twitter:image" content={new URL(optimizedImage.src, Astro.url)} />
 
 <GlobalStyles />
+
+<!-- PostHog Analytics -->
+<PostHog />
