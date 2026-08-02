@@ -6,7 +6,7 @@ logoImage: "./logo.png"
 # Add up to 10 tags for your organisation
 tags: ["R Community", "Singapore", "Data Science"]
 # (Optional) Links ----------------------------------
-meetup: https://www.meetup.com/r-user-group-sg/
+website: https://luma.com/rugs
 ---
 
 ## About R User Group Singapore (RUGS)
