@@ -9,7 +9,7 @@ startTime: "13:00"
 endDate: "2026-08-29"
 endTime: "17:00"
 heroImage: "Kubernetes Workshop.jpg"
-tags: []
+tags: ["Docker", "Kubernetes", "Workshop", "Containers", "Deployment"]
 rsvpButtonUrl: "https://portal.geekshacking.com/workshops/kubernetes"
 rsvpButtonText: "RSVP via GeeksHacking Portal"
 ---
