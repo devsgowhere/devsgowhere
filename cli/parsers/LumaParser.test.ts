@@ -1,4 +1,5 @@
-import { describe, expect, test } from "vitest"
+import * as cheerio from "cheerio"
+import { describe, expect, test, vi } from "vitest"
 import { LumaParser } from "./LumaParser"
 import { PageScraper } from "../PageScraper"
 
@@ -80,7 +81,7 @@ describe("LumaParser", () => {
         venueAddress: "",
         // description: '',
         // content: '',
-        tags: [],
+        tags: ["AI"],
         // heroImage: 'path/to/devsgowhere/scraper-output/hero-1752914046954.png',
         rsvpButtonText: "Register on Luma",
         rsvpButtonUrl: url,
@@ -120,6 +121,100 @@ describe("LumaParser", () => {
       expect(result?.content?.length).toBeGreaterThan(0)
       expect(result?.description?.length).toBeGreaterThan(0)
       expect(result?.heroImage?.length).toBeGreaterThan(0)
+    })
+  })
+
+  describe("page data", () => {
+    const page = (data: object, body = "") =>
+      cheerio.load(
+        `<html><head><meta property="og:description" content="\u200BSummary text"></head><body>${body}` +
+          `<script id="__NEXT_DATA__" type="application/json">${JSON.stringify({ props: { pageProps: { initialData: { data } } } })}</script>` +
+          `</body></html>`,
+      )
+    const baseEvent = {
+      name: "\u200BMeetup",
+      start_at: "2026-11-03T10:30:00.000Z",
+      end_at: "2026-11-03T13:00:00.000Z",
+      timezone: "Asia/Singapore",
+      location_type: "offline",
+    }
+    const scrape = async (data: object, body = "") => {
+      const parser = new LumaParser()
+      // don't download images in these tests
+      vi.spyOn(parser as any, "downloadImage").mockResolvedValue({ originalUrl: "", fileName: null, filePath: null })
+      return parser.scrapeEventDataFromPage(page(data, body), "https://luma.com/abc")
+    }
+
+    test("public address", async () => {
+      const result = await scrape(
+        {
+          event: {
+            ...baseEvent,
+            cover_url: "https://images.lumacdn.com/event-covers/j9/cover.png",
+            geo_address_visibility: "public",
+            geo_address_info: {
+              mode: "shown",
+              address: "Lorong AI @ One-North",
+              full_address: "Lorong AI @ One-North, 69 Ayer Rajah Cres., Singapore 139961",
+            },
+          },
+          categories: [{ name: "AI" }, { name: "Tech" }],
+        },
+        '<div class="event-about-card"><div class="content"><p>\u200BAbout\u200B the event</p></div></div>',
+      )
+
+      expect(result).toMatchObject({
+        title: "Meetup",
+        description: "Summary text",
+        content: "About the event",
+        startDate: "2026-11-03",
+        startTime: "18:30",
+        endDate: "2026-11-03",
+        endTime: "21:00",
+        venue: "Lorong AI @ One-North",
+        venueAddress: "69 Ayer Rajah Cres., Singapore 139961",
+        tags: ["AI", "Tech"],
+        // the original cover, not the resized thumbnail in the page
+        heroImage: "https://images.lumacdn.com/event-covers/j9/cover.png",
+      })
+    })
+
+    test("address hidden until registration", async () => {
+      const result = await scrape({
+        event: {
+          ...baseEvent,
+          geo_address_visibility: "guests-only",
+          geo_address_info: { mode: "obfuscated", sublocality: "Queenstown", city: "Singapore" },
+        },
+      })
+
+      expect(result).toMatchObject({
+        venue: "Queenstown, Singapore (address shared after registering)",
+        venueAddress: "",
+        tags: [],
+      })
+    })
+
+    test("online event", async () => {
+      const result = await scrape({ event: { ...baseEvent, location_type: "online", geo_address_info: null } })
+
+      expect(result).toMatchObject({ venue: "Online event", venueAddress: "" })
+    })
+
+    test("cover images are downloaded scaled down as JPEG", () => {
+      const parser = new LumaParser() as any
+      const downloadUrl = parser.getImageDownloadUrl("https://images.lumacdn.com/uploads/zy/cover.png")
+
+      expect(downloadUrl).toBe(
+        "https://images.lumacdn.com/cdn-cgi/image/format=jpeg,fit=scale-down,width=1200,quality=85,background=white/uploads/zy/cover.png",
+      )
+      expect(parser.getImageFileName(downloadUrl)).toBe("cover.jpg")
+      // already-resized URLs and other hosts keep the default behaviour
+      expect(parser.getImageDownloadUrl("https://example.com/a.png?x=1")).toBe("https://example.com/a.png")
+    })
+
+    test("page without event data", async () => {
+      await expect(scrape({ calendar: {} })).rejects.toThrow("No Luma event data found")
     })
   })
 })
