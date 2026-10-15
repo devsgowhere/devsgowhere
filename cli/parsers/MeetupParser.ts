@@ -10,14 +10,16 @@ export class MeetupParser extends BaseParser {
     let defaultData: any = {}
     const nextData = $("#__NEXT_DATA__").text()
     if (nextData) defaultData = JSON.parse(nextData)
+    // structured event data embedded in the page; preferred over the rendered HTML, whose layout changes
+    const event = defaultData.props?.pageProps?.event || {}
 
     console.log(`Extracting event title...`)
-    const eventTitle = $("main h1").first().text().trim()
+    const eventTitle = event.title?.trim() || $("main h1").first().text().trim()
     console.log(`Event title: ${eventTitle}`)
     scrapedData.title = eventTitle
 
     console.log(`Extracting event start time...`)
-    const eventStartTime = $("main aside time").attr("datetime")?.trim() || ""
+    const eventStartTime = event.dateTime || $("main aside time").attr("datetime")?.trim() || ""
 
     if (eventStartTime) {
       console.log(`Event start time: ${eventStartTime}`)
@@ -31,11 +33,11 @@ export class MeetupParser extends BaseParser {
     }
 
     console.log(`Extracting event end time...`)
-    const eventEndTime = defaultData.props.pageProps.event?.endTime
+    const eventEndTime = event.endTime
     if (eventEndTime) {
-      // Example: Saturday, Aug 23 · 10:00 AM to 1:00 PM SST
+      // Example: 2025-08-23T13:00:00+08:00
       console.log(`Event end time: ${eventEndTime}`)
-      const endDateTime = DateTime.fromISO(eventStartTime).setZone("Asia/Singapore")
+      const endDateTime = DateTime.fromISO(eventEndTime).setZone("Asia/Singapore")
       scrapedData.endDate = `${endDateTime.toFormat("yyyy-MM-dd")}`
       scrapedData.endTime = `${endDateTime.toFormat("HH:mm")}`
     } else {
@@ -45,7 +47,7 @@ export class MeetupParser extends BaseParser {
     }
 
     console.log(`Extracting event venue name...`)
-    const eventVenue = $("main aside p").eq(2).text().trim()
+    const eventVenue = event.venue?.name?.trim() || $("main aside p").eq(2).text().trim()
     if (eventVenue) {
       console.log(`Event venue: ${eventVenue}`)
       scrapedData.venue = eventVenue
@@ -55,7 +57,13 @@ export class MeetupParser extends BaseParser {
     }
 
     console.log(`Extracting event venue address...`)
-    const eventVenueAddress = $("main aside p").eq(3).text().trim()
+    // Example: 14 Orchard Road, Singapore 238827 · Singapore
+    const eventVenueAddress = event.venue
+      ? [event.venue.address, event.venue.city]
+          .map((part) => part?.trim())
+          .filter(Boolean)
+          .join(" · ")
+      : $("main aside p").eq(3).text().trim()
     if (eventVenueAddress) {
       console.log(`Event venue address: ${eventVenueAddress}`)
       scrapedData.venueAddress = eventVenueAddress
@@ -70,7 +78,7 @@ export class MeetupParser extends BaseParser {
 
     // get event details from "main #event-details" as html
     console.log(`Extracting event content...`)
-    const eventContent = defaultData.props.pageProps.event.description
+    const eventContent = event.description
     if (eventContent) {
       console.log(`Event content extracted.`)
       scrapedData.content = eventContent
@@ -82,16 +90,14 @@ export class MeetupParser extends BaseParser {
     console.log(`Extracting event tags...`)
     scrapedData.tags = []
 
-    const venueTags = [
-      defaultData.props.pageProps.event.venue?.city,
-      defaultData.props.pageProps.event.venue?.state,
-      defaultData.props.pageProps.event.venue?.country?.toUpperCase(),
-    ].filter((tag) => tag && tag.length > 0).join(", ")
+    const venueTags = [event.venue?.city, event.venue?.state, event.venue?.country?.toUpperCase()]
+      .filter((tag) => tag && tag.length > 0)
+      .join(", ")
     if (venueTags && venueTags.length > 0) {
       scrapedData.tags = [`Events in ${venueTags}`]
     }
 
-    defaultData.props.pageProps.event.topics.edges.forEach((edge: any) => {
+    event.topics?.edges?.forEach((edge: any) => {
       if (edge.node.name && !scrapedData.tags?.includes(edge.node.name)) {
         scrapedData.tags = scrapedData.tags || []
         scrapedData.tags.push(edge.node.name)
@@ -100,7 +106,7 @@ export class MeetupParser extends BaseParser {
 
     console.log(`Extracting hero image...`)
     // const heroImageUrl = $("main aside img").attr("src")?.trim() || ""
-    const heroImageUrl = defaultData.props.pageProps.event?.featuredEventPhoto?.source || defaultData.props.pageProps.event?.group?.groupPhoto?.source || ""
+    const heroImageUrl = event.featuredEventPhoto?.source || event.group?.groupPhoto?.source || ""
 
     // download the hero image to 'scraper-output' folder
     if (heroImageUrl) {
