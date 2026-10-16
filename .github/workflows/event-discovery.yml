@@ -69,3 +69,12 @@ jobs:
         if: ${{ steps.create-pull-request.outputs.pull-request-number }}
         run: |
           echo "Pull Request ${{ steps.create-pull-request.outputs.pull-request-operation }}: ${{ steps.create-pull-request.outputs.pull-request-url }}"
+      # Notify only when the PR was opened or its events changed (a run that finds nothing new reports "none")
+      - name: Notify Telegram
+        if: ${{ steps.create-pull-request.outputs.pull-request-operation == 'created' || steps.create-pull-request.outputs.pull-request-operation == 'updated' }}
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          PR_URL: ${{ steps.create-pull-request.outputs.pull-request-url }}
+          PR_OPERATION: ${{ steps.create-pull-request.outputs.pull-request-operation }}
+        run: bash scripts/notify-telegram.sh scraper-output/discovery-summary.md "$PR_URL" "$PR_OPERATION"
