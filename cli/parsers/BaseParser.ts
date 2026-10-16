@@ -99,8 +99,7 @@ export abstract class BaseParser {
       filePath: null,
     }
     try {
-      // Clean the URL by removing query parameters
-      const cleanHeroImageUrl = imageUrl.split("?")[0]
+      const cleanHeroImageUrl = this.getImageDownloadUrl(imageUrl)
       console.log(`Hero image found: src=${cleanHeroImageUrl}`)
 
       // Get file name from cleanHeroImageUrl
@@ -131,6 +130,14 @@ export abstract class BaseParser {
     }
 
     return result
+  }
+
+  /**
+   * URL to download the image from. Removes query parameters by default; override for hosts that need them
+   * (e.g. signed image URLs).
+   */
+  protected getImageDownloadUrl(imageUrl: string): string {
+    return imageUrl.split("?")[0]
   }
 
   protected getImageFileName(imageUrl: string): string {

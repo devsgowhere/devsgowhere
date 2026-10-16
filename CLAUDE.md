@@ -20,6 +20,7 @@ npm run format         # prettier --write (120 cols, no semicolons, double quote
 
 npm run create-event   # interactive CLI (manual entry or scrape from URL)
 npm run create-event -- --eventURL=<url> --orgID=<org_folder>   # non-interactive scrape (used by CI)
+npm run discover-events -- --dry-run [--org=<org_id>] [--days=60]  # list new events from orgs' Meetup/Luma pages (drop --dry-run to write them)
 make create-org        # interactive org creation (scripts/create-org.sh)
 bash scripts/list-orgs.sh        # list valid org IDs
 bash scripts/find-event-urls.sh  # list every rsvpButtonUrl already in content (check for duplicates before adding)
@@ -59,7 +60,9 @@ Schema violations fail `npm run build`, so build after adding/editing content.
 ## CI / deployment (`.github/workflows/`)
 
 Deploys to Cloudflare Pages via reusable `build-template.yml` + `deploy-template.yml`:
+
 - PRs to `main` → preview deploy (same-repo PRs only).
 - Push to `main` → production.
 - Nightly cron (00:01 SGT) → rebuild + production deploy so past events drop off.
+- `event-discovery.yml` (daily 06:00 SGT, or manual) runs `cli/discover.ts`: reads each org's `meetup`/`website` frontmatter, lists upcoming events from Meetup group `/events/` pages and Luma calendar pages (`__NEXT_DATA__`; Luma events outside `Asia/Singapore` are skipped), drops ones whose `rsvpButtonUrl` already exists (`eventKey` normalises lu.ma/luma.com and Meetup IDs), scrapes the rest with the normal parsers, builds, and opens/refreshes one PR on the fixed branch `event-discovery/auto`. That branch is regenerated from `main` on every run, so edits pushed to it are overwritten — merge or fix on `main`.
 - `event-scrapper.yml` runs the CLI in auto mode and opens a PR on branch `event-scrapper/<run_id>-<attempt>`. It's triggered manually or via `google-form-webhook.yml` (`repository_dispatch` from a Google Form; see `scripts/Code.gs`, `docs/webhook.http`).

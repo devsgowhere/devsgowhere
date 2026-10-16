@@ -8,6 +8,7 @@
     "preview": "astro preview --host",
     "astro": "astro",
     "create-event": "tsx cli/index.ts",
+    "discover-events": "tsx cli/discover.ts",
     "test": "vitest run",
     "format": "prettier . --write"
   },

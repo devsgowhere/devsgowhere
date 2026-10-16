@@ -1,0 +1,71 @@
+name: (Scheduled) Event Discovery
+
+# Checks every org's Meetup group / Luma calendar (from the `meetup` and `website` fields of
+# src/content/orgs/<org>/index.md) for upcoming events not yet in src/content/events, scrapes them,
+# and opens (or refreshes) a single PR on a fixed branch for review.
+
+on:
+  schedule:
+    - cron: "0 22 * * *" # Daily at 06:00 SGT (22:00 UTC)
+  workflow_dispatch:
+    inputs:
+      org:
+        description: "Only check this org ID (leave empty for all orgs)"
+        required: false
+        type: string
+      days:
+        description: "Only add events starting within this many days"
+        required: false
+        type: number
+        default: 60
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: event-discovery
+  cancel-in-progress: false
+
+jobs:
+  discover-events:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: szenius/set-timezone@v2.0
+        with:
+          timezoneLinux: "Asia/Singapore"
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Discover and scrape new events
+        env:
+          ORG: ${{ inputs.org }}
+          DAYS: ${{ inputs.days || 60 }}
+        run: npm run discover-events -- --days="$DAYS" ${ORG:+--org="$ORG"}
+      # Validate the generated content against the schemas before opening a PR
+      - name: Build site
+        run: npm run build
+      - name: Create Pull Request
+        id: create-pull-request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          # Fixed branch: each run regenerates it from main, so the open PR is updated instead of duplicated
+          branch: event-discovery/auto
+          base: main
+          add-paths: |
+            src/content/
+          commit-message: "Add auto-discovered events"
+          title: "Add auto-discovered events"
+          body-path: scraper-output/discovery-summary.md
+          labels: event
+          delete-branch: true
+      - name: Print Pull Request info
+        if: ${{ steps.create-pull-request.outputs.pull-request-number }}
+        run: |
+          echo "Pull Request ${{ steps.create-pull-request.outputs.pull-request-operation }}: ${{ steps.create-pull-request.outputs.pull-request-url }}"
