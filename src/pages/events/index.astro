@@ -7,9 +7,11 @@ import TagsPanel from "../../components/TagsPanel.astro"
 
 import { SITE_TITLE, SITE_DESCRIPTION, GTM_MEASUREMENT_ID } from "../../consts"
 import { getCollection } from "astro:content"
+import { compareEventsByStart } from "../../utils/helpers"
 import EventCard from "../../components/EventCard.astro"
 import { Settings, DateTime } from "luxon"
-import { GoogleTagmanager, GoogleTagmanagerNoscript } from "@digi4care/astro-google-tagmanager"
+import GoogleTagmanager from "../../components/GoogleTagmanager.astro"
+import GoogleTagmanagerNoscript from "../../components/GoogleTagmanagerNoscript.astro"
 
 Settings.defaultZone = "Asia/Singapore"
 
@@ -19,7 +21,7 @@ const events = (await getCollection("events"))
     const startDate = DateTime.fromISO(event.data.startDate)
     return startDate >= beginningOfDay
   })
-  .toSorted((a, b) => new Date(a.data.startDate).valueOf() - new Date(b.data.startDate).valueOf())
+  .toSorted(compareEventsByStart)
 
 // Group events by date
 const groupedEvents = events.reduce((acc: any, event) => {

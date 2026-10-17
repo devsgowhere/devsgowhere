@@ -1,4 +1,5 @@
 import { getCollection } from "astro:content"
+import { compareEventsByStart } from "../../utils/helpers"
 import type { APIRoute } from "astro"
 import { Settings, DateTime } from "luxon"
 
@@ -12,7 +13,7 @@ export const GET: APIRoute = async () => {
       const startDate = DateTime.fromISO(event.data.startDate)
       return startDate >= beginningOfDay
     })
-    .sort((a, b) => new Date(a.data.startDate).valueOf() - new Date(b.data.startDate).valueOf())
+    .sort(compareEventsByStart)
 
   const index = events.map((event) => ({
     id: event.id,
