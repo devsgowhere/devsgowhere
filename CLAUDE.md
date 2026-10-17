@@ -26,7 +26,7 @@ bash scripts/list-orgs.sh        # list valid org IDs
 bash scripts/find-event-urls.sh  # list every rsvpButtonUrl already in content (check for duplicates before adding)
 ```
 
-CI and the devcontainer use Node 22.
+CI, the devcontainer and `.nvmrc` use Node 24 (`engines` requires >=24).
 
 The parser tests hit live event URLs (Meetup/Luma/Eventbrite) via `PageScraper.getPage`, so they need network access and can break when the remote page changes or the event is removed.
 

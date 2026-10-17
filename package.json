@@ -2,6 +2,9 @@
   "name": "devsgowhere",
   "type": "module",
   "version": "0.0.1",
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "dev": "astro dev --host",
     "build": "astro build",
@@ -28,7 +31,6 @@
     "cheerio": "^1.1.2",
     "inquirer": "^12.6.3",
     "luxon": "^3.7.1",
-    "node": "^24.2.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "sass": "^1.87.0",
