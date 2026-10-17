@@ -62,7 +62,7 @@ jobs:
         run: npm run build
       - name: Create Pull Request
         id: create-pull-request
-        uses: peter-evans/create-pull-request@v5
+        uses: peter-evans/create-pull-request@v7
         with:
           # Fixed branch: each run regenerates it from main, so an open PR is updated instead of duplicated
           branch: event-discovery/auto
