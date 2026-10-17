@@ -16,7 +16,7 @@ website: https://build.gov.sg
 # discord: <url>
 # github: <url>
 # telegram: <url>
-meetup: https://lu.ma/buildforgood
+# meetup: <url>
 ---
 
 A citizen engagement initiative that empowers citizens to make Singapore better through tech.
