@@ -101,7 +101,8 @@ async function main() {
 function summary(added: DiscoveredEvent[], eventErrors: string[], sourceErrors: string[]): string {
   const lines = [
     "Events discovered automatically from each org's Meetup group / Luma calendar by the event discovery workflow.",
-    "Please review each event (venue, description, hero image) before merging.",
+    "Scheduled runs merge this PR automatically once the site builds; if it's still open, auto-merge was off or failed.",
+    "Fix any wrong details (venue, description, hero image) on `main`.",
     "",
     `### Added (${added.length})`,
     ...added.map((e) => `- \`${e.orgId}\` ${e.startAt.slice(0, 10)} [${e.title}](${e.url})`),

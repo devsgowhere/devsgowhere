@@ -3,7 +3,7 @@ set -euo pipefail
 
 # notify-telegram.sh
 # Send a Telegram message about an event discovery PR, listing the events from the discovery summary.
-# Usage: TELEGRAM_BOT_TOKEN=... TELEGRAM_CHAT_ID=... ./scripts/notify-telegram.sh <summary.md> <pr_url> <created|updated>
+# Usage: TELEGRAM_BOT_TOKEN=... TELEGRAM_CHAT_ID=... ./scripts/notify-telegram.sh <summary.md> <pr_url> <merged|merge-failed|created|updated>
 # Set DRY_RUN=1 to print the message instead of sending it.
 
 SUMMARY_FILE="${1:?summary file required}"
@@ -27,17 +27,28 @@ if [ "${count}" -gt "${MAX_EVENTS}" ]; then
 …and $((count - MAX_EVENTS)) more"
 fi
 
-if [ "${OPERATION}" = "created" ]; then
-  heading="📅 Event discovery found ${count} new event(s) for DevsGoWhere"
-else
-  heading="📅 Event discovery PR updated: ${count} event(s) awaiting review"
-fi
+link_label="Review"
+case "${OPERATION}" in
+  merged)
+    heading="📅 Event discovery added ${count} new event(s) to DevsGoWhere (merged, deploying now)"
+    link_label="PR"
+    ;;
+  merge-failed)
+    heading="⚠️ Event discovery found ${count} new event(s) but couldn't merge the PR, please review"
+    ;;
+  created)
+    heading="📅 Event discovery found ${count} new event(s) for DevsGoWhere"
+    ;;
+  *)
+    heading="📅 Event discovery PR updated: ${count} event(s) awaiting review"
+    ;;
+esac
 
 message="${heading}
 ${listing:+
 ${listing}
 }
-Review: ${PR_URL}"
+${link_label}: ${PR_URL}"
 
 if [ -n "${DRY_RUN:-}" ]; then
   printf "%s\n" "${message}"
