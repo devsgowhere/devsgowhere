@@ -2,7 +2,9 @@ name: (Scheduled) Event Discovery
 
 # Checks every org's Meetup group / Luma calendar (from the `meetup` and `website` fields of
 # src/content/orgs/<org>/index.md) for upcoming events not yet in src/content/events, scrapes them,
-# and opens (or refreshes) a single PR on a fixed branch for review.
+# and opens (or refreshes) a single PR on a fixed branch. The PR is then merged automatically and production
+# is redeployed, unless auto-merge is turned off for a manual run (or the merge fails), in which case it
+# waits for review.
 
 on:
   schedule:
@@ -18,6 +20,11 @@ on:
         required: false
         type: number
         default: 60
+      auto_merge:
+        description: "Merge the PR and deploy automatically (untick to leave it for review)"
+        required: false
+        type: boolean
+        default: true
 
 permissions:
   contents: write
@@ -30,6 +37,8 @@ concurrency:
 jobs:
   discover-events:
     runs-on: ubuntu-latest
+    outputs:
+      merged: ${{ steps.merge.outcome == 'success' }}
     steps:
       - uses: szenius/set-timezone@v2.0
         with:
@@ -53,9 +62,9 @@ jobs:
         run: npm run build
       - name: Create Pull Request
         id: create-pull-request
-        uses: peter-evans/create-pull-request@v5
+        uses: peter-evans/create-pull-request@v7
         with:
-          # Fixed branch: each run regenerates it from main, so the open PR is updated instead of duplicated
+          # Fixed branch: each run regenerates it from main, so an open PR is updated instead of duplicated
           branch: event-discovery/auto
           base: main
           add-paths: |
@@ -69,6 +78,19 @@ jobs:
         if: ${{ steps.create-pull-request.outputs.pull-request-number }}
         run: |
           echo "Pull Request ${{ steps.create-pull-request.outputs.pull-request-operation }}: ${{ steps.create-pull-request.outputs.pull-request-url }}"
+      # Scheduled runs have no inputs (and null == false in expressions), so check the event explicitly.
+      # If the merge is refused (e.g. by the branch ruleset), the PR stays open for review.
+      - name: Merge Pull Request
+        id: merge
+        if: ${{ (github.event_name == 'schedule' || inputs.auto_merge) && (steps.create-pull-request.outputs.pull-request-operation == 'created' || steps.create-pull-request.outputs.pull-request-operation == 'updated') }}
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ steps.create-pull-request.outputs.pull-request-number }}
+        run: |
+          gh api -X PUT "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/merge" \
+            -f merge_method=merge -f commit_title="Merge auto-discovered events (#${PR_NUMBER})"
+          gh api -X DELETE "repos/${GITHUB_REPOSITORY}/git/refs/heads/event-discovery/auto" || true
       # Notify only when the PR was opened or its events changed (a run that finds nothing new reports "none")
       - name: Notify Telegram
         if: ${{ steps.create-pull-request.outputs.pull-request-operation == 'created' || steps.create-pull-request.outputs.pull-request-operation == 'updated' }}
@@ -76,5 +98,21 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           PR_URL: ${{ steps.create-pull-request.outputs.pull-request-url }}
-          PR_OPERATION: ${{ steps.create-pull-request.outputs.pull-request-operation }}
-        run: bash scripts/notify-telegram.sh scraper-output/discovery-summary.md "$PR_URL" "$PR_OPERATION"
+          PR_STATE: ${{ (steps.merge.outcome == 'success' && 'merged') || (steps.merge.outcome == 'failure' && 'merge-failed') || steps.create-pull-request.outputs.pull-request-operation }}
+        run: bash scripts/notify-telegram.sh scraper-output/discovery-summary.md "$PR_URL" "$PR_STATE"
+
+  # Merges made with GITHUB_TOKEN don't trigger the push-to-main production workflow, so deploy from here
+  build:
+    needs: discover-events
+    if: ${{ needs.discover-events.outputs.merged == 'true' }}
+    uses: ./.github/workflows/build-template.yml
+    with:
+      ref: main
+
+  deploy-production:
+    needs: build
+    uses: ./.github/workflows/deploy-template.yml
+    with:
+      env_name: production
+    secrets:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
