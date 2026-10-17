@@ -22,7 +22,7 @@ jobs:
       - run: echo "The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
       # Checkout the repository
       - name: Check out the repository code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ inputs.ref }}
       - run: echo "The ${{ github.repository }} repository has been cloned to the runner."
