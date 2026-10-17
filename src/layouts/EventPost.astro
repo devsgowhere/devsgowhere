@@ -11,7 +11,8 @@ import SummaryCard from "../components/SummaryCard.astro"
 import FormattedEventDate from "../components/FormattedEventDate.astro"
 import AddToCalendarButton from "../components/AddToCalendarButton.tsx"
 import { toSlug } from "../utils/helpers"
-import { GoogleTagmanager, GoogleTagmanagerNoscript } from "@digi4care/astro-google-tagmanager"
+import GoogleTagmanager from "../components/GoogleTagmanager.astro"
+import GoogleTagmanagerNoscript from "../components/GoogleTagmanagerNoscript.astro"
 
 type Props = CollectionEntry<"events">["data"]
 

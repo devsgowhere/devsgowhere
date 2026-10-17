@@ -50,7 +50,7 @@ export class EventCLI {
     try {
       const { method } = await inquirer.prompt([
         {
-          type: "list",
+          type: "select",
           name: "method",
           message: "How would you like to create the event?",
           choices: [
@@ -159,7 +159,7 @@ export class EventCLI {
   private async collectEventData(): Promise<EventData> {
     const answers = await inquirer.prompt([
       {
-        type: "list",
+        type: "select",
         name: "org",
         message: "Select the organization:",
         choices: this.availableOrgs.length > 0 ? this.availableOrgs : ["No organizations found"],
@@ -286,7 +286,7 @@ export class EventCLI {
 
     const answers = await inquirer.prompt([
       {
-        type: "list",
+        type: "select",
         name: "org",
         message: "Select the organization:",
         choices: this.availableOrgs.length > 0 ? this.availableOrgs : ["No organizations found"],

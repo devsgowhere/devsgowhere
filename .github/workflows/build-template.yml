@@ -16,7 +16,7 @@ jobs:
   ##########################################
   build:
     runs-on: ubuntu-latest
-    container: node:22-alpine # Use Node.js 22 container
+    container: node:24-alpine # Use Node.js 24 container
     steps:
       - run: echo "The job was automatically triggered by a ${{github.event_name}} event."
       - run: echo "The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."

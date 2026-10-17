@@ -7,7 +7,8 @@ import Footer from "../../components/Footer.astro"
 import { SITE_TITLE, SITE_DESCRIPTION, GTM_MEASUREMENT_ID } from "../../consts"
 import { getCollection } from "astro:content"
 import { Image } from "astro:assets"
-import { GoogleTagmanager, GoogleTagmanagerNoscript } from "@digi4care/astro-google-tagmanager"
+import GoogleTagmanager from "../../components/GoogleTagmanager.astro"
+import GoogleTagmanagerNoscript from "../../components/GoogleTagmanagerNoscript.astro"
 
 const orgs = (await getCollection("orgs")).sort((a, b) => a.data.title.localeCompare(b.data.title))
 ---

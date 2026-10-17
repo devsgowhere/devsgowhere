@@ -1,5 +1,6 @@
 import rss from "@astrojs/rss"
 import { getCollection } from "astro:content"
+import { compareEventsByStart } from "../utils/helpers"
 import { SITE_TITLE, SITE_DESCRIPTION } from "../consts"
 
 export async function GET(context) {
@@ -9,7 +10,7 @@ export async function GET(context) {
       const startDate = new Date(event.data.startDate)
       return startDate >= now
     })
-    .sort((a, b) => new Date(a.data.startDate).valueOf() - new Date(b.data.startDate).valueOf())
+    .sort(compareEventsByStart)
 
   return rss({
     title: SITE_TITLE,
