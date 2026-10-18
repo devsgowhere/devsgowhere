@@ -4,6 +4,19 @@ import path from "path"
 
 const DEFAULT_OUTPUT_DIR = "scraper-output"
 
+// Shared placeholder, referenced from content files at src/content/<collection>/<...>/index.md
+export const PLACEHOLDER_IMAGE = "../../../../public/org-placeholder.png"
+
+/** Value to write in frontmatter: URLs and the placeholder as-is, local files by name (they're copied alongside). */
+export function imageFrontmatterValue(image: string): string {
+  return image.startsWith("http") || image === PLACEHOLDER_IMAGE ? image : path.basename(image)
+}
+
+/** Whether the image is a downloaded local file that must be copied next to the content file. */
+export function isLocalImageToCopy(image: string | undefined | null): image is string {
+  return !!image && !image.startsWith("http") && image !== PLACEHOLDER_IMAGE
+}
+
 export function saveAsHtml(api: cheerio.CheerioAPI, url: string, outputDir = DEFAULT_OUTPUT_DIR) {
   const fileName = urlToSafeFilename(url, { ext: ".html" })
   const outputPath = path.join(outputDir, fileName)

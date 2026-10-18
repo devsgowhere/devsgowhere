@@ -1,6 +1,7 @@
 import fs from "fs"
 import path from "path"
 import type { EventData } from "./types"
+import { imageFrontmatterValue, isLocalImageToCopy } from "./utils"
 
 export class EventWriter {
   createEventFile(eventData: EventData): void {
@@ -19,7 +20,7 @@ export class EventWriter {
       fs.writeFileSync(eventFile, fileContent, "utf8")
 
       // if got hero image, copy it to the event directory
-      if (eventData.heroImage && !eventData.heroImage.startsWith("http") && eventData.heroImage !== "../public/org-placeholder.png") {
+      if (isLocalImageToCopy(eventData.heroImage)) {
         const heroImageFilename = path.basename(eventData.heroImage)
         const heroImageDest = path.join(eventDir, heroImageFilename)
         fs.copyFileSync(eventData.heroImage, heroImageDest)
@@ -105,12 +106,7 @@ export class EventWriter {
     }
 
     // if hero image is a file path, use only the filename
-    if (eventData.heroImage.startsWith("http")) {
-      content += `heroImage: "${eventData.heroImage}"\n`
-    } else {
-      const heroImageFilename = path.basename(eventData.heroImage)
-      content += `heroImage: "${heroImageFilename}"\n`
-    }
+    content += `heroImage: "${imageFrontmatterValue(eventData.heroImage)}"\n`
 
     // event tags
     if (eventData.tags && eventData.tags.length > 0) {
