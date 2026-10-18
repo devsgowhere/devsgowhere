@@ -4,7 +4,7 @@ import { EventbriteParser } from "./parsers/EventbriteParser"
 import { LumaParser } from "./parsers/LumaParser"
 import { MeetupParser } from "./parsers/MeetupParser"
 import type { EventData, OrgData, ScrapedEventData, ScrapedOrgData } from "./types"
-import { saveAsHtml } from "./utils"
+import { PLACEHOLDER_IMAGE, saveAsHtml } from "./utils"
 
 export class PageScraper {
   public outputDir: string
@@ -111,7 +111,7 @@ export class PageScraper {
       endDate: scrapedData.endDate,
       endTime: scrapedData.endTime,
       tags: scrapedData.tags || [],
-      heroImage: scrapedData.heroImage || "../public/org-placeholder.png",
+      heroImage: scrapedData.heroImage || PLACEHOLDER_IMAGE,
       rsvpButtonUrl: originalUrl,
       rsvpButtonText: scrapedData.rsvpButtonText || "RSVP",
     }
@@ -168,8 +168,8 @@ export class PageScraper {
       description: scrapedData.description || "Organization description missing",
       content: scrapedData.content || "",
       tags: scrapedData.tags || [],
-      heroImage: scrapedData.heroImage || "../public/org-placeholder.png",
-      logoImage: scrapedData.logoImage || "../public/org-placeholder.png",
+      heroImage: scrapedData.heroImage || PLACEHOLDER_IMAGE,
+      logoImage: scrapedData.logoImage || PLACEHOLDER_IMAGE,
       website: scrapedData.website || (originalUrl.includes("meetup.com") ? "" : originalUrl),
       twitter: scrapedData.twitter || "",
       facebook: scrapedData.facebook || "",

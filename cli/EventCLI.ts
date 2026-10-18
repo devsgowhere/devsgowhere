@@ -5,6 +5,7 @@ import { EventWriter } from "./EventWriter"
 import { OrgWriter } from "./OrgWriter"
 import { PageScraper } from "./PageScraper"
 import type { EventCLIOptions, EventData, ScrapedEventData } from "./types"
+import { PLACEHOLDER_IMAGE } from "./utils"
 
 export class EventCLI {
   private options: EventCLIOptions
@@ -234,7 +235,7 @@ export class EventCLI {
         type: "input",
         name: "heroImage",
         message: "Hero image URL:",
-        default: "../public/org-placeholder.png",
+        default: PLACEHOLDER_IMAGE,
       },
       {
         type: "input",
@@ -369,7 +370,7 @@ export class EventCLI {
         type: "input",
         name: "heroImage",
         message: "Hero image:",
-        default: scrapedData.heroImage || "./public/org-placeholder.png",
+        default: scrapedData.heroImage || PLACEHOLDER_IMAGE,
       },
       {
         type: "input",

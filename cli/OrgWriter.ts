@@ -1,6 +1,7 @@
 import fs from "fs"
 import path from "path"
 import type { OrgData } from "./types"
+import { imageFrontmatterValue, isLocalImageToCopy } from "./utils"
 
 export class OrgWriter {
   createOrgFile(orgData: OrgData): void {
@@ -18,7 +19,7 @@ export class OrgWriter {
       fs.writeFileSync(orgFile, fileContent, "utf8")
 
       // if got hero image, copy it to the orgs directory
-      if (orgData.heroImage && !orgData.heroImage.startsWith("http")) {
+      if (isLocalImageToCopy(orgData.heroImage)) {
         const heroImageFilename = path.basename(orgData.heroImage)
         const heroImageDest = path.join(orgDir, heroImageFilename)
         fs.copyFileSync(orgData.heroImage, heroImageDest)
@@ -26,7 +27,7 @@ export class OrgWriter {
       }
 
       // if got logo image, copy it to the orgs directory
-      if (orgData.logoImage && !orgData.logoImage.startsWith("http")) {
+      if (isLocalImageToCopy(orgData.logoImage)) {
         const logoImageFilename = path.basename(orgData.logoImage)
         const logoImageDest = path.join(orgDir, logoImageFilename)
         fs.copyFileSync(orgData.logoImage, logoImageDest)
@@ -59,20 +60,10 @@ export class OrgWriter {
     }
 
     // if hero image is a file path, use only the filename
-    if (orgData.heroImage.startsWith("http")) {
-      content += `heroImage: "${orgData.heroImage}"\n`
-    } else {
-      const heroImageFilename = path.basename(orgData.heroImage)
-      content += `heroImage: "${heroImageFilename}"\n`
-    }
+    content += `heroImage: "${imageFrontmatterValue(orgData.heroImage)}"\n`
 
     // if logo image is a file path, use only the filename
-    if (orgData.logoImage.startsWith("http")) {
-      content += `logoImage: "${orgData.logoImage}"\n`
-    } else {
-      const logoImageFilename = path.basename(orgData.logoImage)
-      content += `logoImage: "${logoImageFilename}"\n`
-    }
+    content += `logoImage: "${imageFrontmatterValue(orgData.logoImage)}"\n`
 
     // event tags
     content += "# Add up to 10 tags for your organisation\n"
