@@ -1,0 +1,41 @@
+name: Notify New Pull Request
+
+# Tells us on Telegram when someone outside the team (e.g. a meetup organizer) opens a PR.
+# pull_request_target (not pull_request) so that PRs from forks can read the Telegram secrets. This is safe
+# because the job never checks out or runs the PR's code: it only reads the PR's metadata from the event.
+on:
+  pull_request_target:
+    types: [opened, ready_for_review]
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  notify:
+    # Skip our own automation (the discovery and scraper PRs, bots like Dependabot) and the maintainers' own PRs.
+    # PRs opened with GITHUB_TOKEN don't trigger workflows anyway; the branch check is a safety net in case they
+    # are ever opened with a personal access token.
+    if: >-
+      github.event.pull_request.user.type != 'Bot' &&
+      !startsWith(github.event.pull_request.head.ref, 'event-discovery/') &&
+      !startsWith(github.event.pull_request.head.ref, 'event-scrapper/') &&
+      !contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.pull_request.author_association) &&
+      (github.event.action == 'opened' && !github.event.pull_request.draft || github.event.action == 'ready_for_review')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          # the base branch (main), which holds the script; never the PR's head
+          ref: ${{ github.event.pull_request.base.sha }}
+      - name: Notify Telegram
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          # passed through env, never interpolated into the script, since titles are user-controlled
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          PR_FILES: ${{ github.event.pull_request.changed_files }}
+          PR_DRAFT: ${{ github.event.pull_request.draft }}
+        run: bash scripts/notify-telegram-pr.sh
