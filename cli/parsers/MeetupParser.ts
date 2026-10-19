@@ -5,21 +5,28 @@ import { BaseParser } from "./BaseParser"
 
 export class MeetupParser extends BaseParser {
   override async scrapeEventDataFromPage($: CheerioAPI, url: string): Promise<ScrapedEventData> {
-    const scrapedData: ScrapedEventData = {}
-
     let defaultData: any = {}
     const nextData = $("#__NEXT_DATA__").text()
     if (nextData) defaultData = JSON.parse(nextData)
     // structured event data embedded in the page; preferred over the rendered HTML, whose layout changes
     const event = defaultData.props?.pageProps?.event || {}
+    return this.scrapeEventDataFromEvent(event, url, $)
+  }
+
+  /**
+   * Maps a Meetup event object to event data. The object comes from the event page's `__NEXT_DATA__` or from
+   * the GraphQL API (`MeetupApi`), which share a shape; `$` is only used as a fallback for missing fields.
+   */
+  async scrapeEventDataFromEvent(event: any, url: string, $?: CheerioAPI): Promise<ScrapedEventData> {
+    const scrapedData: ScrapedEventData = {}
 
     console.log(`Extracting event title...`)
-    const eventTitle = event.title?.trim() || $("main h1").first().text().trim()
+    const eventTitle = event.title?.trim() || $?.("main h1").first().text().trim() || ""
     console.log(`Event title: ${eventTitle}`)
     scrapedData.title = eventTitle
 
     console.log(`Extracting event start time...`)
-    const eventStartTime = event.dateTime || $("main aside time").attr("datetime")?.trim() || ""
+    const eventStartTime = event.dateTime || $?.("main aside time").attr("datetime")?.trim() || ""
 
     if (eventStartTime) {
       console.log(`Event start time: ${eventStartTime}`)
@@ -47,7 +54,7 @@ export class MeetupParser extends BaseParser {
     }
 
     console.log(`Extracting event venue name...`)
-    const eventVenue = event.venue?.name?.trim() || $("main aside p").eq(2).text().trim()
+    const eventVenue = event.venue?.name?.trim() || $?.("main aside p").eq(2).text().trim()
     if (eventVenue) {
       console.log(`Event venue: ${eventVenue}`)
       scrapedData.venue = eventVenue
@@ -63,7 +70,7 @@ export class MeetupParser extends BaseParser {
           .map((part) => part?.trim())
           .filter(Boolean)
           .join(" · ")
-      : $("main aside p").eq(3).text().trim()
+      : $?.("main aside p").eq(3).text().trim()
     if (eventVenueAddress) {
       console.log(`Event venue address: ${eventVenueAddress}`)
       scrapedData.venueAddress = eventVenueAddress
@@ -106,7 +113,13 @@ export class MeetupParser extends BaseParser {
 
     console.log(`Extracting hero image...`)
     // const heroImageUrl = $("main aside img").attr("src")?.trim() || ""
-    const heroImageUrl = event.featuredEventPhoto?.source || event.group?.groupPhoto?.source || ""
+    // the page has `source` URLs, the API `highResUrl` ones (and `keyGroupPhoto` instead of `groupPhoto`)
+    const heroImageUrl =
+      event.featuredEventPhoto?.source ||
+      event.featuredEventPhoto?.highResUrl ||
+      event.group?.groupPhoto?.source ||
+      event.group?.keyGroupPhoto?.highResUrl ||
+      ""
 
     // download the hero image to 'scraper-output' folder
     if (heroImageUrl) {

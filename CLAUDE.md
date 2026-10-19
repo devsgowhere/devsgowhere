@@ -50,6 +50,7 @@ Schema violations fail `npm run build`, so build after adding/editing content.
 - `EventCLI` drives prompts (inquirer) → `PageScraper` fetches the page into cheerio and picks a parser by URL host → `EventWriter` writes `src/content/events/<org>/<YYYYMMDD-slug>/index.md` (slug from start date + title, capped at 100 chars) and copies the downloaded hero image alongside. `OrgWriter` does the same for orgs.
 - Parsers in `cli/parsers/` extend `BaseParser` (shared Turndown HTML→Markdown conversion, image download). Supported: Meetup, Luma (`lu.ma`/`luma.com`), Eventbrite. To add a platform, add a parser and a case in `PageScraper.getParser`.
 - Raw HTML and downloaded images go to `scraper-output/` (gitignored except `.gitkeep`).
+- Meetup API (`cli/MeetupApi.ts`, GraphQL at `api.meetup.com/gql-ext`): when `MEETUP_CLIENT_ID`, `MEETUP_SIGNING_KEY_ID`, `MEETUP_PRIVATE_KEY` and `MEETUP_MEMBER_ID` are set (JWT flow; see `.env.example`, loaded from `.env` by the npm scripts, repo secrets in CI), discovery lists Meetup groups' events and `PageScraper` reads Meetup events through the API instead of scraping. The API returns the same event shape as the page's `__NEXT_DATA__`, so both go through `MeetupParser.scrapeEventDataFromEvent`. Without the variables everything falls back to scraping; setting only some of them is an error.
 
 ## Site structure
 
