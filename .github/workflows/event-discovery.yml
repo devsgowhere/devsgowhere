@@ -52,10 +52,15 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
+      # Meetup groups are read via the Meetup API when its secrets are set (JWT flow), otherwise scraped
       - name: Discover and scrape new events
         env:
           ORG: ${{ inputs.org }}
           DAYS: ${{ inputs.days || 60 }}
+          MEETUP_CLIENT_ID: ${{ secrets.MEETUP_CLIENT_ID }}
+          MEETUP_SIGNING_KEY_ID: ${{ secrets.MEETUP_SIGNING_KEY_ID }}
+          MEETUP_PRIVATE_KEY: ${{ secrets.MEETUP_PRIVATE_KEY }}
+          MEETUP_MEMBER_ID: ${{ secrets.MEETUP_MEMBER_ID }}
         run: npm run discover-events -- --days="$DAYS" ${ORG:+--org="$ORG"}
       # Validate the generated content against the schemas before opening a PR
       - name: Build site

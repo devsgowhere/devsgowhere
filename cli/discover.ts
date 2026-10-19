@@ -15,10 +15,14 @@ import {
   extractEvents,
   getExistingEventKeys,
   getOrgSources,
+  meetupApiEvents,
+  meetupUrlname,
   selectNewEvents,
   type DiscoveredEvent,
+  type OrgSource,
 } from "./EventDiscovery"
 import { EventWriter } from "./EventWriter"
+import { MeetupApi } from "./MeetupApi"
 import { PageScraper } from "./PageScraper"
 
 const argv = yargs(hideBin(process.argv))
@@ -57,13 +61,22 @@ async function main() {
   const sources = getOrgSources(path.join(contentDir, "orgs")).filter((s) => !argv.org || s.orgId === argv.org)
   const existingKeys = getExistingEventKeys(path.join(contentDir, "events"))
   console.log(`Checking ${sources.length} org sources (${existingKeys.size} events already in content)`)
+  const meetupApi = MeetupApi.fromEnv()
+  console.log(meetupApi ? "Using the Meetup API for Meetup groups" : "No Meetup API credentials, scraping Meetup pages")
+
+  const listEvents = async (source: OrgSource): Promise<DiscoveredEvent[]> => {
+    if (source.platform === "meetup" && meetupApi) {
+      return meetupApiEvents(await meetupApi.getUpcomingEvents(meetupUrlname(source)), source.orgId, now)
+    }
+    const $ = await PageScraper.getPage(source.url)
+    return extractEvents(source, $.html(), now)
+  }
 
   const discovered: DiscoveredEvent[] = []
   const sourceErrors: string[] = []
   for (const source of sources) {
     try {
-      const $ = await PageScraper.getPage(source.url)
-      const events = extractEvents(source, $.html(), now)
+      const events = await listEvents(source)
       console.log(`[${source.orgId}] ${source.url}: ${events.length} upcoming`)
       discovered.push(...events)
     } catch (error: any) {
@@ -78,7 +91,7 @@ async function main() {
   for (const event of newEvents) console.log(`  ${event.startAt}  ${event.orgId}  ${event.url}  ${event.title}`)
   if (argv.dryRun) return
 
-  const scraper = new PageScraper(outputDir)
+  const scraper = new PageScraper(outputDir, meetupApi)
   const writer = new EventWriter()
   const added: DiscoveredEvent[] = []
   const eventErrors: string[] = []

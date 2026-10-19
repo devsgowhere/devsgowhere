@@ -1,6 +1,7 @@
 import * as cheerio from "cheerio"
 import type { BaseParser } from "./parsers/BaseParser"
 import { EventbriteParser } from "./parsers/EventbriteParser"
+import { MeetupApi } from "./MeetupApi"
 import { LumaParser } from "./parsers/LumaParser"
 import { MeetupParser } from "./parsers/MeetupParser"
 import type { EventData, OrgData, ScrapedEventData, ScrapedOrgData } from "./types"
@@ -8,9 +9,12 @@ import { PLACEHOLDER_IMAGE, saveAsHtml } from "./utils"
 
 export class PageScraper {
   public outputDir: string
+  private meetupApi: MeetupApi | null
 
-  constructor(outputDir: string) {
+  /** @param meetupApi used for Meetup events instead of scraping their pages; defaults to one from the env */
+  constructor(outputDir: string, meetupApi: MeetupApi | null = MeetupApi.fromEnv()) {
     this.outputDir = outputDir
+    this.meetupApi = meetupApi
   }
 
   private getParser(url: string): BaseParser {
@@ -36,6 +40,13 @@ export class PageScraper {
    */
   async scrapeEventData(url: string): Promise<ScrapedEventData> {
     const parser = this.getParser(url)
+
+    const meetupEventId = url.match(/meetup\.com\/[^/]+\/events\/(\d+)/)?.[1]
+    if (this.meetupApi && parser instanceof MeetupParser && meetupEventId) {
+      console.log(`Fetching Meetup event ${meetupEventId} from the API...`)
+      const event = await this.meetupApi.getEvent(meetupEventId)
+      return parser.scrapeEventDataFromEvent(event, url)
+    }
 
     console.log(`Fetching ${url}...`)
     const $ = await PageScraper.getPage(url)

@@ -59,6 +59,11 @@ jobs:
         run: npm ci
       # Run the event scrapper
       - name: Run event scrapper
+        env:
+          MEETUP_CLIENT_ID: ${{ secrets.MEETUP_CLIENT_ID }}
+          MEETUP_SIGNING_KEY_ID: ${{ secrets.MEETUP_SIGNING_KEY_ID }}
+          MEETUP_PRIVATE_KEY: ${{ secrets.MEETUP_PRIVATE_KEY }}
+          MEETUP_MEMBER_ID: ${{ secrets.MEETUP_MEMBER_ID }}
         run: |
           npm run create-event -- \
             --eventURL="${{ github.event.inputs.eventURL || inputs.eventURL }}" \

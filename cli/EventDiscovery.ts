@@ -1,5 +1,6 @@
 import fs from "fs"
 import path from "path"
+import type { MeetupEvent } from "./MeetupApi"
 
 export type Platform = "meetup" | "luma"
 
@@ -121,6 +122,24 @@ export function extractMeetupEvents(html: string, orgId: string, now: Date): Dis
     .filter(([key, event]) => key.startsWith("Event:") && event.status === "ACTIVE" && event.eventUrl && event.dateTime)
     .filter(([, event]) => new Date(event.dateTime) > now)
     .map(([, event]) => ({
+      orgId,
+      url: event.eventUrl.replace(/\/$/, ""),
+      title: event.title ?? "",
+      startAt: event.dateTime,
+    }))
+}
+
+/** The Meetup group URL name of a source, e.g. "aws-sg" for https://www.meetup.com/aws-sg/events/. */
+export function meetupUrlname(source: OrgSource): string {
+  return new URL(source.url).pathname.split("/").filter(Boolean)[0]
+}
+
+/** Same as extractMeetupEvents, for events returned by the Meetup API (`MeetupApi.getUpcomingEvents`). */
+export function meetupApiEvents(events: MeetupEvent[], orgId: string, now: Date): DiscoveredEvent[] {
+  return events
+    .filter((event) => event.status === "ACTIVE" && event.eventUrl && event.dateTime)
+    .filter((event) => new Date(event.dateTime) > now)
+    .map((event) => ({
       orgId,
       url: event.eventUrl.replace(/\/$/, ""),
       title: event.title ?? "",
