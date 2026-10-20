@@ -1,7 +1,8 @@
 name: Notify Workflow Failure
 
 # Posts to Telegram when one of the workflows below fails, times out or can't start. "Create Event from Issue"
-# isn't listed because it alerts on its own (with the issue link).
+# isn't listed because it alerts on its own (with the issue link), nor are PR preview builds, whose failures the
+# PR's author sees on the PR.
 # workflow_run only runs from the default branch, and never checks out the failed run's code here.
 on:
   workflow_run:
@@ -9,7 +10,6 @@ on:
       - "(Scheduled) Event Discovery"
       - "(Scheduled) Nightly Builds"
       - "(Manual) Production Builds"
-      - "(Pull Request) Preview Builds"
       - "(Manual) Event Scrapper"
       - "Google Form Webhook Triggered Workflow"
     types: [completed]
