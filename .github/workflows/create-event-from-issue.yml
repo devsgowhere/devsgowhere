@@ -1,11 +1,14 @@
 name: Create Event from Issue
 
-# Turns a "Submit an event" issue (.github/ISSUE_TEMPLATE/new-event.yml) into a pull request: validates the
-# submission, scrapes the event with the create-event CLI, builds the site, opens a PR that closes the issue,
-# replies on the issue and posts to Telegram. Editing the issue re-runs it and updates the same PR.
+# Turns an event submission issue into a pull request, builds the site, opens a PR that closes the issue,
+# replies on the issue and posts to Telegram. Editing the issue re-runs it and updates the same PR. Two forms:
+# - "Submit an event" (new-event.yml, label new-event): validates the URL and org (cli/check-event-request.ts)
+#   and scrapes the event page with the create-event CLI
+# - "Submit an event (other websites)" (new-event-details.yml, label new-event-details): validates the submitted
+#   fields and writes the event from them as they are, no scraping (cli/create-event-from-details.ts)
 #
-# Issue text is untrusted: it only reaches the shell through environment variables, never through ${{ }} in a
-# script, and the URL and org ID are validated (cli/check-event-request.ts) before the CLI sees them.
+# Issue text is untrusted: it only reaches the shell through environment variables or a file, never through
+# ${{ }} in a script, and it's validated before anything is written.
 on:
   issues:
     types: [opened, edited]
@@ -29,7 +32,9 @@ jobs:
   create-event:
     if: >-
       github.event_name == 'workflow_dispatch' ||
-      (github.event.issue.state == 'open' && contains(github.event.issue.labels.*.name, 'new-event'))
+      (github.event.issue.state == 'open' &&
+        (contains(github.event.issue.labels.*.name, 'new-event') ||
+          contains(github.event.issue.labels.*.name, 'new-event-details')))
     runs-on: ubuntu-latest
     steps:
       - name: Read the submission
@@ -51,6 +56,12 @@ jobs:
               }),
             )
             const field = (label) => (sections[label] === "_No response_" ? "" : (sections[label] ?? ""))
+            // the details form's whole body goes to the CLI as a file
+            const bodyFile = require("path").join(process.env.RUNNER_TEMP, "issue-body.md")
+            require("fs").writeFileSync(bodyFile, issue.body ?? "")
+            const labels = issue.labels.map((label) => (typeof label === "string" ? label : label.name))
+            core.setOutput("kind", labels.includes("new-event-details") ? "details" : "scrape")
+            core.setOutput("body_file", bodyFile)
             core.setOutput("number", issue.number)
             core.setOutput("title", issue.title)
             core.setOutput("url", issue.html_url)
@@ -73,11 +84,18 @@ jobs:
       - name: Validate the submission
         id: validate
         env:
+          KIND: ${{ steps.issue.outputs.kind }}
+          BODY_FILE: ${{ steps.issue.outputs.body_file }}
           EVENT_URL: ${{ steps.issue.outputs.event_url }}
           ORG_CHOICE: ${{ steps.issue.outputs.org_choice }}
           NEW_ORG_ID: ${{ steps.issue.outputs.new_org_id }}
         run: |
-          result=$(npx tsx cli/check-event-request.ts --url="$EVENT_URL" --org-choice="$ORG_CHOICE" --new-org-id="$NEW_ORG_ID")
+          if [ "$KIND" = "details" ]; then
+            # validates and, if valid, writes the event (and new org) from the submitted fields
+            result=$(npx tsx cli/create-event-from-details.ts --body-file="$BODY_FILE")
+          else
+            result=$(npx tsx cli/check-event-request.ts --url="$EVENT_URL" --org-choice="$ORG_CHOICE" --new-org-id="$NEW_ORG_ID")
+          fi
           echo "$result"
           {
             echo "ok=$(jq -r .ok <<< "$result")"
@@ -110,7 +128,7 @@ jobs:
             })
 
       - name: Scrape the event
-        if: ${{ steps.validate.outputs.ok == 'true' }}
+        if: ${{ steps.validate.outputs.ok == 'true' && steps.issue.outputs.kind == 'scrape' }}
         env:
           EVENT_URL: ${{ steps.validate.outputs.event_url }}
           ORG_ID: ${{ steps.validate.outputs.org_id }}
@@ -120,13 +138,13 @@ jobs:
           MEETUP_MEMBER_ID: ${{ secrets.MEETUP_MEMBER_ID }}
         run: npm run create-event -- --eventURL="$EVENT_URL" --orgID="$ORG_ID"
 
-      - name: Read the scraped event
+      - name: Read the new event
         if: ${{ steps.validate.outputs.ok == 'true' }}
         id: event
         run: |
           file=$(git status --porcelain --untracked-files=all src/content/events | awk '{print $2}' | grep '/index.md$' | head -n 1)
           if [ -z "$file" ]; then
-            echo "::error::create-event didn't write an event file"
+            echo "::error::No event file was written"
             exit 1
           fi
           read_field() { sed -n "s/^$1: \"\{0,1\}\([^\"]*\)\"\{0,1\}$/\1/p" "$file" | head -n 1; }
@@ -161,12 +179,12 @@ jobs:
 
             | | |
             |---|---|
-            | Event | ${{ steps.validate.outputs.event_url }} |
-            | Organisation | `${{ steps.validate.outputs.org_id }}`${{ steps.validate.outputs.creates_org == 'true' && ' (new, created from its Meetup group)' || '' }} |
+            | ${{ steps.issue.outputs.kind == 'details' && 'Registration' || 'Event' }} | ${{ steps.validate.outputs.event_url }} |
+            | Organisation | `${{ steps.validate.outputs.org_id }}`${{ steps.validate.outputs.creates_org == 'true' && (steps.issue.outputs.kind == 'details' && ' (new, a basic page to fill in)' || ' (new, created from its Meetup group)') || '' }} |
             | When | ${{ steps.event.outputs.date }} |
             | Venue | ${{ steps.event.outputs.venue }} |
 
-            Generated by the create-event CLI from the event page. Before merging, check the date, time, venue, description and hero image${{ steps.validate.outputs.creates_org == 'true' && ', and the new organisation page' || '' }}.
+            ${{ steps.issue.outputs.kind == 'details' && 'Written from the details filled in on the issue (not scraped).' || 'Generated by the create-event CLI from the event page.' }} Before merging, check the date, time, venue, description and hero image${{ steps.validate.outputs.creates_org == 'true' && ', and the new organisation page' || '' }}.
 
             ### Notes from the submitter
 

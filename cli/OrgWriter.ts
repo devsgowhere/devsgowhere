@@ -1,8 +1,8 @@
 import fs from "fs"
 import path from "path"
-import { ISSUE_TEMPLATE_PATH, updateIssueTemplate } from "./IssueTemplate"
+import { updateIssueTemplates } from "./IssueTemplate"
 import type { OrgData } from "./types"
-import { imageFrontmatterValue, isLocalImageToCopy } from "./utils"
+import { imageFrontmatterValue, isLocalImageToCopy, quote } from "./utils"
 
 export class OrgWriter {
   createOrgFile(orgData: OrgData): void {
@@ -35,8 +35,8 @@ export class OrgWriter {
         console.log(`Logo image copied to: ${logoImageDest}`)
       }
 
-      // list the new org in the "Submit an event" issue form's dropdown
-      if (updateIssueTemplate()) console.log(`Added the org to ${ISSUE_TEMPLATE_PATH}`)
+      // list the new org in the event submission issue forms' dropdowns
+      for (const template of updateIssueTemplates()) console.log(`Added the org to ${template}`)
 
       console.log("\n✅ Org created successfully!")
       console.log(`📁 Location: ${orgFile}`)
@@ -52,27 +52,27 @@ export class OrgWriter {
 
     // start of front matter
     content += "---\n"
-    content += `title: "${orgData.title}"\n`
+    content += `title: ${quote(orgData.title)}\n`
 
     // description is used for SEO and card preview, truncate to 160 characters
     if (orgData.description) {
       // replace newlines with spaces
       const seoDescription = orgData.description.replace(/\n/g, " ").substring(0, 160)
-      content += `description: "${seoDescription}"\n`
+      content += `description: ${quote(seoDescription)}\n`
     } else {
       content += `description: ""\n`
     }
 
     // if hero image is a file path, use only the filename
-    content += `heroImage: "${imageFrontmatterValue(orgData.heroImage)}"\n`
+    content += `heroImage: ${quote(imageFrontmatterValue(orgData.heroImage))}\n`
 
     // if logo image is a file path, use only the filename
-    content += `logoImage: "${imageFrontmatterValue(orgData.logoImage)}"\n`
+    content += `logoImage: ${quote(imageFrontmatterValue(orgData.logoImage))}\n`
 
     // event tags
     content += "# Add up to 10 tags for your organisation\n"
     if (orgData.tags && orgData.tags.length > 0) {
-      content += `tags: [${orgData.tags.map((tag) => `"${tag}"`).join(", ")}]\n`
+      content += `tags: [${orgData.tags.map(quote).join(", ")}]\n`
     } else {
       content += `tags: []\n`
     }

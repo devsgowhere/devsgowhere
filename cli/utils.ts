@@ -7,6 +7,11 @@ const DEFAULT_OUTPUT_DIR = "scraper-output"
 // Shared placeholder, referenced from content files at src/content/<collection>/<...>/index.md
 export const PLACEHOLDER_IMAGE = "../../../../public/org-placeholder.png"
 
+/** A YAML double-quoted scalar; JSON string escaping is valid YAML, so quotes and backslashes can't break it. */
+export function quote(value: string | undefined | null): string {
+  return JSON.stringify(value ?? "")
+}
+
 /** Value to write in frontmatter: URLs and the placeholder as-is, local files by name (they're copied alongside). */
 export function imageFrontmatterValue(image: string): string {
   return image.startsWith("http") || image === PLACEHOLDER_IMAGE ? image : path.basename(image)

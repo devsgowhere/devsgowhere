@@ -5,10 +5,10 @@ import { parse } from "yaml"
 import { describe, expect, test } from "vitest"
 import {
   getOrgOptions,
-  ISSUE_TEMPLATE_PATH,
   NEW_ORG_OPTION,
   orgIdFromOption,
   orgOptionLabel,
+  outdatedIssueTemplates,
   renderIssueTemplate,
 } from "./IssueTemplate"
 
@@ -81,9 +81,8 @@ describe("orgIdFromOption", () => {
   })
 })
 
-describe("the Submit an event issue form", () => {
-  test("lists every org in src/content/orgs (run `npm run update-issue-template` if this fails)", () => {
-    const current = fs.readFileSync(ISSUE_TEMPLATE_PATH, "utf8")
-    expect(current).toBe(renderIssueTemplate(current, getOrgOptions(path.join("src", "content", "orgs"))))
+describe("the event submission issue forms", () => {
+  test("list every org in src/content/orgs (run `npm run update-issue-template` if this fails)", () => {
+    expect(outdatedIssueTemplates()).toEqual([])
   })
 })
