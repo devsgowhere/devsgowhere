@@ -20,4 +20,7 @@ fi
 export org_name org_description
 envsubst < "$template_file" > "$folder_name/index.md"
 
+# list the new org in the "Submit an event" issue form's dropdown
+npm run --silent update-issue-template
+
 echo "Org file created at $folder_name/index.md. Do open the file to edit it."

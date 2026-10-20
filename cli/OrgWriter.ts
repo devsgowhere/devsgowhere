@@ -1,5 +1,6 @@
 import fs from "fs"
 import path from "path"
+import { ISSUE_TEMPLATE_PATH, updateIssueTemplate } from "./IssueTemplate"
 import type { OrgData } from "./types"
 import { imageFrontmatterValue, isLocalImageToCopy } from "./utils"
 
@@ -33,6 +34,9 @@ export class OrgWriter {
         fs.copyFileSync(orgData.logoImage, logoImageDest)
         console.log(`Logo image copied to: ${logoImageDest}`)
       }
+
+      // list the new org in the "Submit an event" issue form's dropdown
+      if (updateIssueTemplate()) console.log(`Added the org to ${ISSUE_TEMPLATE_PATH}`)
 
       console.log("\n✅ Org created successfully!")
       console.log(`📁 Location: ${orgFile}`)

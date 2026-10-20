@@ -22,6 +22,11 @@ count=$(printf "%s" "${events}" | grep -c '^- ' || true)
 listing=$(printf "%s\n" "${events}" \
   | head -n "${MAX_EVENTS}" \
   | sed -E 's/^- `([^`]*)` ([0-9-]+) \[(.*)\]\(.*\)$/• \2  \3 (\1)/')
+# Nothing to tell the team about, e.g. a PR that only synced the issue form's organisation list
+if [ "${count}" -eq 0 ]; then
+  echo "No events in ${SUMMARY_FILE}, skipping Telegram notification"
+  exit 0
+fi
 if [ "${count}" -gt "${MAX_EVENTS}" ]; then
   listing="${listing}
 …and $((count - MAX_EVENTS)) more"
