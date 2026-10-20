@@ -56,8 +56,8 @@ jobs:
             core.setOutput("url", issue.html_url)
             core.setOutput("author", issue.user.login)
             core.setOutput("event_url", field("Event URL"))
-            core.setOutput("org_id", field("Organisation ID").replace(/^`|`$/g, ""))
-            core.setOutput("new_org", /- \[x\] This is a new organisation/i.test(issue.body ?? "") ? "true" : "false")
+            core.setOutput("org_choice", field("Organisation"))
+            core.setOutput("new_org_id", field("New organisation ID").replace(/^`|`$/g, ""))
             core.setOutput("notes", field("Notes for the team"))
 
       - name: Checkout repository
@@ -74,10 +74,10 @@ jobs:
         id: validate
         env:
           EVENT_URL: ${{ steps.issue.outputs.event_url }}
-          ORG_ID: ${{ steps.issue.outputs.org_id }}
-          NEW_ORG: ${{ steps.issue.outputs.new_org }}
+          ORG_CHOICE: ${{ steps.issue.outputs.org_choice }}
+          NEW_ORG_ID: ${{ steps.issue.outputs.new_org_id }}
         run: |
-          result=$(npx tsx cli/check-event-request.ts --url="$EVENT_URL" --org="$ORG_ID" $([ "$NEW_ORG" = "true" ] && echo --new-org))
+          result=$(npx tsx cli/check-event-request.ts --url="$EVENT_URL" --org-choice="$ORG_CHOICE" --new-org-id="$NEW_ORG_ID")
           echo "$result"
           {
             echo "ok=$(jq -r .ok <<< "$result")"
@@ -150,8 +150,10 @@ jobs:
           # One branch per issue: editing the issue updates the same PR
           branch: event-issue/${{ steps.issue.outputs.number }}
           base: main
+          # a new org is also added to this issue form's dropdown (OrgWriter regenerates it)
           add-paths: |
             src/content/
+            .github/ISSUE_TEMPLATE/
           commit-message: "Add event: ${{ steps.event.outputs.title }} (#${{ steps.issue.outputs.number }})"
           title: "Add event: ${{ steps.event.outputs.title }}"
           body: |

@@ -1,10 +1,11 @@
 import { eventKey } from "./EventDiscovery"
+import { NEW_ORG_OPTION, orgIdFromOption } from "./IssueTemplate"
 
 /** An event submitted through the "New event" issue form. */
 export interface EventRequest {
   url: string
   orgId: string
-  /** The submitter ticked "This is a new organisation" */
+  /** The submitter chose "My organisation isn't listed" */
   isNewOrg: boolean
 }
 
@@ -17,6 +18,15 @@ export interface EventRequestContext {
 
 export type EventRequestResult =
   { ok: true; url: string; orgId: string; createsOrg: boolean } | { ok: false; errors: string[] }
+
+/**
+ * Turns the issue form's organisation answers into an org ID: the ID in the chosen dropdown option, or the typed
+ * "New organisation ID" when the "isn't listed" option was chosen.
+ */
+export function orgFromSubmission(orgChoice: string, newOrgId: string): { orgId: string; isNewOrg: boolean } {
+  if (orgChoice.trim() === NEW_ORG_OPTION || !orgChoice.trim()) return { orgId: newOrgId.trim(), isNewOrg: true }
+  return { orgId: orgIdFromOption(orgChoice) ?? orgChoice.trim(), isNewOrg: false }
+}
 
 const ORG_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9_-]*$/
 
@@ -57,11 +67,13 @@ export function validateEventRequest(request: EventRequest, context: EventReques
   }
 
   const orgExists = context.orgIds.has(orgId)
-  if (!ORG_ID_PATTERN.test(orgId)) {
+  if (!orgId) {
+    errors.push(`Choose your organisation, or fill in "New organisation ID" if it isn't listed.`)
+  } else if (!ORG_ID_PATTERN.test(orgId)) {
     errors.push(`The organisation ID \`${orgId}\` should only contain letters, numbers, \`-\` and \`_\`.`)
   } else if (!orgExists && !request.isNewOrg) {
     errors.push(
-      `There's no organisation with the ID \`${orgId}\`. Check the [list of organisation IDs](https://devsgowhere.com/orgs/list-orgs.txt), or tick "This is a new organisation".`,
+      `There's no organisation with the ID \`${orgId}\`. Choose your organisation from the list, or "${NEW_ORG_OPTION}" and fill in "New organisation ID".`,
     )
   } else if (!orgExists && platform && platform !== "meetup") {
     errors.push(

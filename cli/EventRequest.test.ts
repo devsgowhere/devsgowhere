@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest"
 import { eventKey } from "./EventDiscovery"
-import { validateEventRequest } from "./EventRequest"
+import { orgFromSubmission, validateEventRequest } from "./EventRequest"
+import { NEW_ORG_OPTION } from "./IssueTemplate"
 
 const context = {
   orgIds: new Set(["aws_user_group_singapore", "taqelah-sg"]),
@@ -64,6 +65,30 @@ describe("validateEventRequest", () => {
     expect(validate("https://www.meetup.com/aws-sg/", "aws_user_group_singapore")).toMatchObject({
       ok: false,
       errors: [expect.stringContaining("isn't an event page")],
+    })
+  })
+})
+
+describe("orgFromSubmission", () => {
+  test("reads the org ID from the dropdown answer", () => {
+    expect(orgFromSubmission("TAQELAH Singapore (taqelah-sg)", "ignored")).toEqual({
+      orgId: "taqelah-sg",
+      isNewOrg: false,
+    })
+  })
+
+  test("uses the typed ID when the org isn't listed", () => {
+    expect(orgFromSubmission(NEW_ORG_OPTION, " singapore_rust_meetup ")).toEqual({
+      orgId: "singapore_rust_meetup",
+      isNewOrg: true,
+    })
+  })
+
+  test("a new org without an ID is reported", () => {
+    const org = orgFromSubmission(NEW_ORG_OPTION, "")
+    expect(validateEventRequest({ url: "https://www.meetup.com/x/events/1/", ...org }, context)).toEqual({
+      ok: false,
+      errors: ['Choose your organisation, or fill in "New organisation ID" if it isn\'t listed.'],
     })
   })
 })

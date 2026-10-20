@@ -62,6 +62,14 @@ jobs:
           MEETUP_PRIVATE_KEY: ${{ secrets.MEETUP_PRIVATE_KEY }}
           MEETUP_MEMBER_ID: ${{ secrets.MEETUP_MEMBER_ID }}
         run: npm run discover-events -- --days="$DAYS" ${ORG:+--org="$ORG"}
+      # Orgs added by hand don't regenerate the "Submit an event" issue form's dropdown, so sync it here
+      # (this PR is merged automatically)
+      - name: Sync the issue form's organisation list
+        run: |
+          npm run update-issue-template
+          if ! git diff --quiet -- .github/ISSUE_TEMPLATE/; then
+            printf '\n### Issue form\n- Synced the "Submit an event" organisation dropdown with `src/content/orgs`\n' >> scraper-output/discovery-summary.md
+          fi
       # Validate the generated content against the schemas before opening a PR
       - name: Build site
         run: npm run build
@@ -74,6 +82,7 @@ jobs:
           base: main
           add-paths: |
             src/content/
+            .github/ISSUE_TEMPLATE/
           commit-message: "Add auto-discovered events"
           title: "Add auto-discovered events"
           body-path: scraper-output/discovery-summary.md
