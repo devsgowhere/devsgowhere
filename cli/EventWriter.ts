@@ -1,7 +1,7 @@
 import fs from "fs"
 import path from "path"
 import type { EventData } from "./types"
-import { imageFrontmatterValue, isLocalImageToCopy } from "./utils"
+import { imageFrontmatterValue, isLocalImageToCopy, quote } from "./utils"
 
 export class EventWriter {
   createEventFile(eventData: EventData): void {
@@ -76,49 +76,49 @@ export class EventWriter {
 
     // start of front matter
     content += "---\n"
-    content += `org: "${eventData.org}"\n`
-    content += `title: "${eventData.title}"\n`
+    content += `org: ${quote(eventData.org)}\n`
+    content += `title: ${quote(eventData.title)}\n`
 
     // description is used for SEO and card preview, truncate to 160 characters
     if (eventData.description) {
       // replace newlines with spaces
       const seoDescription = eventData.description.replace(/\n/g, " ").substring(0, 160)
-      content += `description: "${seoDescription}"\n`
+      content += `description: ${quote(seoDescription)}\n`
     } else {
       content += `description: ""\n`
     }
 
     // venue and address (reuired)
-    content += `venue: "${eventData.venue}"\n`
-    content += `venueAddress: "${eventData.venueAddress}"\n`
+    content += `venue: ${quote(eventData.venue)}\n`
+    content += `venueAddress: ${quote(eventData.venueAddress)}\n`
 
     // start date and time are required
-    content += `startDate: "${eventData.startDate}"\n`
-    content += `startTime: "${eventData.startTime}"\n`
+    content += `startDate: ${quote(eventData.startDate)}\n`
+    content += `startTime: ${quote(eventData.startTime)}\n`
 
     // end date and time are optional
     if (eventData.endDate) {
-      content += `endDate: "${eventData.endDate}"\n`
+      content += `endDate: ${quote(eventData.endDate)}\n`
     }
 
     if (eventData.endTime) {
-      content += `endTime: "${eventData.endTime}"\n`
+      content += `endTime: ${quote(eventData.endTime)}\n`
     }
 
     // if hero image is a file path, use only the filename
-    content += `heroImage: "${imageFrontmatterValue(eventData.heroImage)}"\n`
+    content += `heroImage: ${quote(imageFrontmatterValue(eventData.heroImage))}\n`
 
     // event tags
     if (eventData.tags && eventData.tags.length > 0) {
-      content += `tags: [${eventData.tags.map((tag) => `"${tag}"`).join(", ")}]\n`
+      content += `tags: [${eventData.tags.map(quote).join(", ")}]\n`
     } else {
       content += `tags: []\n`
     }
 
     // event rsvp button
     if (eventData.rsvpButtonUrl) {
-      content += `rsvpButtonUrl: "${eventData.rsvpButtonUrl}"\n`
-      content += `rsvpButtonText: "${eventData.rsvpButtonText}"\n`
+      content += `rsvpButtonUrl: ${quote(eventData.rsvpButtonUrl)}\n`
+      content += `rsvpButtonText: ${quote(eventData.rsvpButtonText)}\n`
     }
 
     // end of front matter
