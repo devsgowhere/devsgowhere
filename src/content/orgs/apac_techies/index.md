@@ -1,8 +1,8 @@
 ---
 title: "Techies"
 description: "A 3rd space for devs, dev-adjacents, and people who really want to get deep into technical conversations."
-heroImage: ""
-logoImage: ""
+heroImage: "../../../../public/org-placeholder.png"
+logoImage: "../../../../public/org-placeholder.png"
 tags: ["architecture", "technology", "RoastMyTechStack", "singapore"]
 website: "https://luma.com/APACtechies"
 linkedin: "https://www.linkedin.com/company/apac-techies/"
