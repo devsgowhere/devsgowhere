@@ -2,8 +2,9 @@
 set -euo pipefail
 
 # notify-telegram-pr.sh
-# Send a Telegram message about a pull request opened by a contributor (e.g. a meetup organizer).
-# Reads the PR from the environment: PR_TITLE, PR_URL, PR_AUTHOR, PR_FILES (changed file count), PR_DRAFT (true/false).
+# Send a Telegram message about a new pull request.
+# Reads the PR from the environment: PR_TITLE, PR_URL, PR_AUTHOR, and optionally PR_FILES (changed file count),
+# PR_DRAFT (true/false), PR_VIA (where it came from, e.g. "issue #12") and HEADING (replaces the first line).
 # Usage: TELEGRAM_BOT_TOKEN=... TELEGRAM_CHAT_ID=... ./scripts/notify-telegram-pr.sh
 # Set DRY_RUN=1 to print the message instead of sending it.
 
@@ -15,8 +16,9 @@ fi
 draft=""
 [ "${PR_DRAFT:-false}" = "true" ] && draft=" (draft)"
 
-message="🙋 New pull request${draft} from ${PR_AUTHOR:?PR_AUTHOR required}: ${PR_TITLE:?PR_TITLE required}
-${PR_FILES:-?} file(s) changed
+message="${HEADING:-🙋 New pull request${draft}}
+${PR_TITLE:?PR_TITLE required}
+by ${PR_AUTHOR:?PR_AUTHOR required}${PR_VIA:+ via ${PR_VIA}}${PR_FILES:+, ${PR_FILES} file(s) changed}
 
 ${PR_URL:?PR_URL required}"
 

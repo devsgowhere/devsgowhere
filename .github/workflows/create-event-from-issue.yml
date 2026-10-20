@@ -1,245 +1,226 @@
-name: (Manual) Create Event from Issue
+name: Create Event from Issue
 
+# Turns a "Submit an event" issue (.github/ISSUE_TEMPLATE/new-event.yml) into a pull request: validates the
+# submission, scrapes the event with the create-event CLI, builds the site, opens a PR that closes the issue,
+# replies on the issue and posts to Telegram. Editing the issue re-runs it and updates the same PR.
+#
+# Issue text is untrusted: it only reaches the shell through environment variables, never through ${{ }} in a
+# script, and the URL and org ID are validated (cli/check-event-request.ts) before the CLI sees them.
 on:
+  issues:
+    types: [opened, edited]
   workflow_dispatch:
     inputs:
       issue_number:
-        description: "GitHub issue containing event details"
+        description: "Number of the event submission issue to process"
         required: true
         type: string
 
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: create-event-from-issue-${{ github.event.issue.number || inputs.issue_number }}
+  cancel-in-progress: true
+
 jobs:
-  experimental:
+  create-event:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.issue.state == 'open' && contains(github.event.issue.labels.*.name, 'new-event'))
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          fetch-depth: 0
-      # - name: Setup Node.js
-      #   uses: actions/setup-node@v5
-      #   with:
-      #     node-version: '18'
-      #     cache: 'npm'
-
-      # - name: Install dependencies
-      #   run: npm ci
-      - name: Get issue details
-        id: get-issue
-        uses: actions/github-script@v7
+      - name: Read the submission
+        id: issue
+        uses: actions/github-script@v8
+        env:
+          ISSUE_NUMBER: ${{ github.event.issue.number || inputs.issue_number }}
         with:
           script: |
-            const issue = await github.rest.issues.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: ${{ github.event.inputs.issue_number }}
-            });
+            const { data: issue } = await github.rest.issues.get({
+              ...context.repo,
+              issue_number: Number(process.env.ISSUE_NUMBER),
+            })
+            // Issue forms render each field as "### <label>\n\n<value>", with "_No response_" when left empty
+            const sections = Object.fromEntries(
+              (issue.body ?? "").split(/^### /m).slice(1).map((section) => {
+                const [label, ...value] = section.split("\n")
+                return [label.trim(), value.join("\n").trim()]
+              }),
+            )
+            const field = (label) => (sections[label] === "_No response_" ? "" : (sections[label] ?? ""))
+            core.setOutput("number", issue.number)
+            core.setOutput("title", issue.title)
+            core.setOutput("url", issue.html_url)
+            core.setOutput("author", issue.user.login)
+            core.setOutput("event_url", field("Event URL"))
+            core.setOutput("org_id", field("Organisation ID").replace(/^`|`$/g, ""))
+            core.setOutput("new_org", /- \[x\] This is a new organisation/i.test(issue.body ?? "") ? "true" : "false")
+            core.setOutput("notes", field("Notes for the team"))
 
-            const issueBody = issue.data.body || '';
-            console.log('Issue body:', issueBody);
+      - name: Checkout repository
+        uses: actions/checkout@v5
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
 
-            // Parse orgID and eventURL from issue body
-            const orgIdMatch = issueBody.match(/^[-*]\s*orgID:\s*(.+)$/m);
-            const eventUrlMatch = issueBody.match(/^[-*]\s*eventURL:\s*(.+)$/m);
+      - name: Validate the submission
+        id: validate
+        env:
+          EVENT_URL: ${{ steps.issue.outputs.event_url }}
+          ORG_ID: ${{ steps.issue.outputs.org_id }}
+          NEW_ORG: ${{ steps.issue.outputs.new_org }}
+        run: |
+          result=$(npx tsx cli/check-event-request.ts --url="$EVENT_URL" --org="$ORG_ID" $([ "$NEW_ORG" = "true" ] && echo --new-org))
+          echo "$result"
+          {
+            echo "ok=$(jq -r .ok <<< "$result")"
+            echo "event_url=$(jq -r '.url // ""' <<< "$result")"
+            echo "org_id=$(jq -r '.orgId // ""' <<< "$result")"
+            echo "creates_org=$(jq -r '.createsOrg // false' <<< "$result")"
+            echo "errors<<EOF"
+            jq -r '(.errors // [])[] | "- " + .' <<< "$result"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
-            if (!orgIdMatch || !eventUrlMatch) {
-              throw new Error('Could not find orgID and/or eventURL in issue body. Expected format:\n- orgID: your_org_id\n- eventURL: https://meetup.com/...');
-            }
+      - name: Reply with validation errors
+        if: ${{ steps.validate.outputs.ok != 'true' }}
+        uses: actions/github-script@v8
+        env:
+          ISSUE_NUMBER: ${{ steps.issue.outputs.number }}
+          ERRORS: ${{ steps.validate.outputs.errors }}
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              ...context.repo,
+              issue_number: Number(process.env.ISSUE_NUMBER),
+              body: [
+                "Thanks for the submission! I couldn't add this event yet:",
+                "",
+                process.env.ERRORS,
+                "",
+                "Edit the issue to fix it and I'll try again.",
+              ].join("\n"),
+            })
 
-            const orgId = orgIdMatch[1].trim();
-            const eventUrl = eventUrlMatch[1].trim();
+      - name: Scrape the event
+        if: ${{ steps.validate.outputs.ok == 'true' }}
+        env:
+          EVENT_URL: ${{ steps.validate.outputs.event_url }}
+          ORG_ID: ${{ steps.validate.outputs.org_id }}
+          MEETUP_CLIENT_ID: ${{ secrets.MEETUP_CLIENT_ID }}
+          MEETUP_SIGNING_KEY_ID: ${{ secrets.MEETUP_SIGNING_KEY_ID }}
+          MEETUP_PRIVATE_KEY: ${{ secrets.MEETUP_PRIVATE_KEY }}
+          MEETUP_MEMBER_ID: ${{ secrets.MEETUP_MEMBER_ID }}
+        run: npm run create-event -- --eventURL="$EVENT_URL" --orgID="$ORG_ID"
 
-            console.log('Extracted orgID:', orgId);
-            console.log('Extracted eventURL:', eventUrl);
+      - name: Read the scraped event
+        if: ${{ steps.validate.outputs.ok == 'true' }}
+        id: event
+        run: |
+          file=$(git status --porcelain --untracked-files=all src/content/events | awk '{print $2}' | grep '/index.md$' | head -n 1)
+          if [ -z "$file" ]; then
+            echo "::error::create-event didn't write an event file"
+            exit 1
+          fi
+          read_field() { sed -n "s/^$1: \"\{0,1\}\([^\"]*\)\"\{0,1\}$/\1/p" "$file" | head -n 1; }
+          {
+            echo "file=$file"
+            echo "title=$(read_field title)"
+            echo "date=$(read_field startDate) $(read_field startTime)"
+            echo "venue=$(read_field venue)"
+          } >> "$GITHUB_OUTPUT"
 
-            // Validate URL format
-            try {
-              new URL(eventUrl);
-            } catch (error) {
-              throw new Error(`Invalid eventURL format: ${eventUrl}`);
-            }
+      # Validate the generated content against the schemas before opening a PR
+      - name: Build site
+        if: ${{ steps.validate.outputs.ok == 'true' }}
+        run: npm run build
 
-            return {
-              orgId: orgId,
-              eventUrl: eventUrl,
-              issueTitle: issue.data.title,
-              issueNumber: issue.data.number
-            };
+      - name: Create Pull Request
+        if: ${{ steps.validate.outputs.ok == 'true' }}
+        id: create-pull-request
+        uses: peter-evans/create-pull-request@v8
+        with:
+          # One branch per issue: editing the issue updates the same PR
+          branch: event-issue/${{ steps.issue.outputs.number }}
+          base: main
+          add-paths: |
+            src/content/
+          commit-message: "Add event: ${{ steps.event.outputs.title }} (#${{ steps.issue.outputs.number }})"
+          title: "Add event: ${{ steps.event.outputs.title }}"
+          body: |
+            Closes #${{ steps.issue.outputs.number }}, submitted by @${{ steps.issue.outputs.author }}.
 
-#       - name: Install Puppeteer dependencies
-#         run: |
-#           sudo apt-get update
-#           sudo apt-get install -y \
-#             ca-certificates \
-#             fonts-liberation \
-#             libappindicator3-1 \
-#             libasound2 \
-#             libatk-bridge2.0-0 \
-#             libatk1.0-0 \
-#             libc6 \
-#             libcairo2 \
-#             libcups2 \
-#             libdbus-1-3 \
-#             libexpat1 \
-#             libfontconfig1 \
-#             libgbm1 \
-#             libgcc1 \
-#             libglib2.0-0 \
-#             libgtk-3-0 \
-#             libnspr4 \
-#             libnss3 \
-#             libpango-1.0-0 \
-#             libpangocairo-1.0-0 \
-#             libstdc++6 \
-#             libx11-6 \
-#             libx11-xcb1 \
-#             libxcb1 \
-#             libxcomposite1 \
-#             libxcursor1 \
-#             libxdamage1 \
-#             libxext6 \
-#             libxfixes3 \
-#             libxi6 \
-#             libxrandr2 \
-#             libxrender1 \
-#             libxss1 \
-#             libxtst6 \
-#             lsb-release \
-#             wget \
-#             xdg-utils
+            | | |
+            |---|---|
+            | Event | ${{ steps.validate.outputs.event_url }} |
+            | Organisation | `${{ steps.validate.outputs.org_id }}`${{ steps.validate.outputs.creates_org == 'true' && ' (new, created from its Meetup group)' || '' }} |
+            | When | ${{ steps.event.outputs.date }} |
+            | Venue | ${{ steps.event.outputs.venue }} |
 
-#       - name: Run event scraper
-#         run: |
-#           npm run create-event -- \
-#             --eventURL "${{ fromJson(steps.get-issue.outputs.result).eventUrl }}" \
-#             --orgID "${{ fromJson(steps.get-issue.outputs.result).orgId }}" \
-#             --headless true \
-#             --output-dir scraper-output
-#         env:
-#           PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: false
+            Generated by the create-event CLI from the event page. Before merging, check the date, time, venue, description and hero image${{ steps.validate.outputs.creates_org == 'true' && ', and the new organisation page' || '' }}.
 
-#       - name: Configure Git
-#         run: |
-#           git config --local user.email "action@github.com"
-#           git config --local user.name "GitHub Action"
+            ### Notes from the submitter
 
-#       - name: Create branch and commit changes
-#         id: create-branch
-#         run: |
-#           # Create a unique branch name
-#           BRANCH_NAME="event/issue-${{ github.event.inputs.issue_number }}-$(date +%s)"
-#           echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+            ${{ steps.issue.outputs.notes || '_None_' }}
+          labels: event
+          delete-branch: true
 
-#           # Create and switch to new branch
-#           git checkout -b "$BRANCH_NAME"
+      - name: Reply with the pull request
+        if: ${{ steps.create-pull-request.outputs.pull-request-operation == 'created' || steps.create-pull-request.outputs.pull-request-operation == 'updated' }}
+        uses: actions/github-script@v8
+        env:
+          ISSUE_NUMBER: ${{ steps.issue.outputs.number }}
+          PR_URL: ${{ steps.create-pull-request.outputs.pull-request-url }}
+          OPERATION: ${{ steps.create-pull-request.outputs.pull-request-operation }}
+        with:
+          script: |
+            const action = process.env.OPERATION === "created" ? "Thanks! I've opened" : "I've updated"
+            await github.rest.issues.createComment({
+              ...context.repo,
+              issue_number: Number(process.env.ISSUE_NUMBER),
+              body: `${action} ${process.env.PR_URL} with this event. The team will review it, and this issue closes when it's merged.`,
+            })
 
-#           # Add all new event files
-#           git add src/content/events/
+      # PRs opened with GITHUB_TOKEN don't trigger notify-new-pr.yml, so notify from here
+      - name: Notify Telegram
+        if: ${{ steps.create-pull-request.outputs.pull-request-operation == 'created' }}
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          PR_TITLE: "Add event: ${{ steps.event.outputs.title }}"
+          PR_URL: ${{ steps.create-pull-request.outputs.pull-request-url }}
+          PR_AUTHOR: ${{ steps.issue.outputs.author }}
+          PR_VIA: "issue #${{ steps.issue.outputs.number }}"
+        run: bash scripts/notify-telegram-pr.sh
 
-#           # Check if there are changes to commit
-#           if git diff --staged --quiet; then
-#             echo "No changes to commit"
-#             exit 1
-#           fi
-
-#           # Commit changes
-#           git commit -m "Add event from issue #${{ github.event.inputs.issue_number }}
-
-#           - orgID: ${{ fromJson(steps.get-issue.outputs.result).orgId }}
-#           - eventURL: ${{ fromJson(steps.get-issue.outputs.result).eventUrl }}
-
-#           Closes #${{ github.event.inputs.issue_number }}"
-
-#           # Push branch
-#           git push origin "$BRANCH_NAME"
-
-#       - name: Create Pull Request
-#         uses: actions/github-script@v7
-#         with:
-#           script: |
-#             const issueData = ${{ steps.get-issue.outputs.result }};
-#             const branchName = '${{ steps.create-branch.outputs.branch_name }}';
-
-#             const pr = await github.rest.pulls.create({
-#               owner: context.repo.owner,
-#               repo: context.repo.repo,
-#               title: `Add event: ${issueData.issueTitle}`,
-#               head: branchName,
-#               base: 'main',
-#               body: `## Event Details
-
-# This PR adds a new event scraped from the provided URL.
-
-# **Source Issue:** #${issueData.issueNumber}
-# **Organization:** ${issueData.orgId}
-# **Event URL:** ${issueData.eventUrl}
-
-# ### Changes
-# - Added new event files to \`src/content/events/${issueData.orgId}/\`
-# - Scraped event details including title, date, venue, and description
-# - Downloaded and included hero image (if available)
-
-# ### Review Checklist
-# - [ ] Event details are accurate
-# - [ ] Date and time are correct
-# - [ ] Venue information is complete
-# - [ ] Hero image displays properly
-# - [ ] RSVP link works correctly
-
-# This PR will close issue #${issueData.issueNumber} when merged.`,
-#               draft: false
-#             });
-
-#             console.log(`Created PR #${pr.data.number}: ${pr.data.html_url}`);
-
-#             // Add comment to original issue
-#             await github.rest.issues.createComment({
-#               owner: context.repo.owner,
-#               repo: context.repo.repo,
-#               issue_number: issueData.issueNumber,
-#               body: `🤖 **Event processing completed!**
-
-# I've successfully scraped the event details and created a pull request with the new event page.
-
-# **Pull Request:** #${pr.data.number}
-# **Branch:** \`${branchName}\`
-
-# The PR includes:
-# - Event details scraped from ${issueData.eventUrl}
-# - Properly formatted event page
-# - Hero image (if available)
-# - All necessary metadata
-
-# Please review the PR and merge it when ready. This issue will be automatically closed when the PR is merged.`
-#             });
-
-#       - name: Handle errors
-#         if: failure()
-#         uses: actions/github-script@v7
-#         with:
-#           script: |
-#             const issueNumber = ${{ github.event.inputs.issue_number }};
-
-#             await github.rest.issues.createComment({
-#               owner: context.repo.owner,
-#               repo: context.repo.repo,
-#               issue_number: issueNumber,
-#               body: `❌ **Event processing failed**
-
-# There was an error processing the event from this issue. Please check the [workflow run](${context.payload.repository.html_url}/actions/runs/${context.runId}) for details.
-
-# Common issues:
-# - Invalid orgID (organization doesn't exist)
-# - Invalid eventURL format or unsupported platform
-# - Network issues accessing the event URL
-# - Missing required information in the event page
-
-# Please verify the issue format and try again:
-# \`\`\`
-# - orgID: your_org_id
-# - eventURL: https://meetup.com/your-event-url
-# \`\`\`
-
-# The orgID should match one of the existing organizations in the \`src/content/orgs/\` directory.`
-#             });
+      - name: Reply on failure
+        if: ${{ failure() }}
+        uses: actions/github-script@v8
+        env:
+          ISSUE_NUMBER: ${{ steps.issue.outputs.number || github.event.issue.number || inputs.issue_number }}
+        with:
+          script: |
+            const run = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
+            await github.rest.issues.createComment({
+              ...context.repo,
+              issue_number: Number(process.env.ISSUE_NUMBER),
+              body: `Sorry, something went wrong while adding this event ([workflow run](${run})). The team has been notified and will take a look.`,
+            })
+      - name: Notify Telegram of the failure
+        if: ${{ failure() }}
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          HEADING: "⚠️ Couldn't create a PR for an event submission"
+          PR_TITLE: ${{ steps.issue.outputs.title || 'event submission' }}
+          PR_URL: ${{ steps.issue.outputs.url || format('{0}/{1}/actions/runs/{2}', github.server_url, github.repository, github.run_id) }}
+          PR_AUTHOR: ${{ steps.issue.outputs.author || github.actor }}
+          PR_VIA: "workflow run ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        run: bash scripts/notify-telegram-pr.sh

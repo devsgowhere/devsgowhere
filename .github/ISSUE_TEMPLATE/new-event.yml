@@ -1,0 +1,43 @@
+name: Submit an event
+description: Add a tech event in Singapore to DevsGoWhere from its Meetup, Luma or Eventbrite page.
+title: "New event: "
+labels: ["new-event"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for sharing your event! Paste its event page link below. A bot will copy the details (title, date, venue, description and image) into a pull request, and the team will review it.
+
+        Events from organisations that run regularly on Meetup or Luma are picked up automatically every day, so you may not need this form if your organisation is already listed.
+  - type: input
+    id: event-url
+    attributes:
+      label: Event URL
+      description: The event's own page on Meetup, Luma or Eventbrite (not the group's page).
+      placeholder: https://www.meetup.com/your-group/events/123456789/
+    validations:
+      required: true
+  - type: input
+    id: org-id
+    attributes:
+      label: Organisation ID
+      description: |
+        Your organisation's ID on DevsGoWhere, e.g. `aws_user_group_singapore`. Find it in the [list of organisation IDs](https://devsgowhere.com/orgs/list-orgs.txt) or at the end of your organisation's page URL (devsgowhere.com/orgs/<ID>/).
+      placeholder: aws_user_group_singapore
+    validations:
+      required: true
+  - type: checkboxes
+    id: new-org
+    attributes:
+      label: New organisation
+      description: Only for Meetup events. The organisation is created from the Meetup group's page, using the ID above (lowercase letters, numbers, `-` or `_`).
+      options:
+        - label: This is a new organisation that isn't on DevsGoWhere yet
+          required: false
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes for the team
+      description: Optional. Anything the event page doesn't say, or details the bot should fix.
+    validations:
+      required: false
