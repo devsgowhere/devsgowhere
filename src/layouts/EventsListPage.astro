@@ -10,6 +10,7 @@ import GoogleTagmanager from "../components/GoogleTagmanager.astro"
 import GoogleTagmanagerNoscript from "../components/GoogleTagmanagerNoscript.astro"
 import { SITE_TITLE, SITE_DESCRIPTION, GTM_MEASUREMENT_ID } from "../consts"
 import type { CollectionEntry } from "astro:content"
+import { PAGE_SIZE } from "../utils/pagination"
 
 interface Props {
   /** Which tab is active */
@@ -24,6 +25,14 @@ interface Props {
 }
 
 const { tab, groupedEvents, searchIndexUrl, pageTitle = SITE_TITLE, heading, noEventsText } = Astro.props
+
+// Only the first page is visible when the page loads; the script then pages through the rest (and searches all of them)
+const firstPageIds = new Set(
+  Object.values(groupedEvents)
+    .flat()
+    .slice(0, PAGE_SIZE)
+    .map((event) => event.id),
+)
 
 // "Search the other list for the same words" link shown while searching
 const other =
@@ -69,8 +78,13 @@ const other =
                 <div class="search-loader__spinner"></div>
               </div>
             </div>
-            <div class="search-results-info mb-m">
-              <p>Showing <span id="results-count" class="results-count">0</span> results</p>
+            <div class="search-results-info mb-m" aria-live="polite">
+              <p>
+                Showing <span id="results-range" class="hide"><span class="results-range__numbers"></span> of </span><span
+                  id="results-count"
+                  class="results-count">{Object.values(groupedEvents).flat().length}</span
+                > results
+              </p>
               <p class="search-other hide">
                 <a id="search-other__link" href={other.url} data-base-url={other.url} data-label={other.label}></a>
               </p>
@@ -78,7 +92,7 @@ const other =
             {
               Object.keys(groupedEvents).length > 0 ? (
                 Object.keys(groupedEvents).map((date) => (
-                  <div class="event-date-group">
+                  <div class:list={["event-date-group", { hide: !groupedEvents[date].some((event) => firstPageIds.has(event.id)) }]}>
                     <fieldset
                       class="mb-s mt-m"
                       style="border-bottom: 0px; border-left: 0px; border-right: 0px; border-color: var(--gray-7);"
@@ -88,7 +102,7 @@ const other =
 
                     <ul class="event-list">
                       {groupedEvents[date].map((event) => (
-                        <li class="event-list-item" data-id={event.id}>
+                        <li class:list={["event-list-item", { hide: !firstPageIds.has(event.id) }]} data-id={event.id}>
                           <EventCard event={event} />
                         </li>
                       ))}
@@ -103,6 +117,8 @@ const other =
             <div class="event-list__empty hide">
               <p class="text-gray-5 text-2xl">No results found 🤕</p>
             </div>
+
+            <nav id="pagination" class="pagination hide" aria-label="Pagination"><ul></ul></nav>
           </section>
         </div>
       </div>
@@ -110,8 +126,8 @@ const other =
     <Footer />
   </Theme>
   <script>
-    // Import search utilities
-    import { normalize, debounce, filterEvents, animateElement, animateNumber } from "../utils/searchUtils.js"
+    import { debounce, filterEvents, animateElement, animateNumber } from "../utils/searchUtils.js"
+    import { PAGE_SIZE, clampPage, pageCount, pageItems, pageRange, pageSlice, parsePage } from "../utils/pagination"
 
     // DOM elements
     const searchInput = document.querySelector("#event-search__input")
@@ -119,33 +135,22 @@ const other =
     const emptyState = document.querySelector(".event-list__empty")
     const resultsInfo = document.querySelector(".search-results-info")
     const resultsCount = document.querySelector("#results-count")
-    const eventItems = document.querySelectorAll(".event-list-item")
-    // each date heading with its events; a heading is hidden when none of its events match
-    const dateGroups = document.querySelectorAll(".event-date-group")
+    const resultsRange = document.querySelector("#results-range")
+    const eventItems = [...document.querySelectorAll(".event-list-item")]
+    // each date heading with its events; a heading is shown when one of its events is on the current page
+    const dateGroups = [...document.querySelectorAll(".event-date-group")]
     const searchLoader = document.querySelector("#search-loader")
     const otherSearch = document.querySelector(".search-other")
     const otherSearchLink = document.querySelector("#search-other__link")
+    const pagination = document.querySelector("#pagination")
 
-    // Fetch search index
+    // Search index, fetched below
     const events = []
-    let indexLoaded = false
-    fetch(searchInput.dataset.indexUrl)
-      .then((response) => response.json())
-      .then((data) => {
-        events.push(...data)
-        indexLoaded = true
-        // Add animation class after initial load
-        document.querySelectorAll(".event-list-item").forEach((item) => {
-          item.classList.add("loaded")
-        })
-        // A search carried in the link (?q=...), e.g. from the other tab, runs as soon as the index is here
-        if (searchInput.value) performSearch()
-        else updateResultsCount(events.length)
-      })
-      .catch((error) => console.error("Error fetching search index:", error))
 
-    // Initialize results count with the total number from DOM
-    updateResultsCount(eventItems.length)
+    // What's shown: the search and the page, both kept in the address bar (?q=...&page=...)
+    const params = new URLSearchParams(window.location.search)
+    const state = { query: (params.get("q") ?? "").trim(), page: parsePage(params.get("page")) }
+    searchInput.value = state.query
 
     // Helper function to update results count display
     function updateResultsCount(count) {
@@ -155,69 +160,121 @@ const other =
       resultsInfo.style.display = "block"
     }
 
-    // Keeps the address bar (and the link to the other tab) in step with the search box
-    function syncQuery(query) {
-      const url = new URL(window.location.href)
-      if (query) url.searchParams.set("q", query)
-      else url.searchParams.delete("q")
-      history.replaceState(null, "", url)
-
-      otherSearchLink.href = query
-        ? `${otherSearchLink.dataset.baseUrl}?q=${encodeURIComponent(query)}`
-        : otherSearchLink.dataset.baseUrl
-      otherSearchLink.textContent = `${otherSearchLink.dataset.label} “${query}”`
-      otherSearch.classList.toggle("hide", !query)
+    // Shows or hides an element; hiding is immediate so the previous page doesn't linger while the next one fades in
+    function setVisible(element, visible) {
+      if (visible) {
+        animateElement(element, true)
+      } else {
+        element.classList.remove("loaded")
+        element.classList.add("hide")
+      }
     }
 
-    // Search implementation
-    const performSearch = () => {
-      const rawQuery = searchInput ? searchInput.value.trim() : ""
-      const query = rawQuery.toLowerCase()
+    // The address bar and the link to the other tab follow the search box and the page
+    function syncUrl(replace) {
+      const url = new URL(window.location.href)
+      state.query ? url.searchParams.set("q", state.query) : url.searchParams.delete("q")
+      state.page > 1 ? url.searchParams.set("page", String(state.page)) : url.searchParams.delete("page")
+      replace ? history.replaceState(null, "", url) : history.pushState(null, "", url)
 
-      // Toggle clear button visibility
-      clearButton.style.display = query ? "block" : "none"
-      syncQuery(rawQuery)
+      otherSearchLink.href = state.query
+        ? `${otherSearchLink.dataset.baseUrl}?q=${encodeURIComponent(state.query)}`
+        : otherSearchLink.dataset.baseUrl
+      otherSearchLink.textContent = `${otherSearchLink.dataset.label} “${state.query}”`
+      otherSearch.classList.toggle("hide", !state.query)
+    }
 
-      // If empty query, show all events
-      if (!query) {
-        animateElement(emptyState, false)
-        eventItems.forEach((item) => {
-          animateElement(item, true)
-        })
-        dateGroups.forEach((group) => animateElement(group, true))
-        updateResultsCount(eventItems.length)
-        return
+    // The link a page button points to, so it also works opened in a new tab
+    function pageUrl(page) {
+      const url = new URL(window.location.href)
+      state.query ? url.searchParams.set("q", state.query) : url.searchParams.delete("q")
+      page > 1 ? url.searchParams.set("page", String(page)) : url.searchParams.delete("page")
+      return url.pathname + url.search
+    }
+
+    function pageLink(label, page, { current = false, disabled = false, ariaLabel, rel } = {}) {
+      const item = document.createElement("li")
+      const link = document.createElement(disabled ? "span" : "a")
+      link.className = "pagination__link"
+      link.textContent = label
+      if (ariaLabel) link.setAttribute("aria-label", ariaLabel)
+      if (current) {
+        link.classList.add("active")
+        link.setAttribute("aria-current", "page")
       }
+      if (disabled) {
+        link.classList.add("disabled")
+        link.setAttribute("aria-disabled", "true")
+      } else {
+        link.href = pageUrl(page)
+        link.dataset.page = String(page)
+        if (rel) link.rel = rel
+      }
+      item.append(link)
+      return item
+    }
 
-      // Filter events using the utility function
-      const matches = filterEvents(events, query)
+    function renderPagination(pages) {
+      const list = pagination.querySelector("ul")
+      list.replaceChildren()
+      pagination.classList.toggle("hide", pages <= 1)
+      if (pages <= 1) return
 
-      // Update UI based on results
-      updateResultsCount(matches.length)
-      animateElement(emptyState, matches.length === 0)
+      list.append(pageLink("‹", state.page - 1, { disabled: state.page === 1, ariaLabel: "Previous page", rel: "prev" }))
+      for (const item of pageItems(state.page, pages)) {
+        if (item === "…") {
+          const gap = document.createElement("li")
+          gap.className = "pagination__gap"
+          gap.textContent = "…"
+          list.append(gap)
+        } else {
+          list.append(pageLink(String(item), item, { current: item === state.page, ariaLabel: `Page ${item}` }))
+        }
+      }
+      list.append(pageLink("›", state.page + 1, { disabled: state.page === pages, ariaLabel: "Next page", rel: "next" }))
+    }
 
-      const matchingIds = new Set(matches.map((event) => event.id))
+    // Shows the current page of the events matching the search
+    function render() {
+      const query = state.query.toLowerCase()
+      const matchingIds = query ? new Set(filterEvents(events, query).map((event) => event.id)) : null
+      const matched = eventItems.filter((item) => !matchingIds || matchingIds.has(item.getAttribute("data-id")))
+
+      state.page = clampPage(state.page, matched.length)
+      const pages = pageCount(matched.length)
+      const shown = new Set(pageSlice(matched, state.page))
+
+      eventItems.forEach((item) => setVisible(item, shown.has(item)))
       dateGroups.forEach((group) => {
-        const items = group.querySelectorAll(".event-list-item")
-        animateElement(
+        setVisible(
           group,
-          [...items].some((item) => matchingIds.has(item.getAttribute("data-id"))),
+          [...group.querySelectorAll(".event-list-item")].some((item) => shown.has(item)),
         )
       })
 
-      // Show/hide matching events with staggered animation
-      eventItems.forEach((item, index) => {
-        const eventId = item.getAttribute("data-id")
-        const visible = matchingIds.has(eventId)
+      clearButton.style.display = query ? "block" : "none"
+      animateElement(emptyState, matched.length === 0)
+      updateResultsCount(matched.length)
+      const { from, to } = pageRange(state.page, matched.length)
+      resultsRange.querySelector(".results-range__numbers").textContent = from === to ? String(from) : `${from}–${to}`
+      resultsRange.classList.toggle("hide", pages <= 1)
+      renderPagination(pages)
+    }
 
-        // Add slight delay based on index for staggered effect
-        setTimeout(
-          () => {
-            animateElement(item, visible)
-          },
-          (index % 5) * 50,
-        ) // Stagger in groups of 5
-      })
+    // Search: back to the first page of the results
+    const performSearch = () => {
+      state.query = searchInput.value.trim()
+      state.page = 1
+      render()
+      syncUrl(true)
+    }
+
+    // Moves to another page, keeping the search; the browser's Back button returns to the previous page
+    function goToPage(page) {
+      state.page = page
+      render()
+      syncUrl(false)
+      document.querySelector(".event-search").scrollIntoView({ behavior: "smooth", block: "start" })
     }
 
     // Set up event listeners with loading indicator
@@ -237,14 +294,39 @@ const other =
       searchInput.focus()
     })
 
-    // Start from the search in the link, if any
-    const initialQuery = new URLSearchParams(window.location.search).get("q")
-    if (initialQuery) {
-      searchInput.value = initialQuery
-      clearButton.style.display = "block"
-      syncQuery(initialQuery.trim())
-      // performSearch() runs once the index has loaded
-    }
+    pagination.addEventListener("click", (event) => {
+      const link = event.target.closest("a[data-page]")
+      // leave modified clicks (new tab, etc.) to the browser
+      if (!link || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return
+      event.preventDefault()
+      goToPage(Number(link.dataset.page))
+    })
+
+    // Back and Forward move between pages and searches
+    window.addEventListener("popstate", () => {
+      const params = new URLSearchParams(window.location.search)
+      state.query = (params.get("q") ?? "").trim()
+      state.page = parsePage(params.get("page"))
+      searchInput.value = state.query
+      render()
+      syncUrl(true)
+    })
+
+    // Show the page in the link right away; a search in the link has to wait for the index
+    if (state.query) clearButton.style.display = "block"
+    else render()
+    syncUrl(true)
+
+    fetch(searchInput.dataset.indexUrl)
+      .then((response) => response.json())
+      .then((data) => {
+        events.push(...data)
+        if (state.query) {
+          render()
+          syncUrl(true)
+        }
+      })
+      .catch((error) => console.error("Error fetching search index:", error))
   </script>
 </html>
 
@@ -356,6 +438,73 @@ const other =
       a {
         color: var(--text-accent-color);
         font-weight: bold;
+      }
+    }
+  }
+
+  // page buttons below the list. The script builds the list items and links, which Astro's scoped styles can't reach,
+  // so they're styled through :global()
+  .pagination {
+    margin: 2.5rem 0 1rem;
+
+    :global(ul) {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.4rem;
+      list-style: none;
+      margin: 0;
+      padding: 0 1rem;
+    }
+
+    :global(.pagination__link) {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 2.5rem;
+      height: 2.5rem;
+      padding: 0 0.5rem;
+      box-sizing: border-box;
+      border: 2px solid var(--gray-7);
+      border-radius: 10px;
+      font-weight: bold;
+      text-decoration: none;
+      color: var(--gray-7);
+    }
+
+    :global(a.pagination__link:hover) {
+      color: var(--text-accent-color);
+      border-color: var(--text-accent-color);
+    }
+
+    :global(.pagination__link.active) {
+      background: var(--text-accent-color);
+      border-color: var(--text-accent-color);
+      color: #fff;
+    }
+
+    :global(.pagination__link.disabled) {
+      opacity: 0.4;
+    }
+
+    :global(.pagination__gap) {
+      display: inline-flex;
+      align-items: center;
+      height: 2.5rem;
+      padding: 0 0.1rem;
+      color: var(--gray-7);
+    }
+
+    // seven page buttons plus previous and next fit a 360px phone
+    @media (max-width: 480px) {
+      :global(ul) {
+        gap: 0.25rem;
+        padding: 0 0.5rem;
+      }
+
+      :global(.pagination__link) {
+        min-width: 2.25rem;
+        padding: 0 0.25rem;
       }
     }
   }
