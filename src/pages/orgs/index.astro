@@ -26,9 +26,9 @@ const orgs = (await getCollection("orgs")).sort((a, b) => a.data.title.localeCom
       <div class="container">
         <header class="org-list-header mb-l">
           <h1 class="page-title text-m text-accent">Organisations</h1>
-          <div class="org-search form-control">
+          <div class="org-search form-control form-control--large">
             <i class="form-control__prepend fa fa-search"></i>
-            <input id="org-search__input" type="text" class="form-control__input" placeholder="Search" />
+            <input id="org-search__input" type="text" class="form-control__input" placeholder="Search organisations…" />
           </div>
         </header>
         <ul class="org-list">
@@ -155,9 +155,10 @@ const orgs = (await getCollection("orgs")).sort((a, b) => a.data.title.localeCom
       margin-bottom: 0;
     }
 
+    // sizing is .form-control--large in GlobalStyles; next to the title it takes up to 560px
     .org-search {
-      // increase font size
-      font-size: 1rem;
+      flex: 0 1 560px;
+      min-width: 0;
     }
 
     //
@@ -175,11 +176,9 @@ const orgs = (await getCollection("orgs")).sort((a, b) => a.data.title.localeCom
 
       // make search input full width
       .org-search {
+        flex-basis: auto;
         width: 100%;
         margin-bottom: 1rem;
-        input {
-          width: 100%;
-        }
       }
     }
   }

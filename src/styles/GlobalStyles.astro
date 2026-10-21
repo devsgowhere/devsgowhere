@@ -423,6 +423,23 @@ import "../styles/fontawesome/scss/brands.scss";
 		padding-left: 2em;
 	}
 
+	// large variant, for the main search boxes: fills its container (pages set the width), taller, larger text
+	.form-control.form-control--large {
+		.form-control__prepend {
+			left: 1rem;
+			font-size: 1.125rem;
+		}
+
+		input[type="text"],
+		.form-control__prepend + input[type="text"] {
+			box-sizing: border-box;
+			width: 100%;
+			font-size: 1.125rem;
+			// room for the search icon on the left
+			padding: 0.65em 1em 0.65em 2.5em;
+		}
+	}
+
 	//
 	//
 	// Component : Card

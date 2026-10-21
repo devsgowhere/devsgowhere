@@ -62,13 +62,13 @@ const groupedEvents = events.reduce((acc: any, event) => {
           <h1 class="text-3xl text-bold text-accent mb-xl">Upcoming Events</h1>
           <!-- <div class="container"> -->
           <section>
-            <div class="event-search form-control">
+            <div class="event-search form-control form-control--large">
               <i class="form-control__prepend fa fa-search"></i>
               <input
                 id="event-search__input"
                 type="text"
                 class="form-control__input"
-                placeholder="Search events by name, tags, organizer..."
+                placeholder="Search events, tags, orgs…"
               />
               <button id="event-search__clear" class="form-control__append" style="display: none;">
                 <i class="fa fa-times"></i>
@@ -231,6 +231,17 @@ const groupedEvents = events.reduce((acc: any, event) => {
     list-style: none;
     padding: 0;
     margin: 0;
+  }
+
+  // fill the column up to a comfortable width (sizing is .form-control--large in GlobalStyles)
+  .event-search {
+    // keeps a 16px gutter each side on phones, where the container has no padding
+    width: min(560px, calc(100% - 2rem));
+
+    // room for the clear button and spinner on the right
+    &.form-control.form-control--large input.form-control__input {
+      padding-right: 3.5em;
+    }
   }
 
   .form-control__append {
