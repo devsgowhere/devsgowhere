@@ -83,7 +83,7 @@ const groupedEvents = events.reduce((acc: any, event) => {
             {
               Object.keys(groupedEvents).length > 0 ? (
                 Object.keys(groupedEvents).map((date) => (
-                  <div class="event-date">
+                  <div class="event-date-group">
                     <fieldset
                       class="mb-s mt-m"
                       style="border-bottom: 0px; border-left: 0px; border-right: 0px; border-color: var(--gray-7);"
@@ -139,6 +139,8 @@ const groupedEvents = events.reduce((acc: any, event) => {
     const resultsInfo = document.querySelector(".search-results-info")
     const resultsCount = document.querySelector("#results-count")
     const eventItems = document.querySelectorAll(".event-list-item")
+    // each date heading with its events; a heading is hidden when none of its events match
+    const dateGroups = document.querySelectorAll(".event-date-group")
     const searchLoader = document.querySelector("#search-loader")
 
     // Initialize results count with the total number from DOM
@@ -165,6 +167,7 @@ const groupedEvents = events.reduce((acc: any, event) => {
         eventItems.forEach((item) => {
           animateElement(item, true)
         })
+        dateGroups.forEach((group) => animateElement(group, true))
         updateResultsCount(eventItems.length)
         return
       }
@@ -176,10 +179,19 @@ const groupedEvents = events.reduce((acc: any, event) => {
       updateResultsCount(matches.length)
       animateElement(emptyState, matches.length === 0)
 
+      const matchingIds = new Set(matches.map((event) => event.id))
+      dateGroups.forEach((group) => {
+        const items = group.querySelectorAll(".event-list-item")
+        animateElement(
+          group,
+          [...items].some((item) => matchingIds.has(item.getAttribute("data-id"))),
+        )
+      })
+
       // Show/hide matching events with staggered animation
       eventItems.forEach((item, index) => {
         const eventId = item.getAttribute("data-id")
-        const visible = matches.some((event) => event.id === eventId)
+        const visible = matchingIds.has(eventId)
 
         // Add slight delay based on index for staggered effect
         setTimeout(
