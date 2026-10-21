@@ -58,6 +58,7 @@ The events list (`/events/`, also the home page, and `/events/past/`) is one lay
 ## Site structure
 
 - `src/pages/` — routes: `events/[...slug]`, `events/tag/[tag]`, `orgs/[...slug]`, plus JSON search indexes (`*/search-index.json.ts`), `orgs/list-orgs.txt.ts`, and `rss.xml.js`.
+- JSON feeds for other sites: `/events.json` (upcoming events) and `/events/past.json`, built from `src/utils/eventsFeed.ts` (rebuilt with every build, so daily). One object `{ version, generatedAt, events[] }`, soonest first, each event with `id`, `title`, `description`, absolute `url`, `rsvpUrl`, `start`/`end` as ISO 8601 with the UTC offset, `timezone`, `venue`, `venueAddress`, `org {id,title,url}`, `tags`, `updatedAt`; missing values are `null`, never empty strings. Engineers.SG builds its iCal feed from `/events.json`, so keep `version` at 1 unless the shape changes incompatibly (adding fields is fine), and keep event IDs stable: `id` is the event's folder (`<org_id>/<YYYYMMDD-slug>`), which becomes the iCal UID. Rescheduling an event means editing `startDate`/`startTime`, not renaming its folder.
 - `src/layouts/` — `EventPost`, `OrgPage`, `Theme`. React islands in `src/components/*.tsx` (add-to-calendar button, OneMap).
 - `src/consts.ts` — site title, default timezone, theme, GTM ID.
 
