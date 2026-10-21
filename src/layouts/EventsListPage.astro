@@ -1,0 +1,411 @@
+---
+// The events list with its search box, shared by the upcoming (/events/) and past (/events/past/) pages.
+import BaseHead from "../components/BaseHead.astro"
+import Header from "../components/Header.astro"
+import Theme from "./Theme.astro"
+import Footer from "../components/Footer.astro"
+import TagsPanel from "../components/TagsPanel.astro"
+import EventCard from "../components/EventCard.astro"
+import GoogleTagmanager from "../components/GoogleTagmanager.astro"
+import GoogleTagmanagerNoscript from "../components/GoogleTagmanagerNoscript.astro"
+import { SITE_TITLE, SITE_DESCRIPTION, GTM_MEASUREMENT_ID } from "../consts"
+import type { CollectionEntry } from "astro:content"
+
+interface Props {
+  /** Which tab is active */
+  tab: "upcoming" | "past"
+  /** Events already sorted, grouped under their date heading (see groupByDate) */
+  groupedEvents: Record<string, CollectionEntry<"events">[]>
+  /** Where the page's search index lives (see buildSearchIndex) */
+  searchIndexUrl: string
+  pageTitle?: string
+  heading: string
+  noEventsText: string
+}
+
+const { tab, groupedEvents, searchIndexUrl, pageTitle = SITE_TITLE, heading, noEventsText } = Astro.props
+
+// "Search the other list for the same words" link shown while searching
+const other =
+  tab === "upcoming"
+    ? { url: "/events/past/", label: "Search past events for" }
+    : { url: "/events/", label: "Search upcoming events for" }
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <BaseHead title={pageTitle} description={SITE_DESCRIPTION} />
+    <script src="https://app.unpkg.com/framer-motion@12.12.1/dist/framer-motion.min.js"></script>
+    <GoogleTagmanager id={GTM_MEASUREMENT_ID} />
+  </head>
+  <Theme>
+    <GoogleTagmanagerNoscript id={GTM_MEASUREMENT_ID} />
+    <Header />
+    <main class="events-list-page pt-xl pb-3xl">
+      <div class="events-layout">
+        <TagsPanel currentTag="" />
+        <!-- Main content: Events -->
+        <div class="container">
+          <h1 class="text-3xl text-bold text-accent mb-m">{heading}</h1>
+          <nav class="events-tabs mb-xl" aria-label="Events">
+            <a href="/events/" class:list={["events-tab", { active: tab === "upcoming" }]} aria-current={tab === "upcoming" ? "page" : undefined}>Upcoming</a>
+            <a href="/events/past/" class:list={["events-tab", { active: tab === "past" }]} aria-current={tab === "past" ? "page" : undefined}>Past</a>
+          </nav>
+          <section>
+            <div class="event-search form-control form-control--large">
+              <i class="form-control__prepend fa fa-search"></i>
+              <input
+                id="event-search__input"
+                type="text"
+                class="form-control__input"
+                placeholder="Search events, tags, orgs…"
+                data-index-url={searchIndexUrl}
+              />
+              <button id="event-search__clear" class="form-control__append" style="display: none;" aria-label="Clear search">
+                <i class="fa fa-times"></i>
+              </button>
+              <div id="search-loader" class="search-loader" style="display: none;">
+                <div class="search-loader__spinner"></div>
+              </div>
+            </div>
+            <div class="search-results-info mb-m">
+              <p>Showing <span id="results-count" class="results-count">0</span> results</p>
+              <p class="search-other hide">
+                <a id="search-other__link" href={other.url} data-base-url={other.url} data-label={other.label}></a>
+              </p>
+            </div>
+            {
+              Object.keys(groupedEvents).length > 0 ? (
+                Object.keys(groupedEvents).map((date) => (
+                  <div class="event-date-group">
+                    <fieldset
+                      class="mb-s mt-m"
+                      style="border-bottom: 0px; border-left: 0px; border-right: 0px; border-color: var(--gray-7);"
+                    >
+                      <legend class="text-3xl text-bold text-gray-7 px-m">{date}</legend>
+                    </fieldset>
+
+                    <ul class="event-list">
+                      {groupedEvents[date].map((event) => (
+                        <li class="event-list-item" data-id={event.id}>
+                          <EventCard event={event} />
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))
+              ) : (
+                <p class="text-gray-5 text-2xl">{noEventsText}</p>
+              )
+            }
+
+            <div class="event-list__empty hide">
+              <p class="text-gray-5 text-2xl">No results found 🤕</p>
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+    <Footer />
+  </Theme>
+  <script>
+    // Import search utilities
+    import { normalize, debounce, filterEvents, animateElement, animateNumber } from "../utils/searchUtils.js"
+
+    // DOM elements
+    const searchInput = document.querySelector("#event-search__input")
+    const clearButton = document.querySelector("#event-search__clear")
+    const emptyState = document.querySelector(".event-list__empty")
+    const resultsInfo = document.querySelector(".search-results-info")
+    const resultsCount = document.querySelector("#results-count")
+    const eventItems = document.querySelectorAll(".event-list-item")
+    // each date heading with its events; a heading is hidden when none of its events match
+    const dateGroups = document.querySelectorAll(".event-date-group")
+    const searchLoader = document.querySelector("#search-loader")
+    const otherSearch = document.querySelector(".search-other")
+    const otherSearchLink = document.querySelector("#search-other__link")
+
+    // Fetch search index
+    const events = []
+    let indexLoaded = false
+    fetch(searchInput.dataset.indexUrl)
+      .then((response) => response.json())
+      .then((data) => {
+        events.push(...data)
+        indexLoaded = true
+        // Add animation class after initial load
+        document.querySelectorAll(".event-list-item").forEach((item) => {
+          item.classList.add("loaded")
+        })
+        // A search carried in the link (?q=...), e.g. from the other tab, runs as soon as the index is here
+        if (searchInput.value) performSearch()
+        else updateResultsCount(events.length)
+      })
+      .catch((error) => console.error("Error fetching search index:", error))
+
+    // Initialize results count with the total number from DOM
+    updateResultsCount(eventItems.length)
+
+    // Helper function to update results count display
+    function updateResultsCount(count) {
+      // Animate count change
+      const currentCount = parseInt(resultsCount?.textContent ?? "0")
+      animateNumber(resultsCount, currentCount, count, 300)
+      resultsInfo.style.display = "block"
+    }
+
+    // Keeps the address bar (and the link to the other tab) in step with the search box
+    function syncQuery(query) {
+      const url = new URL(window.location.href)
+      if (query) url.searchParams.set("q", query)
+      else url.searchParams.delete("q")
+      history.replaceState(null, "", url)
+
+      otherSearchLink.href = query
+        ? `${otherSearchLink.dataset.baseUrl}?q=${encodeURIComponent(query)}`
+        : otherSearchLink.dataset.baseUrl
+      otherSearchLink.textContent = `${otherSearchLink.dataset.label} “${query}”`
+      otherSearch.classList.toggle("hide", !query)
+    }
+
+    // Search implementation
+    const performSearch = () => {
+      const rawQuery = searchInput ? searchInput.value.trim() : ""
+      const query = rawQuery.toLowerCase()
+
+      // Toggle clear button visibility
+      clearButton.style.display = query ? "block" : "none"
+      syncQuery(rawQuery)
+
+      // If empty query, show all events
+      if (!query) {
+        animateElement(emptyState, false)
+        eventItems.forEach((item) => {
+          animateElement(item, true)
+        })
+        dateGroups.forEach((group) => animateElement(group, true))
+        updateResultsCount(eventItems.length)
+        return
+      }
+
+      // Filter events using the utility function
+      const matches = filterEvents(events, query)
+
+      // Update UI based on results
+      updateResultsCount(matches.length)
+      animateElement(emptyState, matches.length === 0)
+
+      const matchingIds = new Set(matches.map((event) => event.id))
+      dateGroups.forEach((group) => {
+        const items = group.querySelectorAll(".event-list-item")
+        animateElement(
+          group,
+          [...items].some((item) => matchingIds.has(item.getAttribute("data-id"))),
+        )
+      })
+
+      // Show/hide matching events with staggered animation
+      eventItems.forEach((item, index) => {
+        const eventId = item.getAttribute("data-id")
+        const visible = matchingIds.has(eventId)
+
+        // Add slight delay based on index for staggered effect
+        setTimeout(
+          () => {
+            animateElement(item, visible)
+          },
+          (index % 5) * 50,
+        ) // Stagger in groups of 5
+      })
+    }
+
+    // Set up event listeners with loading indicator
+    const debouncedSearch = debounce(() => {
+      searchLoader.style.display = "none"
+      performSearch()
+    }, 400)
+
+    searchInput.addEventListener("input", () => {
+      searchLoader.style.display = "block"
+      debouncedSearch()
+    })
+
+    clearButton.addEventListener("click", () => {
+      searchInput.value = ""
+      performSearch()
+      searchInput.focus()
+    })
+
+    // Start from the search in the link, if any
+    const initialQuery = new URLSearchParams(window.location.search).get("q")
+    if (initialQuery) {
+      searchInput.value = initialQuery
+      clearButton.style.display = "block"
+      syncQuery(initialQuery.trim())
+      // performSearch() runs once the index has loaded
+    }
+  </script>
+</html>
+
+<style lang="scss">
+  .events-list-page {
+    text-align: center;
+  }
+
+  ul.event-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  // Upcoming | Past
+  .events-tabs {
+    display: inline-flex;
+    border: 2px solid var(--gray-7);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .events-tab {
+    padding: 0.4rem 1.5rem;
+    font-weight: bold;
+    text-decoration: none;
+    color: var(--gray-7);
+
+    &:hover {
+      color: var(--text-accent-color);
+    }
+
+    &.active {
+      background: var(--text-accent-color);
+      color: #fff;
+    }
+  }
+
+  // fill the column up to a comfortable width (sizing is .form-control--large in GlobalStyles)
+  .event-search {
+    // keeps a 16px gutter each side on phones, where the container has no padding
+    width: min(560px, calc(100% - 2rem));
+
+    // room for the clear button and spinner on the right
+    &.form-control.form-control--large input.form-control__input {
+      padding-right: 3.5em;
+    }
+  }
+
+  .form-control__append {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #999;
+    cursor: pointer;
+    padding: 5px;
+
+    &:hover {
+      color: #666;
+    }
+  }
+
+  .event-list-item {
+    transition:
+      transform 0.3s ease-out,
+      opacity 0.4s ease-out,
+      height 0.5s ease-out;
+    opacity: 0;
+    transform: translateY(20px);
+    height: auto;
+    overflow: hidden;
+
+    &.loaded {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    &.hide {
+      opacity: 0;
+      height: 0;
+      margin: 0;
+      padding: 0;
+      transform: translateY(10px);
+    }
+  }
+
+  .hide {
+    display: none;
+  }
+
+  .search-results-info {
+    text-align: center;
+    color: #666;
+    font-size: 0.9rem;
+    margin-top: 1rem;
+    transition: opacity 0.3s ease;
+
+    .results-count {
+      font-weight: bold;
+      color: #555;
+    }
+
+    .search-other {
+      margin-top: 0.25rem;
+
+      a {
+        color: var(--text-accent-color);
+        font-weight: bold;
+      }
+    }
+  }
+
+  .event-list__empty {
+    text-align: center;
+    margin: 3rem 0;
+    transition:
+      opacity 0.3s ease,
+      transform 0.4s ease;
+    opacity: 0;
+    transform: scale(0.95);
+
+    &:not(.hide) {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .search-loader {
+    position: absolute;
+    right: 40px;
+    top: 50%;
+    transform: translateY(-50%);
+
+    &__spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(0, 0, 0, 0.1);
+      border-top-color: #767676;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .events-layout {
+    display: flex;
+    align-items: flex-start;
+    width: 100%;
+  }
+
+  .container {
+    flex: 1 1 0%;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+</style>
