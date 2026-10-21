@@ -43,7 +43,9 @@ Defined in `src/content.config.ts` (two collections, glob-loaded):
 
 Schema violations fail `npm run build`, so build after adding/editing content.
 
-"Upcoming vs past" is decided against the current date at build time, in several places: `src/pages/events/index.astro`, `events/search-index.json.ts`, `orgs/[...slug].astro`, and `rss.xml.js`. That's why a nightly workflow rebuilds and redeploys daily. Change all of them together.
+"Upcoming vs past" is decided against the current date at build time (midnight in Singapore), in several places: `src/utils/events.ts` (`upcomingEvents`, `pastEvents`, used by `events/index.astro`, `events/past/index.astro` and both search indexes), `orgs/[...slug].astro`, and `rss.xml.js`. That's why a nightly workflow rebuilds and redeploys daily. Change all of them together.
+
+The events list (`/events/`, also the home page, and `/events/past/`) is one layout, `src/layouts/EventsListPage.astro`, with an Upcoming | Past tab switch and a search box. Each page has its own search index (`events/search-index.json`, `events/past/search-index.json`, built by `buildSearchIndex` with organiser, venue and description), the search reads `?q=` so searches can be linked, and a search shows a link to run the same words on the other tab. Both lists are paginated in the browser (`PAGE_SIZE` = 12 in `src/utils/pagination.ts`): every card is in the page, the server renders only the first page visible, and the script shows one page of the matches at a time, so search covers all pages. The page and search are kept in the address bar (`?q=…&page=2`); changing page adds a history entry, so Back works.
 
 ## Event scraper CLI (`cli/`)
 

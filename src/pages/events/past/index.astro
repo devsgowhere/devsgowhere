@@ -1,0 +1,17 @@
+---
+import { getCollection } from "astro:content"
+import EventsListPage from "../../../layouts/EventsListPage.astro"
+import { SITE_TITLE } from "../../../consts"
+import { groupByDate, pastEvents } from "../../../utils/events"
+
+const groupedEvents = groupByDate(pastEvents(await getCollection("events")))
+---
+
+<EventsListPage
+  tab="past"
+  heading="Past Events"
+  pageTitle={`Past Events | ${SITE_TITLE}`}
+  groupedEvents={groupedEvents}
+  searchIndexUrl="/events/past/search-index.json"
+  noEventsText="No past events yet."
+/>

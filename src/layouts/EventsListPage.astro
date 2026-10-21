@@ -1,0 +1,560 @@
+---
+// The events list with its search box, shared by the upcoming (/events/) and past (/events/past/) pages.
+import BaseHead from "../components/BaseHead.astro"
+import Header from "../components/Header.astro"
+import Theme from "./Theme.astro"
+import Footer from "../components/Footer.astro"
+import TagsPanel from "../components/TagsPanel.astro"
+import EventCard from "../components/EventCard.astro"
+import GoogleTagmanager from "../components/GoogleTagmanager.astro"
+import GoogleTagmanagerNoscript from "../components/GoogleTagmanagerNoscript.astro"
+import { SITE_TITLE, SITE_DESCRIPTION, GTM_MEASUREMENT_ID } from "../consts"
+import type { CollectionEntry } from "astro:content"
+import { PAGE_SIZE } from "../utils/pagination"
+
+interface Props {
+  /** Which tab is active */
+  tab: "upcoming" | "past"
+  /** Events already sorted, grouped under their date heading (see groupByDate) */
+  groupedEvents: Record<string, CollectionEntry<"events">[]>
+  /** Where the page's search index lives (see buildSearchIndex) */
+  searchIndexUrl: string
+  pageTitle?: string
+  heading: string
+  noEventsText: string
+}
+
+const { tab, groupedEvents, searchIndexUrl, pageTitle = SITE_TITLE, heading, noEventsText } = Astro.props
+
+// Only the first page is visible when the page loads; the script then pages through the rest (and searches all of them)
+const firstPageIds = new Set(
+  Object.values(groupedEvents)
+    .flat()
+    .slice(0, PAGE_SIZE)
+    .map((event) => event.id),
+)
+
+// "Search the other list for the same words" link shown while searching
+const other =
+  tab === "upcoming"
+    ? { url: "/events/past/", label: "Search past events for" }
+    : { url: "/events/", label: "Search upcoming events for" }
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <BaseHead title={pageTitle} description={SITE_DESCRIPTION} />
+    <script src="https://app.unpkg.com/framer-motion@12.12.1/dist/framer-motion.min.js"></script>
+    <GoogleTagmanager id={GTM_MEASUREMENT_ID} />
+  </head>
+  <Theme>
+    <GoogleTagmanagerNoscript id={GTM_MEASUREMENT_ID} />
+    <Header />
+    <main class="events-list-page pt-xl pb-3xl">
+      <div class="events-layout">
+        <TagsPanel currentTag="" />
+        <!-- Main content: Events -->
+        <div class="container">
+          <h1 class="text-3xl text-bold text-accent mb-m">{heading}</h1>
+          <nav class="events-tabs mb-xl" aria-label="Events">
+            <a href="/events/" class:list={["events-tab", { active: tab === "upcoming" }]} aria-current={tab === "upcoming" ? "page" : undefined}>Upcoming</a>
+            <a href="/events/past/" class:list={["events-tab", { active: tab === "past" }]} aria-current={tab === "past" ? "page" : undefined}>Past</a>
+          </nav>
+          <section>
+            <div class="event-search form-control form-control--large">
+              <i class="form-control__prepend fa fa-search"></i>
+              <input
+                id="event-search__input"
+                type="text"
+                class="form-control__input"
+                placeholder="Search events, tags, orgs…"
+                data-index-url={searchIndexUrl}
+              />
+              <button id="event-search__clear" class="form-control__append" style="display: none;" aria-label="Clear search">
+                <i class="fa fa-times"></i>
+              </button>
+              <div id="search-loader" class="search-loader" style="display: none;">
+                <div class="search-loader__spinner"></div>
+              </div>
+            </div>
+            <div class="search-results-info mb-m" aria-live="polite">
+              <p>
+                Showing <span id="results-range" class="hide"><span class="results-range__numbers"></span> of </span><span
+                  id="results-count"
+                  class="results-count">{Object.values(groupedEvents).flat().length}</span
+                > results
+              </p>
+              <p class="search-other hide">
+                <a id="search-other__link" href={other.url} data-base-url={other.url} data-label={other.label}></a>
+              </p>
+            </div>
+            {
+              Object.keys(groupedEvents).length > 0 ? (
+                Object.keys(groupedEvents).map((date) => (
+                  <div class:list={["event-date-group", { hide: !groupedEvents[date].some((event) => firstPageIds.has(event.id)) }]}>
+                    <fieldset
+                      class="mb-s mt-m"
+                      style="border-bottom: 0px; border-left: 0px; border-right: 0px; border-color: var(--gray-7);"
+                    >
+                      <legend class="text-3xl text-bold text-gray-7 px-m">{date}</legend>
+                    </fieldset>
+
+                    <ul class="event-list">
+                      {groupedEvents[date].map((event) => (
+                        <li class:list={["event-list-item", { hide: !firstPageIds.has(event.id) }]} data-id={event.id}>
+                          <EventCard event={event} />
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))
+              ) : (
+                <p class="text-gray-5 text-2xl">{noEventsText}</p>
+              )
+            }
+
+            <div class="event-list__empty hide">
+              <p class="text-gray-5 text-2xl">No results found 🤕</p>
+            </div>
+
+            <nav id="pagination" class="pagination hide" aria-label="Pagination"><ul></ul></nav>
+          </section>
+        </div>
+      </div>
+    </main>
+    <Footer />
+  </Theme>
+  <script>
+    import { debounce, filterEvents, animateElement, animateNumber } from "../utils/searchUtils.js"
+    import { PAGE_SIZE, clampPage, pageCount, pageItems, pageRange, pageSlice, parsePage } from "../utils/pagination"
+
+    // DOM elements
+    const searchInput = document.querySelector("#event-search__input")
+    const clearButton = document.querySelector("#event-search__clear")
+    const emptyState = document.querySelector(".event-list__empty")
+    const resultsInfo = document.querySelector(".search-results-info")
+    const resultsCount = document.querySelector("#results-count")
+    const resultsRange = document.querySelector("#results-range")
+    const eventItems = [...document.querySelectorAll(".event-list-item")]
+    // each date heading with its events; a heading is shown when one of its events is on the current page
+    const dateGroups = [...document.querySelectorAll(".event-date-group")]
+    const searchLoader = document.querySelector("#search-loader")
+    const otherSearch = document.querySelector(".search-other")
+    const otherSearchLink = document.querySelector("#search-other__link")
+    const pagination = document.querySelector("#pagination")
+
+    // Search index, fetched below
+    const events = []
+
+    // What's shown: the search and the page, both kept in the address bar (?q=...&page=...)
+    const params = new URLSearchParams(window.location.search)
+    const state = { query: (params.get("q") ?? "").trim(), page: parsePage(params.get("page")) }
+    searchInput.value = state.query
+
+    // Helper function to update results count display
+    function updateResultsCount(count) {
+      // Animate count change
+      const currentCount = parseInt(resultsCount?.textContent ?? "0")
+      animateNumber(resultsCount, currentCount, count, 300)
+      resultsInfo.style.display = "block"
+    }
+
+    // Shows or hides an element; hiding is immediate so the previous page doesn't linger while the next one fades in
+    function setVisible(element, visible) {
+      if (visible) {
+        animateElement(element, true)
+      } else {
+        element.classList.remove("loaded")
+        element.classList.add("hide")
+      }
+    }
+
+    // The address bar and the link to the other tab follow the search box and the page
+    function syncUrl(replace) {
+      const url = new URL(window.location.href)
+      state.query ? url.searchParams.set("q", state.query) : url.searchParams.delete("q")
+      state.page > 1 ? url.searchParams.set("page", String(state.page)) : url.searchParams.delete("page")
+      replace ? history.replaceState(null, "", url) : history.pushState(null, "", url)
+
+      otherSearchLink.href = state.query
+        ? `${otherSearchLink.dataset.baseUrl}?q=${encodeURIComponent(state.query)}`
+        : otherSearchLink.dataset.baseUrl
+      otherSearchLink.textContent = `${otherSearchLink.dataset.label} “${state.query}”`
+      otherSearch.classList.toggle("hide", !state.query)
+    }
+
+    // The link a page button points to, so it also works opened in a new tab
+    function pageUrl(page) {
+      const url = new URL(window.location.href)
+      state.query ? url.searchParams.set("q", state.query) : url.searchParams.delete("q")
+      page > 1 ? url.searchParams.set("page", String(page)) : url.searchParams.delete("page")
+      return url.pathname + url.search
+    }
+
+    function pageLink(label, page, { current = false, disabled = false, ariaLabel, rel } = {}) {
+      const item = document.createElement("li")
+      const link = document.createElement(disabled ? "span" : "a")
+      link.className = "pagination__link"
+      link.textContent = label
+      if (ariaLabel) link.setAttribute("aria-label", ariaLabel)
+      if (current) {
+        link.classList.add("active")
+        link.setAttribute("aria-current", "page")
+      }
+      if (disabled) {
+        link.classList.add("disabled")
+        link.setAttribute("aria-disabled", "true")
+      } else {
+        link.href = pageUrl(page)
+        link.dataset.page = String(page)
+        if (rel) link.rel = rel
+      }
+      item.append(link)
+      return item
+    }
+
+    function renderPagination(pages) {
+      const list = pagination.querySelector("ul")
+      list.replaceChildren()
+      pagination.classList.toggle("hide", pages <= 1)
+      if (pages <= 1) return
+
+      list.append(pageLink("‹", state.page - 1, { disabled: state.page === 1, ariaLabel: "Previous page", rel: "prev" }))
+      for (const item of pageItems(state.page, pages)) {
+        if (item === "…") {
+          const gap = document.createElement("li")
+          gap.className = "pagination__gap"
+          gap.textContent = "…"
+          list.append(gap)
+        } else {
+          list.append(pageLink(String(item), item, { current: item === state.page, ariaLabel: `Page ${item}` }))
+        }
+      }
+      list.append(pageLink("›", state.page + 1, { disabled: state.page === pages, ariaLabel: "Next page", rel: "next" }))
+    }
+
+    // Shows the current page of the events matching the search
+    function render() {
+      const query = state.query.toLowerCase()
+      const matchingIds = query ? new Set(filterEvents(events, query).map((event) => event.id)) : null
+      const matched = eventItems.filter((item) => !matchingIds || matchingIds.has(item.getAttribute("data-id")))
+
+      state.page = clampPage(state.page, matched.length)
+      const pages = pageCount(matched.length)
+      const shown = new Set(pageSlice(matched, state.page))
+
+      eventItems.forEach((item) => setVisible(item, shown.has(item)))
+      dateGroups.forEach((group) => {
+        setVisible(
+          group,
+          [...group.querySelectorAll(".event-list-item")].some((item) => shown.has(item)),
+        )
+      })
+
+      clearButton.style.display = query ? "block" : "none"
+      animateElement(emptyState, matched.length === 0)
+      updateResultsCount(matched.length)
+      const { from, to } = pageRange(state.page, matched.length)
+      resultsRange.querySelector(".results-range__numbers").textContent = from === to ? String(from) : `${from}–${to}`
+      resultsRange.classList.toggle("hide", pages <= 1)
+      renderPagination(pages)
+    }
+
+    // Search: back to the first page of the results
+    const performSearch = () => {
+      state.query = searchInput.value.trim()
+      state.page = 1
+      render()
+      syncUrl(true)
+    }
+
+    // Moves to another page, keeping the search; the browser's Back button returns to the previous page
+    function goToPage(page) {
+      state.page = page
+      render()
+      syncUrl(false)
+      document.querySelector(".event-search").scrollIntoView({ behavior: "smooth", block: "start" })
+    }
+
+    // Set up event listeners with loading indicator
+    const debouncedSearch = debounce(() => {
+      searchLoader.style.display = "none"
+      performSearch()
+    }, 400)
+
+    searchInput.addEventListener("input", () => {
+      searchLoader.style.display = "block"
+      debouncedSearch()
+    })
+
+    clearButton.addEventListener("click", () => {
+      searchInput.value = ""
+      performSearch()
+      searchInput.focus()
+    })
+
+    pagination.addEventListener("click", (event) => {
+      const link = event.target.closest("a[data-page]")
+      // leave modified clicks (new tab, etc.) to the browser
+      if (!link || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return
+      event.preventDefault()
+      goToPage(Number(link.dataset.page))
+    })
+
+    // Back and Forward move between pages and searches
+    window.addEventListener("popstate", () => {
+      const params = new URLSearchParams(window.location.search)
+      state.query = (params.get("q") ?? "").trim()
+      state.page = parsePage(params.get("page"))
+      searchInput.value = state.query
+      render()
+      syncUrl(true)
+    })
+
+    // Show the page in the link right away; a search in the link has to wait for the index
+    if (state.query) clearButton.style.display = "block"
+    else render()
+    syncUrl(true)
+
+    fetch(searchInput.dataset.indexUrl)
+      .then((response) => response.json())
+      .then((data) => {
+        events.push(...data)
+        if (state.query) {
+          render()
+          syncUrl(true)
+        }
+      })
+      .catch((error) => console.error("Error fetching search index:", error))
+  </script>
+</html>
+
+<style lang="scss">
+  .events-list-page {
+    text-align: center;
+  }
+
+  ul.event-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  // Upcoming | Past
+  .events-tabs {
+    display: inline-flex;
+    border: 2px solid var(--gray-7);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .events-tab {
+    padding: 0.4rem 1.5rem;
+    font-weight: bold;
+    text-decoration: none;
+    color: var(--gray-7);
+
+    &:hover {
+      color: var(--text-accent-color);
+    }
+
+    &.active {
+      background: var(--text-accent-color);
+      color: #fff;
+    }
+  }
+
+  // fill the column up to a comfortable width (sizing is .form-control--large in GlobalStyles)
+  .event-search {
+    // keeps a 16px gutter each side on phones, where the container has no padding
+    width: min(560px, calc(100% - 2rem));
+
+    // room for the clear button and spinner on the right
+    &.form-control.form-control--large input.form-control__input {
+      padding-right: 3.5em;
+    }
+  }
+
+  .form-control__append {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #999;
+    cursor: pointer;
+    padding: 5px;
+
+    &:hover {
+      color: #666;
+    }
+  }
+
+  .event-list-item {
+    transition:
+      transform 0.3s ease-out,
+      opacity 0.4s ease-out,
+      height 0.5s ease-out;
+    opacity: 0;
+    transform: translateY(20px);
+    height: auto;
+    overflow: hidden;
+
+    &.loaded {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    &.hide {
+      opacity: 0;
+      height: 0;
+      margin: 0;
+      padding: 0;
+      transform: translateY(10px);
+    }
+  }
+
+  .hide {
+    display: none;
+  }
+
+  .search-results-info {
+    text-align: center;
+    color: #666;
+    font-size: 0.9rem;
+    margin-top: 1rem;
+    transition: opacity 0.3s ease;
+
+    .results-count {
+      font-weight: bold;
+      color: #555;
+    }
+
+    .search-other {
+      margin-top: 0.25rem;
+
+      a {
+        color: var(--text-accent-color);
+        font-weight: bold;
+      }
+    }
+  }
+
+  // page buttons below the list. The script builds the list items and links, which Astro's scoped styles can't reach,
+  // so they're styled through :global()
+  .pagination {
+    margin: 2.5rem 0 1rem;
+
+    :global(ul) {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.4rem;
+      list-style: none;
+      margin: 0;
+      padding: 0 1rem;
+    }
+
+    :global(.pagination__link) {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 2.5rem;
+      height: 2.5rem;
+      padding: 0 0.5rem;
+      box-sizing: border-box;
+      border: 2px solid var(--gray-7);
+      border-radius: 10px;
+      font-weight: bold;
+      text-decoration: none;
+      color: var(--gray-7);
+    }
+
+    :global(a.pagination__link:hover) {
+      color: var(--text-accent-color);
+      border-color: var(--text-accent-color);
+    }
+
+    :global(.pagination__link.active) {
+      background: var(--text-accent-color);
+      border-color: var(--text-accent-color);
+      color: #fff;
+    }
+
+    :global(.pagination__link.disabled) {
+      opacity: 0.4;
+    }
+
+    :global(.pagination__gap) {
+      display: inline-flex;
+      align-items: center;
+      height: 2.5rem;
+      padding: 0 0.1rem;
+      color: var(--gray-7);
+    }
+
+    // seven page buttons plus previous and next fit a 360px phone
+    @media (max-width: 480px) {
+      :global(ul) {
+        gap: 0.25rem;
+        padding: 0 0.5rem;
+      }
+
+      :global(.pagination__link) {
+        min-width: 2.25rem;
+        padding: 0 0.25rem;
+      }
+    }
+  }
+
+  .event-list__empty {
+    text-align: center;
+    margin: 3rem 0;
+    transition:
+      opacity 0.3s ease,
+      transform 0.4s ease;
+    opacity: 0;
+    transform: scale(0.95);
+
+    &:not(.hide) {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .search-loader {
+    position: absolute;
+    right: 40px;
+    top: 50%;
+    transform: translateY(-50%);
+
+    &__spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(0, 0, 0, 0.1);
+      border-top-color: #767676;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .events-layout {
+    display: flex;
+    align-items: flex-start;
+    width: 100%;
+  }
+
+  .container {
+    flex: 1 1 0%;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+</style>
