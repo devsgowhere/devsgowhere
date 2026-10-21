@@ -233,6 +233,26 @@ const groupedEvents = events.reduce((acc: any, event) => {
     margin: 0;
   }
 
+  // fill the column up to a comfortable width (the input otherwise keeps the browser's ~20-character default)
+  .event-search {
+    // keeps a 16px gutter each side on phones, where the container has no padding
+    width: min(560px, calc(100% - 2rem));
+
+    // .form-control's global rules set padding-left after an icon; this needs to outrank them
+    &.form-control input.form-control__input {
+      box-sizing: border-box;
+      width: 100%;
+      font-size: 1.125rem;
+      // room for the search icon on the left and the clear button and spinner on the right
+      padding: 0.65em 3.5em 0.65em 2.5em;
+    }
+
+    .form-control__prepend {
+      left: 1rem;
+      font-size: 1.125rem;
+    }
+  }
+
   .form-control__append {
     position: absolute;
     right: 10px;
