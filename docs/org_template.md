@@ -17,6 +17,7 @@ tags: ["coding", "singapore"]
 # github: <url>
 # telegram: <url>
 # meetup: <url>
+# skipEvents: ["yoga", "dinner"]  # (Optional) daily event discovery skips events with these words in the title
 ---
 
 $org_description

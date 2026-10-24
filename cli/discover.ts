@@ -21,6 +21,7 @@ import {
   type DiscoveredEvent,
   type OrgSource,
 } from "./EventDiscovery"
+import { applySkipEvents, nonTechTag } from "./EventFilter"
 import { EventWriter } from "./EventWriter"
 import { MeetupApi } from "./MeetupApi"
 import { PageScraper } from "./PageScraper"
@@ -86,8 +87,11 @@ async function main() {
     await sleep(DELAY_MS)
   }
 
-  const newEvents = selectNewEvents(discovered, existingKeys, now, argv.days)
+  const skipped: string[] = []
+  const skipEventsByOrg = new Map(sources.map((s) => [s.orgId, s.skipEvents ?? []]))
+  const newEvents = applySkipEvents(selectNewEvents(discovered, existingKeys, now, argv.days), skipEventsByOrg, skipped)
   console.log(`\n${newEvents.length} new events within ${argv.days} days`)
+  for (const line of skipped) console.log(`  skipped: ${line}`)
   for (const event of newEvents) console.log(`  ${event.startAt}  ${event.orgId}  ${event.url}  ${event.title}`)
   if (argv.dryRun) return
 
@@ -98,6 +102,11 @@ async function main() {
   for (const event of newEvents) {
     try {
       const scraped = await scraper.scrapeEventData(event.url)
+      const tag = nonTechTag(scraped.tags)
+      if (tag) {
+        console.log(`Skipping ${event.url} "${event.title}" (tagged "${tag}")`)
+        continue
+      }
       const eventData = await scraper.createEventDataFromScrapedData(scraped, event.url, event.orgId)
       writer.createEventFile(eventData)
       added.push(event)

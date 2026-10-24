@@ -1,5 +1,6 @@
 import fs from "fs"
 import path from "path"
+import { parse } from "yaml"
 import type { MeetupEvent } from "./MeetupApi"
 
 export type Platform = "meetup" | "luma"
@@ -9,6 +10,8 @@ export interface OrgSource {
   platform: Platform
   /** Page listing the org's upcoming events */
   url: string
+  /** Title keywords of events to leave out, from the org's `skipEvents` frontmatter */
+  skipEvents?: string[]
 }
 
 export interface DiscoveredEvent {
@@ -46,6 +49,17 @@ export function toOrgSource(orgId: string, link: string): OrgSource | null {
   return null
 }
 
+/** The `skipEvents` list of an org's frontmatter (a one-line or block YAML list of strings); empty if none or invalid. */
+function parseSkipEvents(frontmatter: string): string[] {
+  if (!/^skipEvents:/m.test(frontmatter)) return []
+  try {
+    const value = parse(frontmatter)?.skipEvents
+    return Array.isArray(value) ? value.filter((v): v is string => typeof v === "string") : []
+  } catch {
+    return []
+  }
+}
+
 /**
  * Reads every org's `meetup` and `website` frontmatter fields and returns the ones pointing at a supported
  * platform (Meetup group or Luma calendar).
@@ -58,13 +72,14 @@ export function getOrgSources(orgsDir: string): OrgSource[] {
 
     const content = fs.readFileSync(file, "utf8").replace(/\r\n/g, "\n")
     const frontmatter = content.match(/^---\n([\s\S]*?)\n---/)?.[1] ?? ""
+    const skipEvents = parseSkipEvents(frontmatter)
     const seen = new Set<string>()
     for (const field of ["meetup", "website"]) {
       const value = frontmatter.match(new RegExp(`^${field}:\\s*["']?([^"'\\s]+)`, "m"))?.[1]
       const source = value ? toOrgSource(orgId, value) : null
       if (source && !seen.has(source.url)) {
         seen.add(source.url)
-        sources.push(source)
+        sources.push(skipEvents.length ? { ...source, skipEvents } : source)
       }
     }
   }
