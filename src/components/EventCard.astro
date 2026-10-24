@@ -1,6 +1,6 @@
 ---
-import { Image } from "astro:assets";
-import FormattedEventDate from "./FormattedEventDate.astro";
+import FormattedEventDate from "./FormattedEventDate.astro"
+import HeroImage from "./HeroImage.astro";
 import { type CollectionEntry, getCollection } from "astro:content";
 
 export interface Props {
@@ -13,7 +13,7 @@ const orgName = orgs.find((org) => org.id === event.data.org.id)?.data.title;
 ---
 
 <a class="card event-card" href={`/events/${event.id}/`}>
-  <Image width={720} height={360} src={event.data.heroImage} alt="" />
+  <HeroImage src={event.data.heroImage} width={720} />
   <div class="event-list-item__info">
     <div class="org-name text-s text-gray-5 mb-2xs">
       {orgName}
@@ -63,6 +63,7 @@ const orgName = orgs.find((org) => org.id === event.data.org.id)?.data.title;
     //------------------------------------------------------------
 
     // size
+    width: 100%;
     max-width: $width;
     margin-top: 1rem;
     margin-bottom: 1rem;
@@ -78,13 +79,6 @@ const orgName = orgs.find((org) => org.id === event.data.org.id)?.data.title;
 
     // text
     text-decoration: none;
-
-    // image
-    img {
-      max-width: 100%;
-      width: 720px;
-      height: auto;
-    }
 
     // event info block
     .event-list-item__info {
