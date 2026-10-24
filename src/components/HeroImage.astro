@@ -12,7 +12,7 @@ const { src, width } = Astro.props
 const height = typeof src === "string" ? width / 2 : undefined
 ---
 
-<!-- A 2:1 frame that shows the whole picture, whatever its shape, on a blurred copy of itself: no cropping -->
+<!-- A 2:1 frame that shows the whole picture, whatever its shape, on a blurred copy of itself: no cropping. On phones: the picture alone, full width -->
 <div class="hero-image">
   <Image class="hero-image__backdrop" src={src} width={64} height={height && 32} alt="" aria-hidden="true" />
   <Image class="hero-image__picture" src={src} width={width} height={height} alt="" />
@@ -42,6 +42,21 @@ const height = typeof src === "string" ? width / 2 : undefined
 
     .hero-image__picture {
       object-fit: contain;
+    }
+
+    // on phones the picture takes the full width, at its own proportions
+    @media (max-width: 768px) {
+      aspect-ratio: auto;
+      background-color: transparent;
+
+      .hero-image__backdrop {
+        display: none;
+      }
+
+      .hero-image__picture {
+        position: static;
+        height: auto;
+      }
     }
   }
 </style>
