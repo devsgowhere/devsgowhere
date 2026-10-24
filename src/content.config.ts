@@ -54,6 +54,8 @@ const orgs = defineCollection({
       github: z.string().url().optional().nullable(),
       telegram: z.string().url().optional().nullable(),
       meetup: z.string().url().optional().nullable(),
+      // event discovery leaves out events whose title contains any of these words
+      skipEvents: z.array(z.string()).optional(),
     }),
 })
 

@@ -158,6 +158,10 @@ describe("content readers", () => {
   )
   write("orgs/lorong/index.md", '---\ntitle: "Lorong"\nwebsite: "https://lu.ma/lorong-ai"\nmeetup: ""\n---\n')
   write("orgs/rugs/index.md", '---\r\ntitle: "RUGS"\r\nwebsite: https://luma.com/rugs\r\n---\r\n')
+  write(
+    "orgs/sq/index.md",
+    '---\ntitle: "SQ"\nwebsite: https://luma.com/Ai-labs\nskipEvents: ["yoga", "Dinner"]\n---\n',
+  )
   write("orgs/none/index.md", '---\ntitle: "None"\nwebsite: https://example.com\n---\n')
   write("events/aws/20261028-x/index.md", '---\nrsvpButtonUrl: "https://www.meetup.com/aws-sg/events/1/"\n---\n')
   write("events/lorong/20261021-y/index.md", "---\nrsvpButtonUrl: https://lu.ma/sg-event\n---\n")
@@ -167,6 +171,7 @@ describe("content readers", () => {
       { orgId: "aws", platform: "meetup", url: "https://www.meetup.com/aws-sg/events/" },
       { orgId: "lorong", platform: "luma", url: "https://luma.com/lorong-ai" },
       { orgId: "rugs", platform: "luma", url: "https://luma.com/rugs" },
+      { orgId: "sq", platform: "luma", url: "https://luma.com/Ai-labs", skipEvents: ["yoga", "Dinner"] },
     ])
   })
 
