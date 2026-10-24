@@ -11,7 +11,7 @@ instagram: sq_collective
 linkedin: https://www.linkedin.com/company/sq-collective
 
 # daily event discovery leaves out events with these words in the title
-skipEvents: ["yoga", "dinner", "padel", "pickleball"]
+skipEvents: ["yoga", "padel", "pickleball"]
 ---
 
 Singapore-based AI innovation hub.
