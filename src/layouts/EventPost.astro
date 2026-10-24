@@ -7,6 +7,7 @@ import BaseHead from "../components/BaseHead.astro"
 import Header from "../components/Header.astro"
 import Footer from "../components/Footer.astro"
 import Theme from "./Theme.astro"
+import HeroImage from "../components/HeroImage.astro"
 import SummaryCard from "../components/SummaryCard.astro"
 import FormattedEventDate from "../components/FormattedEventDate.astro"
 import AddToCalendarButton from "../components/AddToCalendarButton.tsx"
@@ -48,9 +49,7 @@ let orgUrl = `/orgs/${org.id}`
     <main class="event-page">
       <div class="container">
         <article class="card">
-          <div class="hero-image">
-            {heroImage && <Image width={1020} height={510} src={heroImage} alt="" />}
-          </div>
+          {heroImage && <HeroImage src={heroImage} width={1020} />}
           <div class="pt-l px-l pb-xl">
             {org && <div class="org-name mb-xs pl-0 text-s text-gray-6">Hosted by: {orgData.data.title}</div>}
             <h1 class="event-title text-3xl text-accent">{title}</h1>
@@ -188,12 +187,6 @@ let orgUrl = `/orgs/${org.id}`
         width: $article-width;
         min-width: 560px;
         background-color: white;
-        .hero-image img {
-          width: 100%;
-          height: auto;
-          max-height: 510px;
-          object-fit: cover;
-        }
       }
 
       // >>> right side summary info

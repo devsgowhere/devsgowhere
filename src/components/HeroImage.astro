@@ -1,0 +1,47 @@
+---
+import { Image } from "astro:assets"
+
+export interface Props {
+  /** An image from the content folder, or a remote URL (whose size we don't know, so it's fitted to the frame) */
+  src: ImageMetadata | string
+  /** Rendered width in px of the picture; the frame is always twice as wide as it is tall */
+  width: number
+}
+const { src, width } = Astro.props
+// remote images need both dimensions
+const height = typeof src === "string" ? width / 2 : undefined
+---
+
+<!-- A 2:1 frame that shows the whole picture, whatever its shape, on a blurred copy of itself: no cropping -->
+<div class="hero-image">
+  <Image class="hero-image__backdrop" src={src} width={64} height={height && 32} alt="" aria-hidden="true" />
+  <Image class="hero-image__picture" src={src} width={width} height={height} alt="" />
+</div>
+
+<style lang="scss">
+  .hero-image {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    aspect-ratio: 2 / 1;
+    background-color: #e8e8e8;
+    line-height: 0;
+
+    img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .hero-image__backdrop {
+      object-fit: cover;
+      filter: blur(24px);
+      transform: scale(1.3);
+    }
+
+    .hero-image__picture {
+      object-fit: contain;
+    }
+  }
+</style>
