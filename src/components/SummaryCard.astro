@@ -77,9 +77,9 @@ let {
     </div>
   </div>
 
-  <!-- Map: client-only component; loads OneMap/Leaflet on the client -->
+  <!-- Map: client-only component; finds the address and embeds OneMap's minimap iframe -->
   <div class="summary-card__map mt-m">
-    {venueAddress && <OneMap client:load height="240px" address={venueAddress} zoomOnAddress={18} />}
+    {venueAddress && <OneMap client:load height="240px" address={venueAddress} />}
   </div>
 
   <style>
