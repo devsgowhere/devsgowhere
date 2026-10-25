@@ -2,9 +2,10 @@ name: (Scheduled) Nightly Builds
 
 on:
   # Trigger the workflow on:
-  # - schedule (daily at midnight UTC) on the default branch (which is main)
+  # - schedule (daily at 00:01 Singapore time) on the default branch (which is main)
   schedule:
-    - cron: "1 16 * * *" # Runs daily at midnight +8 GMT (which is 16:00 UTC)
+    - cron: "1 0 * * *"
+      timezone: "Asia/Singapore"
 
 jobs:
   ##########################################
@@ -18,7 +19,7 @@ jobs:
   ##########################################
   # Nightly deployment job
   # - Deploys the default branch (main) to Cloudflare Pages
-  # - Runs daily at midnight UTC
+  # - Runs daily at 00:01 Singapore time
   ##########################################
   deploy-nightly:
     needs: build

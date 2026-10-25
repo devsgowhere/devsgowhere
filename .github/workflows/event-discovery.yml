@@ -8,7 +8,8 @@ name: (Scheduled) Event Discovery
 
 on:
   schedule:
-    - cron: "0 22 * * *" # Daily at 06:00 SGT (22:00 UTC)
+    - cron: "0 6 * * *"
+      timezone: "Asia/Singapore"
   workflow_dispatch:
     inputs:
       org:
