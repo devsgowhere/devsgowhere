@@ -21,6 +21,7 @@ jobs:
       !startsWith(github.event.pull_request.head.ref, 'event-discovery/') &&
       !startsWith(github.event.pull_request.head.ref, 'event-scrapper/') &&
       !startsWith(github.event.pull_request.head.ref, 'event-issue/') &&
+      !startsWith(github.event.pull_request.head.ref, 'org-issue/') &&
       (github.event.action == 'opened' && !github.event.pull_request.draft || github.event.action == 'ready_for_review')
     runs-on: ubuntu-latest
     steps:
