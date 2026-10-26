@@ -1,0 +1,61 @@
+name: Submit an organisation
+description: List your community, meetup group or organisation on DevsGoWhere.
+title: "New organisation: "
+labels: ["new-org"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Add your community to DevsGoWhere. A bot turns your answers into a pull request, and the team will review it.
+
+        If you add your **Meetup group** or **Luma calendar** under "Links", we'll also pick up its upcoming events every day. To add a single event, use the "Submit an event" forms instead.
+  - type: input
+    id: name
+    attributes:
+      label: Organisation name
+      placeholder: "Rust Singapore"
+    validations:
+      required: true
+  - type: input
+    id: description
+    attributes:
+      label: Short description
+      description: One or two sentences, up to 160 characters. Shown on the organisations list and in search results.
+      placeholder: "A monthly meetup for Rustaceans in Singapore."
+    validations:
+      required: true
+  - type: textarea
+    id: about
+    attributes:
+      label: About
+      description: Optional. Tell people more about the organisation, in Markdown. Leave empty to use the short description.
+  - type: textarea
+    id: links
+    attributes:
+      label: Links
+      description: One link per line, in any order, for example your Meetup group, Luma calendar, website, and social pages (Facebook, Instagram, LinkedIn, X, YouTube, TikTok, Discord, GitHub, Telegram).
+      placeholder: |
+        https://www.meetup.com/rust-sg/
+        https://rust.sg
+        https://www.linkedin.com/company/rust-sg
+  - type: input
+    id: tags
+    attributes:
+      label: Tags
+      description: Optional. Up to 10 topics, separated by commas.
+      placeholder: "rust, systems, backend"
+  - type: textarea
+    id: logo
+    attributes:
+      label: Logo
+      description: Optional. Drag your logo into this box (JPEG, PNG, WebP or GIF, up to 10 MB). A square image works best.
+  - type: textarea
+    id: cover
+    attributes:
+      label: Cover image
+      description: Optional. Drag a wide banner photo into this box (up to 10 MB). A plain placeholder is used if you leave it empty.
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes for the team
+      description: Optional. Anything else we should know, like who runs the organisation.

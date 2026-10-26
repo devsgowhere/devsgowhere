@@ -85,7 +85,7 @@ export function orgIdFromName(name: string): string {
 }
 
 /** Markdown from the form, with HTML tags neutralised (Astro renders raw HTML in Markdown); `>` quotes still work. */
-function safeMarkdown(text: string): string {
+export function safeMarkdown(text: string): string {
   return text.replace(/</g, "&lt;")
 }
 

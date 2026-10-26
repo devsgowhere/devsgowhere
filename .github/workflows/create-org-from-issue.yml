@@ -1,0 +1,200 @@
+name: Create Org from Issue
+
+# Turns an organisation submission issue ("Submit an organisation", new-org.yml, label new-org) into a pull request:
+# validates the submitted fields and writes the org from them (cli/create-org-from-issue.ts), builds the site,
+# opens a PR that closes the issue, replies on the issue and posts to Telegram. Editing the issue re-runs it and
+# updates the same PR.
+#
+# Issue text is untrusted: it only reaches the shell through a file, never through ${{ }} in a script, and it's
+# validated before anything is written.
+on:
+  issues:
+    types: [opened, edited]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: "Number of the organisation submission issue to process"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: create-org-from-issue-${{ github.event.issue.number || inputs.issue_number }}
+  cancel-in-progress: true
+
+jobs:
+  create-org:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.issue.state == 'open' && contains(github.event.issue.labels.*.name, 'new-org'))
+    runs-on: ubuntu-latest
+    steps:
+      - name: Read the submission
+        id: issue
+        uses: actions/github-script@v8
+        env:
+          ISSUE_NUMBER: ${{ github.event.issue.number || inputs.issue_number }}
+        with:
+          script: |
+            const { data: issue } = await github.rest.issues.get({
+              ...context.repo,
+              issue_number: Number(process.env.ISSUE_NUMBER),
+            })
+            // Issue forms render each field as "### <label>\n\n<value>", with "_No response_" when left empty
+            const sections = Object.fromEntries(
+              (issue.body ?? "").split(/^### /m).slice(1).map((section) => {
+                const [label, ...value] = section.split("\n")
+                return [label.trim(), value.join("\n").trim()]
+              }),
+            )
+            const notes = sections["Notes for the team"]
+            // the whole body goes to the CLI as a file
+            const bodyFile = require("path").join(process.env.RUNNER_TEMP, "issue-body.md")
+            require("fs").writeFileSync(bodyFile, issue.body ?? "")
+            core.setOutput("body_file", bodyFile)
+            core.setOutput("number", issue.number)
+            core.setOutput("title", issue.title)
+            core.setOutput("url", issue.html_url)
+            core.setOutput("author", issue.user.login)
+            core.setOutput("notes", notes && notes !== "_No response_" ? notes : "")
+
+      - name: Checkout repository
+        uses: actions/checkout@v5
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate the submission and write the org
+        id: validate
+        env:
+          BODY_FILE: ${{ steps.issue.outputs.body_file }}
+        run: |
+          result=$(npx tsx cli/create-org-from-issue.ts --body-file="$BODY_FILE")
+          echo "$result"
+          {
+            echo "ok=$(jq -r .ok <<< "$result")"
+            echo "org_id=$(jq -r '.orgId // ""' <<< "$result")"
+            echo "org_title=$(jq -r '.title // ""' <<< "$result")"
+            echo "lists_events=$(jq -r '.listsEvents // false' <<< "$result")"
+            echo "errors<<EOF"
+            jq -r '(.errors // [])[] | "- " + .' <<< "$result"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Reply with validation errors
+        if: ${{ steps.validate.outputs.ok != 'true' }}
+        uses: actions/github-script@v8
+        env:
+          ISSUE_NUMBER: ${{ steps.issue.outputs.number }}
+          ERRORS: ${{ steps.validate.outputs.errors }}
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              ...context.repo,
+              issue_number: Number(process.env.ISSUE_NUMBER),
+              body: [
+                "Thanks for the submission! I couldn't add this organisation yet:",
+                "",
+                process.env.ERRORS,
+                "",
+                "Edit the issue to fix it and I'll try again.",
+              ].join("\n"),
+            })
+
+      # Validate the generated content against the schemas before opening a PR
+      - name: Build site
+        if: ${{ steps.validate.outputs.ok == 'true' }}
+        run: npm run build
+
+      - name: Create Pull Request
+        if: ${{ steps.validate.outputs.ok == 'true' }}
+        id: create-pull-request
+        uses: peter-evans/create-pull-request@v8
+        with:
+          # One branch per issue: editing the issue updates the same PR
+          branch: org-issue/${{ steps.issue.outputs.number }}
+          base: main
+          # OrgWriter also lists the org in the event issue forms' dropdowns
+          add-paths: |
+            src/content/
+            .github/ISSUE_TEMPLATE/
+          commit-message: "Add organisation: ${{ steps.validate.outputs.org_title }} (#${{ steps.issue.outputs.number }})"
+          title: "Add organisation: ${{ steps.validate.outputs.org_title }}"
+          body: |
+            Closes #${{ steps.issue.outputs.number }}, submitted by @${{ steps.issue.outputs.author }}.
+
+            | | |
+            |---|---|
+            | Organisation | `${{ steps.validate.outputs.org_id }}` |
+            | Daily event discovery | ${{ steps.validate.outputs.lists_events == 'true' && 'Yes, from its Meetup group or Luma calendar' || 'No Meetup group or Luma calendar given' }} |
+
+            Written from the details filled in on the issue. Before merging, check the description, links, tags and the logo and cover images.
+
+            ### Notes from the submitter
+
+            ${{ steps.issue.outputs.notes || '_None_' }}
+          labels: org
+          delete-branch: true
+
+      - name: Reply with the pull request
+        if: ${{ steps.create-pull-request.outputs.pull-request-operation == 'created' || steps.create-pull-request.outputs.pull-request-operation == 'updated' }}
+        uses: actions/github-script@v8
+        env:
+          ISSUE_NUMBER: ${{ steps.issue.outputs.number }}
+          PR_URL: ${{ steps.create-pull-request.outputs.pull-request-url }}
+          OPERATION: ${{ steps.create-pull-request.outputs.pull-request-operation }}
+          LISTS_EVENTS: ${{ steps.validate.outputs.lists_events }}
+        with:
+          script: |
+            const action = process.env.OPERATION === "created" ? "Thanks! I've opened" : "I've updated"
+            const events = process.env.LISTS_EVENTS === "true" ? " Once it's merged, its upcoming events will be picked up daily." : ""
+            await github.rest.issues.createComment({
+              ...context.repo,
+              issue_number: Number(process.env.ISSUE_NUMBER),
+              body: `${action} ${process.env.PR_URL} with this organisation. The team will review it, and this issue closes when it's merged.${events}`,
+            })
+
+      # PRs opened with GITHUB_TOKEN don't trigger notify-new-pr.yml, so notify from here
+      - name: Notify Telegram
+        if: ${{ steps.create-pull-request.outputs.pull-request-operation == 'created' }}
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          PR_TITLE: "Add organisation: ${{ steps.validate.outputs.org_title }}"
+          PR_URL: ${{ steps.create-pull-request.outputs.pull-request-url }}
+          PR_AUTHOR: ${{ steps.issue.outputs.author }}
+          PR_VIA: "issue #${{ steps.issue.outputs.number }}"
+        run: bash scripts/notify-telegram-pr.sh
+
+      - name: Reply on failure
+        if: ${{ failure() }}
+        uses: actions/github-script@v8
+        env:
+          ISSUE_NUMBER: ${{ steps.issue.outputs.number || github.event.issue.number || inputs.issue_number }}
+        with:
+          script: |
+            const run = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
+            await github.rest.issues.createComment({
+              ...context.repo,
+              issue_number: Number(process.env.ISSUE_NUMBER),
+              body: `Sorry, something went wrong while adding this organisation ([workflow run](${run})). The team has been notified and will take a look.`,
+            })
+      - name: Notify Telegram of the failure
+        if: ${{ failure() }}
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          HEADING: "⚠️ Couldn't create a PR for an organisation submission"
+          PR_TITLE: ${{ steps.issue.outputs.title || 'organisation submission' }}
+          PR_URL: ${{ steps.issue.outputs.url || format('{0}/{1}/actions/runs/{2}', github.server_url, github.repository, github.run_id) }}
+          PR_AUTHOR: ${{ steps.issue.outputs.author || github.actor }}
+          PR_VIA: "workflow run ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        run: bash scripts/notify-telegram-pr.sh
