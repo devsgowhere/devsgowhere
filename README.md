@@ -4,6 +4,8 @@ Discover events for engineers in Singapore!
 
 ## Contributing
 
+**Just want to list an event or an organisation?** You don't need to edit files: use one of the [issue forms](https://github.com/devsgowhere/devsgowhere/issues/new/choose) and a bot opens the pull request for you. The steps below are for making changes yourself.
+
 ### To make changes
 
 1. Fork this GitHub repository.

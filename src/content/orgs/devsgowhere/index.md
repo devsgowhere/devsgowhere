@@ -43,9 +43,19 @@ Our goal is to make it easier for the community to discover, share, and attend d
 
 ---
 
-Want to list your organisation or an upcoming event on the site? It's straightforward!
+Want to list your organisation or an upcoming event on the site? It's straightforward, and you don't need to write any code. You only need a free GitHub account.
 
-Follow the steps in our [Github README](https://github.com/devsgowhere/devsgowhere) to submit an event. *(Please try to submit **5-7** days in advance to allow us time to review and approve your submission - we are all volunteers maintaining the site outside of our full time jobs.)*
+Go to [our submission page on GitHub](https://github.com/devsgowhere/devsgowhere/issues/new/choose) and pick a form:
+
+- **[Submit an event](https://github.com/devsgowhere/devsgowhere/issues/new?template=new-event.yml)**: your event is on **Meetup, Luma or Eventbrite**. Paste its link and choose your organisation. We copy the details from the event page for you.
+- **[Submit an event (other websites)](https://github.com/devsgowhere/devsgowhere/issues/new?template=new-event-details.yml)**: your event is registered somewhere else, like a conference site or a Google Form. Fill in the date, venue and description yourself.
+- **[Submit an organisation](https://github.com/devsgowhere/devsgowhere/issues/new?template=new-org.yml)**: your community isn't listed yet. Add your **Meetup group or Luma calendar** and we'll pick up its upcoming events every day, so you only need to do this once.
+
+After you submit, a bot turns your answers into a pull request and replies on your issue with a link. A volunteer reviews it, and your listing goes live once it's merged. If something needs fixing, the bot tells you on the issue: edit the issue and it tries again.
+
+Prefer not to use GitHub? You can also use our [Google Form](/create-event/), or [edit the files directly](https://github.com/devsgowhere/devsgowhere#contributing) and send a pull request.
+
+*(Please try to submit **5-7** days in advance to allow us time to review and approve your submission - we are all volunteers maintaining the site outside of our full time jobs.)*
 
 Don't be shy! We want to help you share about your event!
 
