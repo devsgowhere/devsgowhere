@@ -4,7 +4,7 @@ description: "$%org_description"
 heroImage: "./clean_494988213.avif"
 tags: ["Hacking", "Ethical Hacking", "Cybersecurity", "Information Security", "Computer Security", "Network Security", "Application Security", "Software Security", "Web Security", "Web Application Security", "Cloud Security", "Penetration Testing", "White Hat Hacking"]
 # links
-website: https://www.div0.sg
+website: https://luma.com/div0_sg
 discord: https://www.div0.sg/digital-kampung
 ---
 
