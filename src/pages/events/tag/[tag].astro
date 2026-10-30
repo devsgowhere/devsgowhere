@@ -1,4 +1,5 @@
 ---
+import { getEvents } from "../../../utils/getEvents"
 import BaseHead from "../../../components/BaseHead.astro"
 import Header from "../../../components/Header.astro"
 import Theme from "../../../layouts/Theme.astro"
@@ -6,7 +7,6 @@ import Footer from "../../../components/Footer.astro"
 import TagsPanel from "../../../components/TagsPanel.astro"
 
 import { SITE_TITLE, SITE_DESCRIPTION, GTM_MEASUREMENT_ID } from "../../../consts"
-import { getCollection } from "astro:content"
 import EventCard from "../../../components/EventCard.astro"
 import { Settings, DateTime } from "luxon"
 import { toSlug, compareEventsByStart } from "../../../utils/helpers"
@@ -16,7 +16,7 @@ import GoogleTagmanagerNoscript from "../../../components/GoogleTagmanagerNoscri
 Settings.defaultZone = "Asia/Singapore"
 
 export async function getStaticPaths() {
-  const events = await getCollection("events")
+  const events = await getEvents()
 
   const allTags = events?.flatMap((event) => event.data?.tags || []).map(toSlug)
   const uniqueTags = [...new Set(allTags)].filter(Boolean)
@@ -30,7 +30,7 @@ export async function getStaticPaths() {
 
 const { tag } = Astro.params
 
-const events = (await getCollection("events"))
+const events = (await getEvents())
   .filter((event) => {
     return event.data.tags && event.data.tags.map(toSlug).includes(tag)
   })

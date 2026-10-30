@@ -1,11 +1,11 @@
+import { getEvents } from "../utils/getEvents"
 import rss from "@astrojs/rss"
-import { getCollection } from "astro:content"
 import { compareEventsByStart } from "../utils/helpers"
 import { SITE_TITLE, SITE_DESCRIPTION } from "../consts"
 
 export async function GET(context) {
   const now = new Date()
-  const events = (await getCollection("events"))
+  const events = (await getEvents())
     .filter((event) => {
       const startDate = new Date(event.data.startDate)
       return startDate >= now

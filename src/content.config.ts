@@ -29,6 +29,8 @@ const events = defineCollection({
       rsvpButtonText: z.string().optional().nullable(),
       tags: z.array(z.string()).optional(),
       org: reference("orgs"),
+      // hidden events are not built or listed anywhere; keep the file so discovery does not add it again
+      hidden: z.boolean().optional().default(false),
     })
   },
 })

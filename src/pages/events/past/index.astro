@@ -1,10 +1,10 @@
 ---
-import { getCollection } from "astro:content"
+import { getEvents } from "../../../utils/getEvents"
 import EventsListPage from "../../../layouts/EventsListPage.astro"
 import { SITE_TITLE } from "../../../consts"
 import { groupByDate, pastEvents } from "../../../utils/events"
 
-const groupedEvents = groupByDate(pastEvents(await getCollection("events")))
+const groupedEvents = groupByDate(pastEvents(await getEvents()))
 ---
 
 <EventsListPage
