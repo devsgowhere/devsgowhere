@@ -1,10 +1,11 @@
 ---
-import { type CollectionEntry, getCollection } from "astro:content";
+import { getEvents } from "../../utils/getEvents"
+import type { CollectionEntry } from "astro:content"
 import EventPost from "../../layouts/EventPost.astro";
 import { render } from "astro:content";
 
 export async function getStaticPaths() {
-  const events = await getCollection("events");
+  const events = await getEvents();
   return events.map((event) => ({
     params: { slug: event.id },
     props: event,

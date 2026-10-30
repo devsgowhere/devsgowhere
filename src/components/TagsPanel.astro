@@ -1,9 +1,10 @@
 ---
+import { getEvents } from "../utils/getEvents"
 import { getCollection } from "astro:content";
 
 const { currentTag = "" } = Astro.props;
 //Get ALL events (past and future)
-const eventsAll = (await getCollection("events"))
+const eventsAll = (await getEvents())
 //Extract all unique tags from ALL events
 // Get all tags with their counts, filter out tags with count < 5, and sort alphabetically
 const allTags = eventsAll.flatMap(event => (event.data.tags ?? []));  

@@ -1,9 +1,9 @@
 ---
-import { getCollection } from "astro:content"
+import { getEvents } from "../../utils/getEvents"
 import EventsListPage from "../../layouts/EventsListPage.astro"
 import { groupByDate, upcomingEvents } from "../../utils/events"
 
-const groupedEvents = groupByDate(upcomingEvents(await getCollection("events")))
+const groupedEvents = groupByDate(upcomingEvents(await getEvents()))
 ---
 
 <EventsListPage

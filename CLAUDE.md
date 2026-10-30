@@ -41,6 +41,8 @@ Defined in `src/content.config.ts` (two collections, glob-loaded):
 - `heroImage` is required and goes through Astro's `image()` — use a file colocated in the event/org folder, or `../../../../public/org-placeholder.png`.
 - Templates: `docs/event_template.md`, `docs/org_template.md`.
 
+An event with `hidden: true` is not built or listed anywhere (use `getEvents()` from `src/utils/getEvents.ts`, never `getCollection("events")`). Keep the file rather than deleting it, so discovery still sees its `rsvpButtonUrl` and does not add it again.
+
 Schema violations fail `npm run build`, so build after adding/editing content.
 
 "Upcoming vs past" is decided against the current date at build time (midnight in Singapore), in several places: `src/utils/events.ts` (`upcomingEvents`, `pastEvents`, used by `events/index.astro`, `events/past/index.astro` and both search indexes), `orgs/[...slug].astro`, and `rss.xml.js`. That's why a nightly workflow rebuilds and redeploys daily. Change all of them together.
