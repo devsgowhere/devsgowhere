@@ -1,4 +1,5 @@
 ---
+hidden: true
 org: "sq_collective"
 title: "Founders' Mondays"
 description: "Why we’re here? Give serious AI-native founders in Singapore an edge so they keep moving from building to delivering. Who it’s for? Actively building (pre-MVP,…"
