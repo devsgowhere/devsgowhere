@@ -1,4 +1,5 @@
 ---
+hidden: true
 org: "sq_collective"
 title: "Co-work Fridays @ SQCo - The Stage:"
 description: "The Stage @ 1.30pm Title: Speaker:   Friday is our open co-working day. People come to work on their own projects, take breaks together, and usually stay…"
