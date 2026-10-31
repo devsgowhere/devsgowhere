@@ -37,7 +37,7 @@ concurrency:
 
 jobs:
   discover-events:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     outputs:
       merged: ${{ steps.merge.outcome == 'success' }}
     steps:

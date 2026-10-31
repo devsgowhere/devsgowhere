@@ -23,7 +23,7 @@ jobs:
       !startsWith(github.event.pull_request.head.ref, 'event-issue/') &&
       !startsWith(github.event.pull_request.head.ref, 'org-issue/') &&
       (github.event.action == 'opened' && !github.event.pull_request.draft || github.event.action == 'ready_for_review')
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
         with:
