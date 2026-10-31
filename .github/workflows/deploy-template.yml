@@ -19,14 +19,14 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     container: node:24-alpine
     environment:
       name: ${{ inputs.env_name }}
       url: ${{ steps.deploy.outputs.deployment-url }}
     steps:
       - name: Download dist artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: ${{ inputs.artifact_name }}
           path: dist

@@ -31,7 +31,7 @@ jobs:
     if: >-
       github.event_name == 'workflow_dispatch' ||
       (github.event.issue.state == 'open' && contains(github.event.issue.labels.*.name, 'new-org'))
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Read the submission
         id: issue

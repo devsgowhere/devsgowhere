@@ -34,7 +34,7 @@ on:
 
 jobs:
   create-event:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: szenius/set-timezone@v2.0
         with:

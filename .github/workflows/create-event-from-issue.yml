@@ -35,7 +35,7 @@ jobs:
       (github.event.issue.state == 'open' &&
         (contains(github.event.issue.labels.*.name, 'new-event') ||
           contains(github.event.issue.labels.*.name, 'new-event-details')))
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Read the submission
         id: issue
