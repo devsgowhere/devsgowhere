@@ -237,10 +237,9 @@ const other =
       list.append(pageLink("›", state.page + 1, { disabled: state.page === pages, ariaLabel: "Next page", rel: "next" }))
     }
 
-    // Shows the current page of the events matching the search
-    function render() {
+    // Loading the index can update search feedback without replacing ordinary browsing controls.
+    function renderSearchStatus() {
       const query = state.query.toLowerCase()
-      noEventsState?.classList.toggle("hide", Boolean(query))
       const needsIndex = Boolean(query) && indexStatus !== "ready"
       searchStatus.classList.toggle("hide", !needsIndex && indexStatus !== "error")
       searchMessage.textContent =
@@ -249,6 +248,14 @@ const other =
           : "Loading search results…"
       retryButton.classList.toggle("hide", indexStatus !== "error")
       searchLoader.style.display = searchTimer !== undefined || (query && indexStatus === "loading") ? "block" : "none"
+      return needsIndex
+    }
+
+    // Shows the current page of the events matching the search
+    function render() {
+      const query = state.query.toLowerCase()
+      noEventsState?.classList.toggle("hide", Boolean(query))
+      const needsIndex = renderSearchStatus()
       if (needsIndex) {
         eventItems.forEach((item) => setVisible(item, false))
         dateGroups.forEach((group) => setVisible(group, false))
@@ -358,7 +365,7 @@ const other =
       activeRequest = controller
       const timeout = window.setTimeout(() => controller.abort(), 15000)
       indexStatus = "loading"
-      render()
+      state.query ? render() : renderSearchStatus()
       try {
         const data = await fetchSearchIndex(searchInput.dataset.indexUrl, controller.signal)
         events.splice(0, events.length, ...data)
@@ -369,7 +376,7 @@ const other =
       } finally {
         window.clearTimeout(timeout)
         activeRequest = null
-        render()
+        state.query ? render() : renderSearchStatus()
         syncUrl(true)
       }
     }
