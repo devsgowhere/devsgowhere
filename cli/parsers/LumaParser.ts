@@ -1,8 +1,8 @@
 import type { CheerioAPI } from "cheerio"
-import { DateTime } from "luxon"
 import path from "path"
 import type { ScrapedEventData, ScrapedOrgData } from "../types"
 import { BaseParser } from "./BaseParser"
+import { parseSourceDateTime } from "./sourceDateTime"
 
 const LUMA_IMAGE_HOST = "images.lumacdn.com"
 const LUMA_IMAGE_OPTIONS = "format=jpeg,fit=scale-down,width=1200,quality=85,background=white"
@@ -56,7 +56,7 @@ export class LumaParser extends BaseParser {
     console.log(`Event start date time: ${event.start_at}`)
     console.log(`Event end date time: ${event.end_at}`)
 
-    const startDateTime = DateTime.fromISO(event.start_at || "").setZone(eventTimeZone)
+    const startDateTime = parseSourceDateTime(event.start_at).setZone(eventTimeZone)
     if (startDateTime.isValid) {
       scrapedData.startDate = startDateTime.toFormat("yyyy-MM-dd") // YYYY-MM-DD
       scrapedData.startTime = startDateTime.toFormat("HH:mm") // HH:MM
@@ -66,7 +66,7 @@ export class LumaParser extends BaseParser {
       scrapedData.startTime = ""
     }
 
-    const endDateTime = DateTime.fromISO(event.end_at || "").setZone(eventTimeZone)
+    const endDateTime = parseSourceDateTime(event.end_at).setZone(eventTimeZone)
     if (endDateTime.isValid) {
       scrapedData.endDate = endDateTime.toFormat("yyyy-MM-dd") // YYYY-MM-DD
       scrapedData.endTime = endDateTime.toFormat("HH:mm") // HH:MM

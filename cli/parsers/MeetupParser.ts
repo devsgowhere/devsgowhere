@@ -1,7 +1,7 @@
 import type { CheerioAPI } from "cheerio"
-import { DateTime } from "luxon"
 import type { ScrapedEventData, ScrapedOrgData } from "../types"
 import { BaseParser } from "./BaseParser"
+import { parseSourceDateTime } from "./sourceDateTime"
 
 export class MeetupParser extends BaseParser {
   override async scrapeEventDataFromPage($: CheerioAPI, url: string): Promise<ScrapedEventData> {
@@ -28,9 +28,9 @@ export class MeetupParser extends BaseParser {
     console.log(`Extracting event start time...`)
     const eventStartTime = event.dateTime || $?.("main aside time").attr("datetime")?.trim() || ""
 
-    if (eventStartTime) {
+    const startDateTime = parseSourceDateTime(eventStartTime).setZone("Asia/Singapore")
+    if (startDateTime.isValid) {
       console.log(`Event start time: ${eventStartTime}`)
-      const startDateTime = DateTime.fromISO(eventStartTime).setZone("Asia/Singapore")
       scrapedData.startDate = `${startDateTime.toFormat("yyyy-MM-dd")}`
       scrapedData.startTime = `${startDateTime.toFormat("HH:mm")}`
     } else {
@@ -41,10 +41,10 @@ export class MeetupParser extends BaseParser {
 
     console.log(`Extracting event end time...`)
     const eventEndTime = event.endTime
-    if (eventEndTime) {
+    const endDateTime = parseSourceDateTime(eventEndTime).setZone("Asia/Singapore")
+    if (endDateTime.isValid) {
       // Example: 2025-08-23T13:00:00+08:00
       console.log(`Event end time: ${eventEndTime}`)
-      const endDateTime = DateTime.fromISO(eventEndTime).setZone("Asia/Singapore")
       scrapedData.endDate = `${endDateTime.toFormat("yyyy-MM-dd")}`
       scrapedData.endTime = `${endDateTime.toFormat("HH:mm")}`
     } else {
