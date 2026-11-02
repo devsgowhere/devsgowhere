@@ -150,6 +150,37 @@ describe("discovery health without a content PR", () => {
     })
   }, 15000)
 
+  test.each([null, { event: { url: "broken-event", start_at: "invalid date" } }])(
+    "reports malformed records mixed into an otherwise valid calendar: %j",
+    (malformed) => {
+      const mixed = `<script id="__NEXT_DATA__">${JSON.stringify({
+        props: {
+          pageProps: {
+            initialData: {
+              data: {
+                upcoming: {
+                  entries: [{ event: { url: "future-event", start_at: startAt } }, malformed],
+                },
+              },
+            },
+          },
+        },
+      })}</script>`
+      runDiscovery({ healthy: calendar, broken: mixed }, (result, root) => {
+        expect(result.status, String(result.stderr)).toBe(0)
+        const report = JSON.parse(fs.readFileSync(path.join(root, "scraper-output", "discovery-report.json"), "utf8"))
+        expect(report.sourceErrors).toHaveLength(1)
+        expect(report.sourceErrors[0]).toContain("broken")
+        expect(report.sourceErrors[0]).toContain("event records")
+        expect(report.added).toEqual([])
+        expect(report.eventErrors).toEqual([])
+        expect(fs.readFileSync(path.join(root, "outputs"), "utf8")).toContain("has_errors=true")
+        expect(fs.readFileSync(path.join(root, "step-summary.md"), "utf8")).toContain("partial")
+      })
+    },
+    15000,
+  )
+
   test("retains valid generated content and reports a partial source outage", () => {
     runDiscovery(
       { healthy: listing, broken: "<html>provider unavailable</html>" },
