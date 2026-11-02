@@ -1,6 +1,6 @@
 ---
 import { getEvents } from "../utils/getEvents"
-import { getCollection } from "astro:content";
+import { toSlug } from "../utils/helpers";
 
 const { currentTag = "" } = Astro.props;
 //Get ALL events (past and future)
@@ -33,95 +33,18 @@ const filteredTags = uniqueTags
 <aside class="tags-panel" data-current-tag={currentTag}>
   <h2 class="tags-header">Tags</h2>
   <ul class="tags-list">
-    {mergedTags.map(tag => (
-        <li class="tag-item" tabindex="0" data-tag={tag} style="text-align: left;">#{tag}</li>
+    {mergedTags.filter(tag => toSlug(tag)).map(tag => (
+        <li>
+          <a
+            href={`/events/tag/${toSlug(tag)}/`}
+            class:list={["tag-item", { selected: toSlug(tag) === currentTag }]}
+            data-tag={tag}
+            aria-current={toSlug(tag) === currentTag ? "page" : undefined}
+          >#{tag}</a>
+        </li>
     ))}
   </ul>
 </aside>
-
-<script>
-    //let selectedTags: string[] = [];
-    // Highlight the tag matching the current tag 
-    document.addEventListener('DOMContentLoaded', () => {
-    // Get the current tag from the data attribute and normalize to slug
-    const currentTagRaw = document.querySelector('.tags-panel')?.getAttribute('data-current-tag') ?? "";
-    const currentTagSlug = currentTagRaw.replace(/\s+/g, '-').toLowerCase();
-    
-    document.querySelectorAll('.tag-item').forEach(el => {
-      const tag = el.getAttribute('data-tag');
-      // Normalize tag to slug for comparison
-      const tagSlug = tag.replace(/\s+/g, '-').toLowerCase();
-
-      // Highlight if matches current tag
-      if (tagSlug === currentTagSlug) {
-        el.classList.add('selected');
-      } else {
-        el.classList.remove('selected');
-      }
-
-      el.addEventListener('click', () => {
-        // Navigate to tag page
-        window.location.href = `/events/tag/${encodeURIComponent(tagSlug)}`;        
-      });
-        // Toggle selection
-        // if (tag && selectedTags.includes(tag)) {
-        //   selectedTags = selectedTags.filter(t => t !== tag);
-        //   el.classList.remove('selected');
-        //   //console.log(`Tag ${tag} deselected`);
-        // } else if (tag) {
-        //   selectedTags.push(tag);
-        //   el.classList.add('selected');
-        //   //console.log(`Tag ${tag} selected`);
-        // }
-        //filterByTags();
-    });
-  });
-
-    // function filterByTags() {
-    //   // If no tags selected, show all events
-    //   if (selectedTags.length === 0) {
-    //     eventItems.forEach(item => animateElement(item, true));
-    //     updateResultsCount(eventItems.length);
-    //     animateElement(emptyState, false);
-    //     return;
-    //   }
-
-    //   // Filter events by any selected tag
-    //   const matches = events.filter(event =>
-    //     (event.tags ?? []).some((tag: string) => selectedTags.includes(tag.toLowerCase()))
-    //   );
-    //   //console.log(`Filtered by tags: ${selectedTags.join(', ')}`);
-
-    //   updateResultsCount(matches.length);
-    //   animateElement(emptyState, matches.length === 0);
-
-    //   eventItems.forEach((item, index) => {
-    //     const eventId = item.getAttribute('data-id');
-    //     const visible = matches.some((event: any) => event.id === eventId);
-
-    //     setTimeout(() => {
-    //       animateElement(item, visible);
-    //     }, index % 5 * 50);
-    //   });
-    // }
-
-    // // Optional: clear tag filter when search input is used
-    // if (searchInput) {
-    //   searchInput.addEventListener('input', () => {
-    //     selectedTags = [];
-    //     document.querySelectorAll('.tag-item').forEach(el => el.classList.remove('selected'));
-    //   });
-    // }
-    
-    // const tagsClearBtn = document.getElementById('tags-clear-btn');
-    // if (tagsClearBtn) {
-    //   tagsClearBtn.addEventListener('click', () => {
-    //     selectedTags = [];
-    //     document.querySelectorAll('.tag-item').forEach(el => el.classList.remove('selected'));
-    //     filterByTags();
-    //   });
-    // }
-</script>
 
 <style lang="scss">
   .tags-panel {
@@ -212,7 +135,7 @@ const filteredTags = uniqueTags
     font-size: 1rem;
     cursor: pointer;
     transition: background 0.2s;
-    outline: none;
+    text-decoration: none;
     border: none;
     &:hover, &:focus {
       background: #e3d6ef;
