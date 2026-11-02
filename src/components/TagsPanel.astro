@@ -103,6 +103,12 @@ const filteredTags = uniqueTags
     color: #444;
   }
 
+  // Closed panels need a control without scripts; retain focus until the viewport handler transfers it.
+  details:not([open]) > .tags-toggle,
+  .tags-toggle:focus {
+    display: list-item;
+  }
+
   @media (max-width: 800px) {
     .tags-panel {
       position: static;
