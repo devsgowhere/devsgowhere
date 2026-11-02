@@ -60,6 +60,7 @@ const other =
                 id="event-search__input"
                 type="text"
                 class="form-control__input"
+                aria-label="Search events"
                 placeholder="Search events, tags, orgs…"
                 data-index-url={searchIndexUrl}
               />
@@ -70,7 +71,10 @@ const other =
                 <div class="search-loader__spinner"></div>
               </div>
             </div>
-            <p id="search-status" class="hide" role="status">Loading search results…</p>
+            <div id="search-status" class="hide mb-m" role="status">
+              <span id="search-status__message">Loading search results…</span>
+              <button id="search-retry" class="hide" type="button">Retry search</button>
+            </div>
             <div class="search-results-info mb-m" aria-live="polite">
               <p>
                 Showing <span id="results-range" class="hide"><span class="results-range__numbers"></span> of </span><span
@@ -103,7 +107,7 @@ const other =
                   </div>
                 ))
               ) : (
-                <p class="text-gray-5 text-2xl">{noEventsText}</p>
+                <p class="event-list__none text-gray-5 text-2xl">{noEventsText}</p>
               )
             }
 
@@ -119,13 +123,15 @@ const other =
     <Footer />
   </Theme>
   <script>
-    import { debounce, filterEvents, animateElement, animateNumber } from "../utils/searchUtils.js"
-    import { PAGE_SIZE, clampPage, pageCount, pageItems, pageRange, pageSlice, parsePage } from "../utils/pagination"
+    import { filterEvents, animateElement } from "../utils/searchUtils.js"
+    import { clampPage, pageCount, pageItems, pageRange, pageSlice, parsePage } from "../utils/pagination"
+    import { fetchSearchIndex } from "../utils/searchIndex"
 
     // DOM elements
     const searchInput = document.querySelector("#event-search__input")
     const clearButton = document.querySelector("#event-search__clear")
     const emptyState = document.querySelector(".event-list__empty")
+    const noEventsState = document.querySelector(".event-list__none")
     const resultsInfo = document.querySelector(".search-results-info")
     const resultsCount = document.querySelector("#results-count")
     const resultsRange = document.querySelector("#results-range")
@@ -137,10 +143,14 @@ const other =
     const otherSearchLink = document.querySelector("#search-other__link")
     const pagination = document.querySelector("#pagination")
     const searchStatus = document.querySelector("#search-status")
+    const searchMessage = document.querySelector("#search-status__message")
+    const retryButton = document.querySelector<HTMLButtonElement>("#search-retry")!
 
     // Search index, fetched below
     const events = []
-    let searchReady = false
+    let indexStatus: "loading" | "ready" | "error" = "loading"
+    let activeRequest: AbortController | null = null
+    let searchTimer: number | undefined
 
     // What's shown: the search and the page, both kept in the address bar (?q=...&page=...)
     const params = new URLSearchParams(window.location.search)
@@ -149,9 +159,7 @@ const other =
 
     // Helper function to update results count display
     function updateResultsCount(count) {
-      // Animate count change
-      const currentCount = parseInt(resultsCount?.textContent ?? "0")
-      animateNumber(resultsCount, currentCount, count, 300)
+      resultsCount.textContent = String(count)
       resultsInfo.style.display = "block"
     }
 
@@ -232,9 +240,16 @@ const other =
     // Shows the current page of the events matching the search
     function render() {
       const query = state.query.toLowerCase()
-      const pending = Boolean(query) && !searchReady
-      searchStatus.classList.toggle("hide", !pending)
-      if (pending) {
+      noEventsState?.classList.toggle("hide", Boolean(query))
+      const needsIndex = Boolean(query) && indexStatus !== "ready"
+      searchStatus.classList.toggle("hide", !needsIndex && indexStatus !== "error")
+      searchMessage.textContent =
+        indexStatus === "error"
+          ? `Search could not load. Try again.${query ? " You can also clear the search to browse all events." : ""}`
+          : "Loading search results…"
+      retryButton.classList.toggle("hide", indexStatus !== "error")
+      searchLoader.style.display = searchTimer !== undefined || (query && indexStatus === "loading") ? "block" : "none"
+      if (needsIndex) {
         eventItems.forEach((item) => setVisible(item, false))
         dateGroups.forEach((group) => setVisible(group, false))
         emptyState.classList.add("hide")
@@ -259,7 +274,7 @@ const other =
       })
 
       clearButton.style.display = query ? "block" : "none"
-      animateElement(emptyState, matched.length === 0)
+      setVisible(emptyState, Boolean(query) && matched.length === 0)
       updateResultsCount(matched.length)
       const { from, to } = pageRange(state.page, matched.length)
       resultsRange.querySelector(".results-range__numbers").textContent = from === to ? String(from) : `${from}–${to}`
@@ -269,6 +284,8 @@ const other =
 
     // Search: back to the first page of the results
     const performSearch = () => {
+      window.clearTimeout(searchTimer)
+      searchTimer = undefined
       state.query = searchInput.value.trim()
       state.page = 1
       render()
@@ -283,15 +300,25 @@ const other =
       document.querySelector(".event-search").scrollIntoView({ behavior: "smooth", block: "start" })
     }
 
-    // Set up event listeners with loading indicator
-    const debouncedSearch = debounce(() => {
-      searchLoader.style.display = "none"
-      performSearch()
-    }, 400)
-
     searchInput.addEventListener("input", () => {
+      window.clearTimeout(searchTimer)
+      state.query = searchInput.value.trim()
+      state.page = 1
+      syncUrl(true)
       searchLoader.style.display = "block"
-      debouncedSearch()
+      // Keep pending requests tied to the latest query, while debouncing filtering over a loaded index.
+      if (indexStatus !== "ready") render()
+      searchTimer = window.setTimeout(() => {
+        searchTimer = undefined
+        render()
+      }, 400)
+    })
+
+    searchInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" && !event.isComposing) {
+        event.preventDefault()
+        performSearch()
+      }
     })
 
     clearButton.addEventListener("click", () => {
@@ -310,6 +337,8 @@ const other =
 
     // Back and Forward move between pages and searches
     window.addEventListener("popstate", () => {
+      window.clearTimeout(searchTimer)
+      searchTimer = undefined
       const params = new URLSearchParams(window.location.search)
       state.query = (params.get("q") ?? "").trim()
       state.page = parsePage(params.get("page"))
@@ -323,17 +352,34 @@ const other =
     syncUrl(true)
     document.querySelector<HTMLElement>(".event-search")!.hidden = false
 
-    fetch(searchInput.dataset.indexUrl)
-      .then((response) => response.json())
-      .then((data) => {
-        events.push(...data)
-        searchReady = true
-        if (state.query) {
-          render()
-          syncUrl(true)
-        }
-      })
-      .catch((error) => console.error("Error fetching search index:", error))
+    async function loadIndex() {
+      if (activeRequest) return
+      const controller = new AbortController()
+      activeRequest = controller
+      const timeout = window.setTimeout(() => controller.abort(), 15000)
+      indexStatus = "loading"
+      render()
+      try {
+        const data = await fetchSearchIndex(searchInput.dataset.indexUrl, controller.signal)
+        events.splice(0, events.length, ...data)
+        indexStatus = "ready"
+      } catch (error) {
+        indexStatus = "error"
+        console.error("Error fetching search index:", error)
+      } finally {
+        window.clearTimeout(timeout)
+        activeRequest = null
+        render()
+        syncUrl(true)
+      }
+    }
+
+    retryButton.addEventListener("click", () => {
+      searchInput.focus()
+      void loadIndex()
+    })
+    window.addEventListener("pagehide", () => activeRequest?.abort())
+    void loadIndex()
   </script>
 </html>
 
