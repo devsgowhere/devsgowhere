@@ -128,6 +128,46 @@ describe("extractLumaEvents", () => {
       { orgId: "lorong", url: "https://luma.com/sg-event", title: "sg-event", startAt: "2026-10-21T07:00:00.000Z" },
     ])
   })
+
+  test("accepts an explicitly empty calendar in either supported page shape", () => {
+    for (const data of [{ upcoming: { entries: [] } }, { featured_items: [] }]) {
+      expect(extractLumaEvents(page({ props: { pageProps: { initialData: { data } } } }), "lorong", NOW)).toEqual([])
+    }
+  })
+
+  test.each([{}, { upcoming: {} }, { upcoming: { entries: {} } }])(
+    "reports missing or malformed calendar entries instead of an empty calendar: %j",
+    (data) => {
+      expect(() => extractLumaEvents(page({ props: { pageProps: { initialData: { data } } } }), "lorong", NOW)).toThrow(
+        "calendar entries",
+      )
+    },
+  )
+
+  test.each([
+    [{ renamed_event: { url: "changed", start_at: "2026-10-21T07:00:00.000Z" } }],
+    [{ event: { url: "changed", renamed_start: "2026-10-21T07:00:00.000Z" } }],
+    [{ event: { url: "changed", start_at: "invalid date" } }],
+    [{ event: null }],
+    [null],
+  ])("reports unusable records in a nonempty calendar: %j", (entry) => {
+    const html = page({ props: { pageProps: { initialData: { data: { upcoming: { entries: [entry] } } } } } })
+    expect(() => extractLumaEvents(html, "lorong", NOW)).toThrow("event records")
+  })
+
+  test("past or non-Singapore records are structurally valid even when none are selected", () => {
+    const entries = [
+      event("past", "2026-10-01T07:00:00.000Z"),
+      event("tokyo", "2026-10-21T07:00:00.000Z", "Asia/Tokyo"),
+    ]
+    expect(
+      extractLumaEvents(
+        page({ props: { pageProps: { initialData: { data: { upcoming: { entries } } } } } }),
+        "lorong",
+        NOW,
+      ),
+    ).toEqual([])
+  })
 })
 
 describe("selectNewEvents", () => {

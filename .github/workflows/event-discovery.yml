@@ -40,6 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       merged: ${{ steps.merge.outcome == 'success' }}
+      has_errors: ${{ steps.discovery.outputs.has_errors }}
     steps:
       - uses: szenius/set-timezone@v2.0
         with:
@@ -55,6 +56,7 @@ jobs:
         run: npm ci
       # Meetup groups are read via the Meetup API when its secrets are set (JWT flow), otherwise scraped
       - name: Discover and scrape new events
+        id: discovery
         env:
           ORG: ${{ inputs.org }}
           DAYS: ${{ inputs.days || 60 }}
@@ -63,6 +65,15 @@ jobs:
           MEETUP_PRIVATE_KEY: ${{ secrets.MEETUP_PRIVATE_KEY }}
           MEETUP_MEMBER_ID: ${{ secrets.MEETUP_MEMBER_ID }}
         run: npm run discover-events -- --days="$DAYS" ${ORG:+--org="$ORG"}
+      - name: Retain discovery diagnostics
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: discovery-report
+          path: |
+            scraper-output/discovery-summary.md
+            scraper-output/discovery-report.json
+          if-no-files-found: warn
       # Orgs added by hand don't regenerate the "Submit an event" issue form's dropdown, so sync it here
       # (this PR is merged automatically)
       - name: Sync the issue form's organisation list
@@ -115,6 +126,18 @@ jobs:
           PR_URL: ${{ steps.create-pull-request.outputs.pull-request-url }}
           PR_STATE: ${{ (steps.merge.outcome == 'success' && 'merged') || (steps.merge.outcome == 'failure' && 'merge-failed') || steps.create-pull-request.outputs.pull-request-operation }}
         run: bash scripts/notify-telegram.sh scraper-output/discovery-summary.md "$PR_URL" "$PR_STATE"
+
+  # Partial results may still deploy, but every incomplete run must reach the existing failure alert workflow,
+  # including runs with no new events/PR. Keep this separate so a partial success cannot merge without deploying.
+  report-discovery-health:
+    needs: discover-events
+    if: ${{ always() && needs.discover-events.outputs.has_errors == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Report incomplete discovery
+        run: |
+          echo "::error::Event discovery was incomplete. See the discover-events step summary and discovery-report artifact for affected sources and events."
+          exit 1
 
   # Merges made with GITHUB_TOKEN don't trigger the push-to-main production workflow, so deploy from here
   build:

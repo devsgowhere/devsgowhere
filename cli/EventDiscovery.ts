@@ -170,10 +170,22 @@ export function extractLumaEvents(html: string, orgId: string, now: Date): Disco
   const data = readNextData(html).props?.pageProps?.initialData?.data
   if (!data) throw new Error("No calendar data found on Luma page")
 
-  const entries: any[] = data.upcoming?.entries ?? data.featured_items ?? []
-  return entries
-    .map((entry) => entry.event)
-    .filter((event) => event?.url && event.start_at && new Date(event.start_at) > now)
+  const entries: any[] = data.upcoming?.entries ?? data.featured_items
+  if (!Array.isArray(entries)) throw new Error("No valid calendar entries found on Luma page")
+  const events = entries
+    .map((entry) => entry?.event)
+    .filter(
+      (event) =>
+        typeof event?.url === "string" &&
+        event.url.trim() &&
+        typeof event.start_at === "string" &&
+        Number.isFinite(Date.parse(event.start_at)),
+    )
+  if (entries.length > 0 && events.length === 0)
+    throw new Error("No valid event records found in Luma calendar entries")
+
+  return events
+    .filter((event) => new Date(event.start_at) > now)
     .filter((event) => (event.timezone ?? SUPPORTED_TIMEZONE) === SUPPORTED_TIMEZONE)
     .map((event) => ({
       orgId,
