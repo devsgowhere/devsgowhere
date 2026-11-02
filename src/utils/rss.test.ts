@@ -10,6 +10,10 @@ const fixtures = [
   listed("tomorrow", "2026-11-04", "09:00"),
   listed("yesterday", "2026-11-02", "19:00"),
   listed("today-morning", "2026-11-03", "08:00"),
+  {
+    id: "ongoing-conference",
+    data: { ...listed("ongoing-conference", "2026-11-02", "09:00").data, endDate: "2026-11-04" },
+  },
 ]
 
 vi.mock("./getEvents", () => ({ getEvents: async () => fixtures }))
@@ -40,5 +44,15 @@ describe("RSS upcoming events", () => {
     expect(xml).toContain("/events/tomorrow/")
     expect(xml).not.toContain("/events/today-morning/")
     expect(xml).not.toContain("/events/today-evening/")
+  })
+
+  test("keeps a multi-day event in the feed through its end day without changing its link", async () => {
+    vi.setSystemTime(new Date("2026-11-04T15:59:00Z"))
+    const ongoing = await GET({ site: new URL("https://devsgowhere.com") })
+    expect(await ongoing.text()).toContain("/events/ongoing-conference/")
+
+    vi.setSystemTime(new Date("2026-11-04T16:00:00Z"))
+    const finished = await GET({ site: new URL("https://devsgowhere.com") })
+    expect(await finished.text()).not.toContain("/events/ongoing-conference/")
   })
 })

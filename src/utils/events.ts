@@ -5,14 +5,19 @@ const TIMEZONE = "Asia/Singapore"
 
 interface ListedEvent {
   id: string
-  data: { startDate: string; startTime: string }
+  data: { startDate: string; startTime: string; endDate?: string | null }
 }
 
-/** Midnight today in Singapore: events starting on or after it are upcoming, earlier ones are past. */
+/** Midnight today in Singapore, the shared day boundary for event listings and feeds. */
 export const startOfToday = (now: DateTime = DateTime.now()): DateTime => now.setZone(TIMEZONE).startOf("day")
 
-export const isUpcoming = (event: ListedEvent, today: DateTime = startOfToday()): boolean =>
-  DateTime.fromISO(event.data.startDate, { zone: TIMEZONE }) >= today
+/** Keep events through their last listed day; unusable end dates fall back to the start day. */
+export const isUpcoming = (event: ListedEvent, today: DateTime = startOfToday()): boolean => {
+  const start = DateTime.fromISO(event.data.startDate, { zone: TIMEZONE })
+  const end = event.data.endDate ? DateTime.fromISO(event.data.endDate, { zone: TIMEZONE }) : start
+  const lastDay = end.isValid && end >= start ? end : start
+  return lastDay >= today
+}
 
 /** Upcoming events, soonest first. */
 export const upcomingEvents = <T extends ListedEvent>(events: T[], today: DateTime = startOfToday()): T[] =>

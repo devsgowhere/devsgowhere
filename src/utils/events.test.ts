@@ -76,3 +76,34 @@ describe("buildSearchIndex", () => {
     })
   })
 })
+
+describe("ongoing multi-day events", () => {
+  const multiDay = (endDate?: string | null) => ({
+    id: "community/conference",
+    data: { startDate: "2026-10-20", startTime: "09:00", endDate },
+  })
+
+  test("keeps a conference upcoming throughout its final listed day", () => {
+    const conference = multiDay("2026-10-22")
+    expect(isUpcoming(conference, TODAY)).toBe(true)
+    expect(isUpcoming(conference, TODAY.plus({ days: 1 }))).toBe(true)
+    expect(isUpcoming(conference, TODAY.plus({ days: 2 }))).toBe(false)
+  })
+
+  test.each([undefined, null, "", "not-a-date", "2026-02-30", "2026-10-19"])(
+    "falls back to the start day when the end date is missing, invalid or earlier (%s)",
+    (endDate) => {
+      expect(isUpcoming(multiDay(endDate), TODAY)).toBe(false)
+    },
+  )
+
+  test("keeps ongoing events in the same complete and stably sorted partition", () => {
+    const events = [event("future", "2026-10-24"), multiDay("2026-10-22"), event("today", "2026-10-21")]
+    expect(upcomingEvents(events, TODAY).map((entry) => entry.id)).toEqual(["community/conference", "today", "future"])
+    expect(pastEvents(events, TODAY)).toEqual([])
+    expect(pastEvents(events, TODAY.plus({ days: 2 })).map((entry) => entry.id)).toEqual([
+      "today",
+      "community/conference",
+    ])
+  })
+})
