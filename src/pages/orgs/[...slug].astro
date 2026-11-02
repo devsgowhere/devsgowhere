@@ -3,7 +3,7 @@ import { getEvents } from "../../utils/getEvents"
 import { render } from "astro:content";
 import OrgPage from "../../layouts/OrgPage.astro";
 import { type CollectionEntry, getCollection } from "astro:content";
-import { compareEventsByStart } from "../../utils/helpers";
+import { pastEvents, startOfToday, upcomingEvents } from "../../utils/events";
 export async function getStaticPaths() {
   const orgs = await getCollection("orgs");
 
@@ -19,20 +19,15 @@ const org = Astro.props;
 const events = (await getEvents())
   .filter((event) => org.id === event.data.org.id);
 
-// Partition events to show past and future events separately
-const pastEvents = events.filter((event) => {
-  const startDate = new Date(event.data.startDate);
-  return startDate < new Date();
-}).sort((a, b) => compareEventsByStart(b, a));
-const upcomingEvents = events.filter((event) => {
-  const startDate = new Date(event.data.startDate);
-  return startDate >= new Date();
-}).sort(compareEventsByStart);
+// Share the listings' Singapore day boundary, captured once for both partitions.
+const today = startOfToday();
+const past = pastEvents(events, today);
+const upcoming = upcomingEvents(events, today);
 
 
 const { Content } = await render(org);
 ---
 
-<OrgPage {...org.data} pastEvents={pastEvents} upcomingEvents={upcomingEvents}>
+<OrgPage {...org.data} pastEvents={past} upcomingEvents={upcoming}>
   <Content />
 </OrgPage>
