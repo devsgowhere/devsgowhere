@@ -135,6 +135,11 @@ describe.each(providers)("$name source timestamps", ({ parse }) => {
         "2026T18:30",
         "2026-W45T18:30",
         "2026-11-05T18",
+        "2026-11-05T18:30:00+08:99",
+        "2026-11-05T18:30:00-0899",
+        "2026-11-05T18:30:00+24:00",
+        "2026-11-05T18:30:00+08:99[Asia/Singapore]",
+        "2026-11-05T18:30:00-0899[Etc/UTC]",
       ]) {
         await expect(createEvent(await parse(start)), `incomplete source: ${start}`).rejects.toThrow(
           /valid event start date\/time/,
@@ -146,6 +151,7 @@ describe.each(providers)("$name source timestamps", ({ parse }) => {
   test.each([
     ["2026-11-05T10:30:00Z", "2026-11-05", "18:30"],
     ["2026-11-05T18:30:00+08:00", "2026-11-05", "18:30"],
+    ["2026-11-05T18:30:00+08:00[Asia/Singapore]", "2026-11-05", "18:30"],
     ["2026-11-05T23:30:00-07:00", "2026-11-06", "14:30"],
     ["20261105T103000Z", "2026-11-05", "18:30"],
     ["2026-11-05t10:30:00.123z", "2026-11-05", "18:30"],
@@ -177,15 +183,28 @@ describe.each(providers)("$name source timestamps", ({ parse }) => {
   )
 })
 
-test("rejects unknown displayed month names instead of substituting January", async () => {
-  const parser = new EventbriteParser()
-  const reference = new Date("2026-11-01T00:00:00Z")
-  const invalidStart = parser.dateTimeParser("Smarch 11 · 6 - 9pm GMT+8", reference)
-  await expect(createEvent({ title: scraped.title, ...invalidStart })).rejects.toThrow(/valid event start date\/time/)
-  const invalidEnd = parser.dateTimeParser("November 11 · 6pm - Smarch 12 · 9pm", reference)
-  expect(invalidEnd).toMatchObject({ startDate: "2026-11-11", startTime: "18:00" })
-  expect(invalidEnd.endDate).toBeUndefined()
-  expect(invalidEnd.endTime).toBeUndefined()
+test.each(["Smarch", "Novuary", "Januarrry"])(
+  "rejects unknown displayed month %s instead of guessing a month",
+  async (month) => {
+    const parser = new EventbriteParser()
+    const reference = new Date("2026-11-01T00:00:00Z")
+    const invalidStart = parser.dateTimeParser(`${month} 11 · 6 - 9pm GMT+8`, reference)
+    await expect(createEvent({ title: scraped.title, ...invalidStart })).rejects.toThrow(/valid event start date\/time/)
+    const invalidEnd = parser.dateTimeParser(`November 11 · 6pm - ${month} 12 · 9pm`, reference)
+    expect(invalidEnd).toMatchObject({ startDate: "2026-11-11", startTime: "18:00" })
+    expect(invalidEnd.endDate).toBeUndefined()
+    expect(invalidEnd.endTime).toBeUndefined()
+  },
+)
+
+test.each(["Sep", "Sept", "September", "sEpTeMbEr"])("preserves supported displayed month %s", async (month) => {
+  const timing = new EventbriteParser().dateTimeParser(`${month} 11 · 6 - 9pm GMT+8`, new Date("2026-09-01T00:00:00Z"))
+  expect(await createEvent({ title: scraped.title, ...timing })).toMatchObject({
+    startDate: "2026-09-11",
+    startTime: "18:00",
+    endDate: "2026-09-11",
+    endTime: "21:00",
+  })
 })
 
 test.each(["", '<div class="date-info__full-datetime">Tue, 10 Nov 2026 11:00 - 12:00 GMT+8</div>'])(

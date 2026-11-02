@@ -267,10 +267,27 @@ export class EventbriteParser extends BaseParser {
    * Convert month name (e.g. 'August') to its corresponding two-digit number (e.g. '08')
    */
   private getMonthNumber(monthName: string): string {
-    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-    // Index of string with the first 3 characters matched
-    const monthAbbr = monthName.substring(0, 3)
-    const monthIndex = months.findIndex((m) => m.toLowerCase() === monthAbbr.toLowerCase())
+    const months = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ]
+    const name = monthName.toLowerCase()
+    const monthIndex = months.findIndex(
+      (month) =>
+        name === month.toLowerCase() ||
+        name === month.substring(0, 3).toLowerCase() ||
+        (month === "September" && name === "sept"),
+    )
     return monthIndex !== -1 ? String(monthIndex + 1).padStart(2, "0") : ""
   }
 
