@@ -1,4 +1,5 @@
 import * as cheerio from "cheerio"
+import { DateTime } from "luxon"
 import type { BaseParser } from "./parsers/BaseParser"
 import { EventbriteParser } from "./parsers/EventbriteParser"
 import { MeetupApi } from "./MeetupApi"
@@ -109,7 +110,19 @@ export class PageScraper {
     if (scrapedData.rsvpButtonUrl) console.log(`RSVP URL: ${scrapedData.rsvpButtonUrl}`)
     if (scrapedData.heroImage) console.log(`Hero Image: ${scrapedData.heroImage}`)
 
-    // Validate required fields and provide defaults
+    // Timing must come from the source: defaults would turn a failed scrape into a plausible but incorrect event.
+    const { startDate, startTime } = scrapedData
+    if (
+      !startDate ||
+      !startTime ||
+      !/^\d{4}-\d{2}-\d{2}$/.test(startDate) ||
+      !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(startTime) ||
+      !DateTime.fromISO(`${startDate}T${startTime}`, { zone: "Asia/Singapore" }).isValid
+    ) {
+      throw new Error("❌ Could not extract a valid event start date/time from the URL")
+    }
+
+    // Provide defaults only for optional details.
     const eventData: EventData = {
       org: specifiedOrgId,
       title: scrapedData.title || "Untitled Event",
@@ -117,8 +130,8 @@ export class PageScraper {
       content: scrapedData.content || "",
       venue: scrapedData.venue || "TBD",
       venueAddress: scrapedData.venueAddress || "",
-      startDate: scrapedData.startDate || new Date().toISOString().split("T")[0],
-      startTime: scrapedData.startTime || "19:00",
+      startDate,
+      startTime,
       endDate: scrapedData.endDate,
       endTime: scrapedData.endTime,
       tags: scrapedData.tags || [],
@@ -130,9 +143,6 @@ export class PageScraper {
     // Validate critical fields
     if (!eventData.title || eventData.title === "Untitled Event") {
       throw new Error("❌ Could not extract event title from the URL")
-    }
-    if (!eventData.startDate || !eventData.startTime) {
-      throw new Error("❌ Could not extract event date/time from the URL")
     }
     if (!eventData.venue || eventData.venue === "TBD") {
       console.warn("⚠️  Could not extract venue information from the URL")
