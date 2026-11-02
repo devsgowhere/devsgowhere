@@ -59,9 +59,10 @@ export function renderIssueTemplate(template: string, orgs: OrgOption[]): string
 
   const lineStart = template.lastIndexOf("\n", begin) + 1
   const indent = template.slice(lineStart, begin)
+  const newline = template.includes("\r\n") ? "\r\n" : "\n"
   // JSON strings are valid YAML scalars, so titles with quotes or colons need no special handling
-  const options = [...orgs.map(orgOptionLabel), NEW_ORG_OPTION].map((label) => `${indent}- ${JSON.stringify(label)}\n`)
-  return template.slice(0, begin) + BEGIN_MARKER + "\n" + options.join("") + indent + template.slice(end)
+  const options = [...orgs.map(orgOptionLabel), NEW_ORG_OPTION].map((label) => `${indent}- ${JSON.stringify(label)}${newline}`)
+  return template.slice(0, begin) + BEGIN_MARKER + newline + options.join("") + indent + template.slice(end)
 }
 
 /** Templates whose generated options differ from the orgs folder. */
