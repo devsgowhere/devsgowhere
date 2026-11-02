@@ -10,7 +10,6 @@ import GoogleTagmanager from "../components/GoogleTagmanager.astro"
 import GoogleTagmanagerNoscript from "../components/GoogleTagmanagerNoscript.astro"
 import { SITE_TITLE, SITE_DESCRIPTION, GTM_MEASUREMENT_ID } from "../consts"
 import type { CollectionEntry } from "astro:content"
-import { PAGE_SIZE } from "../utils/pagination"
 
 interface Props {
   /** Which tab is active */
@@ -25,14 +24,6 @@ interface Props {
 }
 
 const { tab, groupedEvents, searchIndexUrl, pageTitle = SITE_TITLE, heading, noEventsText } = Astro.props
-
-// Only the first page is visible when the page loads; the script then pages through the rest (and searches all of them)
-const firstPageIds = new Set(
-  Object.values(groupedEvents)
-    .flat()
-    .slice(0, PAGE_SIZE)
-    .map((event) => event.id),
-)
 
 // "Search the other list for the same words" link shown while searching
 const other =
@@ -62,7 +53,8 @@ const other =
             <a href="/events/past/" class:list={["events-tab", { active: tab === "past" }]} aria-current={tab === "past" ? "page" : undefined}>Past</a>
           </nav>
           <section>
-            <div class="event-search form-control form-control--large">
+            <noscript><p>All events are shown. Enable JavaScript to search and browse pages.</p></noscript>
+            <div class="event-search form-control form-control--large" hidden>
               <i class="form-control__prepend fa fa-search"></i>
               <input
                 id="event-search__input"
@@ -78,6 +70,7 @@ const other =
                 <div class="search-loader__spinner"></div>
               </div>
             </div>
+            <p id="search-status" class="hide" role="status">Loading search results…</p>
             <div class="search-results-info mb-m" aria-live="polite">
               <p>
                 Showing <span id="results-range" class="hide"><span class="results-range__numbers"></span> of </span><span
@@ -92,7 +85,7 @@ const other =
             {
               Object.keys(groupedEvents).length > 0 ? (
                 Object.keys(groupedEvents).map((date) => (
-                  <div class:list={["event-date-group", { hide: !groupedEvents[date].some((event) => firstPageIds.has(event.id)) }]}>
+                  <div class="event-date-group">
                     <fieldset
                       class="mb-s mt-m"
                       style="border-bottom: 0px; border-left: 0px; border-right: 0px; border-color: var(--gray-7);"
@@ -102,7 +95,7 @@ const other =
 
                     <ul class="event-list">
                       {groupedEvents[date].map((event) => (
-                        <li class:list={["event-list-item", { hide: !firstPageIds.has(event.id) }]} data-id={event.id}>
+                        <li class="event-list-item" data-id={event.id}>
                           <EventCard event={event} />
                         </li>
                       ))}
@@ -143,9 +136,11 @@ const other =
     const otherSearch = document.querySelector(".search-other")
     const otherSearchLink = document.querySelector("#search-other__link")
     const pagination = document.querySelector("#pagination")
+    const searchStatus = document.querySelector("#search-status")
 
     // Search index, fetched below
     const events = []
+    let searchReady = false
 
     // What's shown: the search and the page, both kept in the address bar (?q=...&page=...)
     const params = new URLSearchParams(window.location.search)
@@ -237,6 +232,17 @@ const other =
     // Shows the current page of the events matching the search
     function render() {
       const query = state.query.toLowerCase()
+      const pending = Boolean(query) && !searchReady
+      searchStatus.classList.toggle("hide", !pending)
+      if (pending) {
+        eventItems.forEach((item) => setVisible(item, false))
+        dateGroups.forEach((group) => setVisible(group, false))
+        emptyState.classList.add("hide")
+        resultsInfo.style.display = "none"
+        pagination.classList.add("hide")
+        clearButton.style.display = "block"
+        return
+      }
       const matchingIds = query ? new Set(filterEvents(events, query).map((event) => event.id)) : null
       const matched = eventItems.filter((item) => !matchingIds || matchingIds.has(item.getAttribute("data-id")))
 
@@ -312,15 +318,16 @@ const other =
       syncUrl(true)
     })
 
-    // Show the page in the link right away; a search in the link has to wait for the index
-    if (state.query) clearButton.style.display = "block"
-    else render()
+    // Show ordinary browsing immediately, or an honest pending state until a linked search can run.
+    render()
     syncUrl(true)
+    document.querySelector<HTMLElement>(".event-search")!.hidden = false
 
     fetch(searchInput.dataset.indexUrl)
       .then((response) => response.json())
       .then((data) => {
         events.push(...data)
+        searchReady = true
         if (state.query) {
           render()
           syncUrl(true)
@@ -370,6 +377,10 @@ const other =
     // keeps a 16px gutter each side on phones, where the container has no padding
     width: min(560px, calc(100% - 2rem));
 
+    &[hidden] {
+      display: none;
+    }
+
     // room for the clear button and spinner on the right
     &.form-control.form-control--large input.form-control__input {
       padding-right: 3.5em;
@@ -397,8 +408,7 @@ const other =
       transform 0.3s ease-out,
       opacity 0.4s ease-out,
       height 0.5s ease-out;
-    opacity: 0;
-    transform: translateY(20px);
+    opacity: 1;
     height: auto;
     overflow: hidden;
 
