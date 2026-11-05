@@ -9,8 +9,8 @@ startTime: "14:00"
 endDate: "2026-12-26"
 endTime: "17:00"
 heroImage: "highres_536813527.jpeg"
-tags: ["Events in Singapore, SG", "Computer Programming", "Leetcode Practice"]
-rsvpButtonUrl: "https://www.meetup.com/junior-developers-singapore/events/tsjtbvyjcqbjc"
+tags: ["Events in Singapore, SG"]
+rsvpButtonUrl: "https://www.meetup.com/junior-developers-singapore/events/317281865"
 rsvpButtonText: "RSVP on Meetup"
 ---
 
