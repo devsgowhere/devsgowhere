@@ -10,7 +10,6 @@ import GoogleTagmanager from "../components/GoogleTagmanager.astro"
 import GoogleTagmanagerNoscript from "../components/GoogleTagmanagerNoscript.astro"
 import { SITE_TITLE, SITE_DESCRIPTION, GTM_MEASUREMENT_ID } from "../consts"
 import type { CollectionEntry } from "astro:content"
-import { PAGE_SIZE } from "../utils/pagination"
 
 interface Props {
   /** Which tab is active */
@@ -25,14 +24,6 @@ interface Props {
 }
 
 const { tab, groupedEvents, searchIndexUrl, pageTitle = SITE_TITLE, heading, noEventsText } = Astro.props
-
-// Only the first page is visible when the page loads; the script then pages through the rest (and searches all of them)
-const firstPageIds = new Set(
-  Object.values(groupedEvents)
-    .flat()
-    .slice(0, PAGE_SIZE)
-    .map((event) => event.id),
-)
 
 // "Search the other list for the same words" link shown while searching
 const other =
@@ -62,12 +53,14 @@ const other =
             <a href="/events/past/" class:list={["events-tab", { active: tab === "past" }]} aria-current={tab === "past" ? "page" : undefined}>Past</a>
           </nav>
           <section>
-            <div class="event-search form-control form-control--large">
+            <noscript><p>All events are shown. Enable JavaScript to search and browse pages.</p></noscript>
+            <div class="event-search form-control form-control--large" hidden>
               <i class="form-control__prepend fa fa-search"></i>
               <input
                 id="event-search__input"
                 type="text"
                 class="form-control__input"
+                aria-label="Search events"
                 placeholder="Search events, tags, orgs…"
                 data-index-url={searchIndexUrl}
               />
@@ -77,6 +70,10 @@ const other =
               <div id="search-loader" class="search-loader" style="display: none;">
                 <div class="search-loader__spinner"></div>
               </div>
+            </div>
+            <div id="search-status" class="hide mb-m" role="status">
+              <span id="search-status__message">Loading search results…</span>
+              <button id="search-retry" class="hide" type="button">Retry search</button>
             </div>
             <div class="search-results-info mb-m" aria-live="polite">
               <p>
@@ -92,7 +89,7 @@ const other =
             {
               Object.keys(groupedEvents).length > 0 ? (
                 Object.keys(groupedEvents).map((date) => (
-                  <div class:list={["event-date-group", { hide: !groupedEvents[date].some((event) => firstPageIds.has(event.id)) }]}>
+                  <div class="event-date-group">
                     <fieldset
                       class="mb-s mt-m"
                       style="border-bottom: 0px; border-left: 0px; border-right: 0px; border-color: var(--gray-7);"
@@ -102,7 +99,7 @@ const other =
 
                     <ul class="event-list">
                       {groupedEvents[date].map((event) => (
-                        <li class:list={["event-list-item", { hide: !firstPageIds.has(event.id) }]} data-id={event.id}>
+                        <li class="event-list-item" data-id={event.id}>
                           <EventCard event={event} />
                         </li>
                       ))}
@@ -110,7 +107,7 @@ const other =
                   </div>
                 ))
               ) : (
-                <p class="text-gray-5 text-2xl">{noEventsText}</p>
+                <p class="event-list__none text-gray-5 text-2xl">{noEventsText}</p>
               )
             }
 
@@ -126,13 +123,15 @@ const other =
     <Footer />
   </Theme>
   <script>
-    import { debounce, filterEvents, animateElement, animateNumber } from "../utils/searchUtils.js"
-    import { PAGE_SIZE, clampPage, pageCount, pageItems, pageRange, pageSlice, parsePage } from "../utils/pagination"
+    import { filterEvents, animateElement } from "../utils/searchUtils.js"
+    import { clampPage, pageCount, pageItems, pageRange, pageSlice, parsePage } from "../utils/pagination"
+    import { fetchSearchIndex } from "../utils/searchIndex"
 
     // DOM elements
     const searchInput = document.querySelector("#event-search__input")
     const clearButton = document.querySelector("#event-search__clear")
     const emptyState = document.querySelector(".event-list__empty")
+    const noEventsState = document.querySelector(".event-list__none")
     const resultsInfo = document.querySelector(".search-results-info")
     const resultsCount = document.querySelector("#results-count")
     const resultsRange = document.querySelector("#results-range")
@@ -143,9 +142,15 @@ const other =
     const otherSearch = document.querySelector(".search-other")
     const otherSearchLink = document.querySelector("#search-other__link")
     const pagination = document.querySelector("#pagination")
+    const searchStatus = document.querySelector("#search-status")
+    const searchMessage = document.querySelector("#search-status__message")
+    const retryButton = document.querySelector<HTMLButtonElement>("#search-retry")!
 
     // Search index, fetched below
     const events = []
+    let indexStatus: "loading" | "ready" | "error" = "loading"
+    let activeRequest: AbortController | null = null
+    let searchTimer: number | undefined
 
     // What's shown: the search and the page, both kept in the address bar (?q=...&page=...)
     const params = new URLSearchParams(window.location.search)
@@ -154,9 +159,7 @@ const other =
 
     // Helper function to update results count display
     function updateResultsCount(count) {
-      // Animate count change
-      const currentCount = parseInt(resultsCount?.textContent ?? "0")
-      animateNumber(resultsCount, currentCount, count, 300)
+      resultsCount.textContent = String(count)
       resultsInfo.style.display = "block"
     }
 
@@ -234,9 +237,34 @@ const other =
       list.append(pageLink("›", state.page + 1, { disabled: state.page === pages, ariaLabel: "Next page", rel: "next" }))
     }
 
+    // Loading the index can update search feedback without replacing ordinary browsing controls.
+    function renderSearchStatus() {
+      const query = state.query.toLowerCase()
+      const needsIndex = Boolean(query) && indexStatus !== "ready"
+      searchStatus.classList.toggle("hide", !needsIndex && indexStatus !== "error")
+      searchMessage.textContent =
+        indexStatus === "error"
+          ? `Search could not load. Try again.${query ? " You can also clear the search to browse all events." : ""}`
+          : "Loading search results…"
+      retryButton.classList.toggle("hide", indexStatus !== "error")
+      searchLoader.style.display = searchTimer !== undefined || (query && indexStatus === "loading") ? "block" : "none"
+      return needsIndex
+    }
+
     // Shows the current page of the events matching the search
     function render() {
       const query = state.query.toLowerCase()
+      noEventsState?.classList.toggle("hide", Boolean(query))
+      const needsIndex = renderSearchStatus()
+      if (needsIndex) {
+        eventItems.forEach((item) => setVisible(item, false))
+        dateGroups.forEach((group) => setVisible(group, false))
+        emptyState.classList.add("hide")
+        resultsInfo.style.display = "none"
+        pagination.classList.add("hide")
+        clearButton.style.display = "block"
+        return
+      }
       const matchingIds = query ? new Set(filterEvents(events, query).map((event) => event.id)) : null
       const matched = eventItems.filter((item) => !matchingIds || matchingIds.has(item.getAttribute("data-id")))
 
@@ -253,7 +281,7 @@ const other =
       })
 
       clearButton.style.display = query ? "block" : "none"
-      animateElement(emptyState, matched.length === 0)
+      setVisible(emptyState, Boolean(query) && matched.length === 0)
       updateResultsCount(matched.length)
       const { from, to } = pageRange(state.page, matched.length)
       resultsRange.querySelector(".results-range__numbers").textContent = from === to ? String(from) : `${from}–${to}`
@@ -263,6 +291,8 @@ const other =
 
     // Search: back to the first page of the results
     const performSearch = () => {
+      window.clearTimeout(searchTimer)
+      searchTimer = undefined
       state.query = searchInput.value.trim()
       state.page = 1
       render()
@@ -277,15 +307,25 @@ const other =
       document.querySelector(".event-search").scrollIntoView({ behavior: "smooth", block: "start" })
     }
 
-    // Set up event listeners with loading indicator
-    const debouncedSearch = debounce(() => {
-      searchLoader.style.display = "none"
-      performSearch()
-    }, 400)
-
     searchInput.addEventListener("input", () => {
+      window.clearTimeout(searchTimer)
+      state.query = searchInput.value.trim()
+      state.page = 1
+      syncUrl(true)
       searchLoader.style.display = "block"
-      debouncedSearch()
+      // Keep pending requests tied to the latest query, while debouncing filtering over a loaded index.
+      if (indexStatus !== "ready") render()
+      searchTimer = window.setTimeout(() => {
+        searchTimer = undefined
+        render()
+      }, 400)
+    })
+
+    searchInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" && !event.isComposing) {
+        event.preventDefault()
+        performSearch()
+      }
     })
 
     clearButton.addEventListener("click", () => {
@@ -304,6 +344,8 @@ const other =
 
     // Back and Forward move between pages and searches
     window.addEventListener("popstate", () => {
+      window.clearTimeout(searchTimer)
+      searchTimer = undefined
       const params = new URLSearchParams(window.location.search)
       state.query = (params.get("q") ?? "").trim()
       state.page = parsePage(params.get("page"))
@@ -312,21 +354,39 @@ const other =
       syncUrl(true)
     })
 
-    // Show the page in the link right away; a search in the link has to wait for the index
-    if (state.query) clearButton.style.display = "block"
-    else render()
+    // Show ordinary browsing immediately, or an honest pending state until a linked search can run.
+    render()
     syncUrl(true)
+    document.querySelector<HTMLElement>(".event-search")!.hidden = false
 
-    fetch(searchInput.dataset.indexUrl)
-      .then((response) => response.json())
-      .then((data) => {
-        events.push(...data)
-        if (state.query) {
-          render()
-          syncUrl(true)
-        }
-      })
-      .catch((error) => console.error("Error fetching search index:", error))
+    async function loadIndex() {
+      if (activeRequest) return
+      const controller = new AbortController()
+      activeRequest = controller
+      const timeout = window.setTimeout(() => controller.abort(), 15000)
+      indexStatus = "loading"
+      state.query ? render() : renderSearchStatus()
+      try {
+        const data = await fetchSearchIndex(searchInput.dataset.indexUrl, controller.signal)
+        events.splice(0, events.length, ...data)
+        indexStatus = "ready"
+      } catch (error) {
+        indexStatus = "error"
+        console.error("Error fetching search index:", error)
+      } finally {
+        window.clearTimeout(timeout)
+        activeRequest = null
+        state.query ? render() : renderSearchStatus()
+        syncUrl(true)
+      }
+    }
+
+    retryButton.addEventListener("click", () => {
+      searchInput.focus()
+      void loadIndex()
+    })
+    window.addEventListener("pagehide", () => activeRequest?.abort())
+    void loadIndex()
   </script>
 </html>
 
@@ -370,6 +430,10 @@ const other =
     // keeps a 16px gutter each side on phones, where the container has no padding
     width: min(560px, calc(100% - 2rem));
 
+    &[hidden] {
+      display: none;
+    }
+
     // room for the clear button and spinner on the right
     &.form-control.form-control--large input.form-control__input {
       padding-right: 3.5em;
@@ -397,8 +461,7 @@ const other =
       transform 0.3s ease-out,
       opacity 0.4s ease-out,
       height 0.5s ease-out;
-    opacity: 0;
-    transform: translateY(20px);
+    opacity: 1;
     height: auto;
     overflow: hidden;
 
@@ -556,5 +619,11 @@ const other =
     flex: 1 1 0%;
     max-width: 1200px;
     margin: 0 auto;
+  }
+
+  @media (max-width: 800px) {
+    .events-layout {
+      flex-direction: column;
+    }
   }
 </style>

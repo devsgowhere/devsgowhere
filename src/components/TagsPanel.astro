@@ -1,6 +1,6 @@
 ---
 import { getEvents } from "../utils/getEvents"
-import { getCollection } from "astro:content";
+import { toSlug } from "../utils/helpers";
 
 const { currentTag = "" } = Astro.props;
 //Get ALL events (past and future)
@@ -30,97 +30,55 @@ const filteredTags = uniqueTags
   const mergedTags = Array.from(new Set([...top20Tags, ...uniqueTags])).sort();
 ---
 
-<aside class="tags-panel" data-current-tag={currentTag}>
+<aside class="tags-panel" aria-label="Event topics" data-current-tag={currentTag}>
   <h2 class="tags-header">Tags</h2>
-  <ul class="tags-list">
-    {mergedTags.map(tag => (
-        <li class="tag-item" tabindex="0" data-tag={tag} style="text-align: left;">#{tag}</li>
+  <details open>
+    <summary class="tags-toggle">Tags</summary>
+    <ul class="tags-list">
+    {mergedTags.filter(tag => toSlug(tag)).map(tag => (
+        <li>
+          <a
+            href={`/events/tag/${toSlug(tag)}/`}
+            class:list={["tag-item", { selected: toSlug(tag) === currentTag }]}
+            data-tag={tag}
+            aria-current={toSlug(tag) === currentTag ? "page" : undefined}
+          >#{tag}</a>
+        </li>
     ))}
-  </ul>
+    </ul>
+  </details>
+  <!-- Close the mobile disclosure while parsing, before the deferred scripts can move the event list. -->
+  <script is:inline>
+    {
+      const panel = document.currentScript.previousElementSibling
+      if (panel instanceof HTMLDetailsElement && window.matchMedia("(max-width: 800px)").matches) panel.open = false
+    }
+  </script>
 </aside>
 
 <script>
-    //let selectedTags: string[] = [];
-    // Highlight the tag matching the current tag 
-    document.addEventListener('DOMContentLoaded', () => {
-    // Get the current tag from the data attribute and normalize to slug
-    const currentTagRaw = document.querySelector('.tags-panel')?.getAttribute('data-current-tag') ?? "";
-    const currentTagSlug = currentTagRaw.replace(/\s+/g, '-').toLowerCase();
-    
-    document.querySelectorAll('.tag-item').forEach(el => {
-      const tag = el.getAttribute('data-tag');
-      // Normalize tag to slug for comparison
-      const tagSlug = tag.replace(/\s+/g, '-').toLowerCase();
+  document.querySelectorAll<HTMLDetailsElement>(".tags-panel details").forEach((panel) => {
+    const summary = panel.querySelector("summary")!
+    const mobile = window.matchMedia("(max-width: 800px)")
 
-      // Highlight if matches current tag
-      if (tagSlug === currentTagSlug) {
-        el.classList.add('selected');
-      } else {
-        el.classList.remove('selected');
+    const syncViewport = () => {
+      const focused = document.activeElement
+      const hadFocus = panel.contains(focused)
+      panel.open = !mobile.matches
+      if (mobile.matches && hadFocus) summary.focus()
+      else if (focused === summary) panel.querySelector("a")?.focus()
+    }
+    syncViewport()
+    mobile.addEventListener("change", syncViewport)
+
+    panel.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && mobile.matches && panel.open) {
+        event.preventDefault()
+        panel.open = false
+        summary.focus()
       }
-
-      el.addEventListener('click', () => {
-        // Navigate to tag page
-        window.location.href = `/events/tag/${encodeURIComponent(tagSlug)}`;        
-      });
-        // Toggle selection
-        // if (tag && selectedTags.includes(tag)) {
-        //   selectedTags = selectedTags.filter(t => t !== tag);
-        //   el.classList.remove('selected');
-        //   //console.log(`Tag ${tag} deselected`);
-        // } else if (tag) {
-        //   selectedTags.push(tag);
-        //   el.classList.add('selected');
-        //   //console.log(`Tag ${tag} selected`);
-        // }
-        //filterByTags();
-    });
-  });
-
-    // function filterByTags() {
-    //   // If no tags selected, show all events
-    //   if (selectedTags.length === 0) {
-    //     eventItems.forEach(item => animateElement(item, true));
-    //     updateResultsCount(eventItems.length);
-    //     animateElement(emptyState, false);
-    //     return;
-    //   }
-
-    //   // Filter events by any selected tag
-    //   const matches = events.filter(event =>
-    //     (event.tags ?? []).some((tag: string) => selectedTags.includes(tag.toLowerCase()))
-    //   );
-    //   //console.log(`Filtered by tags: ${selectedTags.join(', ')}`);
-
-    //   updateResultsCount(matches.length);
-    //   animateElement(emptyState, matches.length === 0);
-
-    //   eventItems.forEach((item, index) => {
-    //     const eventId = item.getAttribute('data-id');
-    //     const visible = matches.some((event: any) => event.id === eventId);
-
-    //     setTimeout(() => {
-    //       animateElement(item, visible);
-    //     }, index % 5 * 50);
-    //   });
-    // }
-
-    // // Optional: clear tag filter when search input is used
-    // if (searchInput) {
-    //   searchInput.addEventListener('input', () => {
-    //     selectedTags = [];
-    //     document.querySelectorAll('.tag-item').forEach(el => el.classList.remove('selected'));
-    //   });
-    // }
-    
-    // const tagsClearBtn = document.getElementById('tags-clear-btn');
-    // if (tagsClearBtn) {
-    //   tagsClearBtn.addEventListener('click', () => {
-    //     selectedTags = [];
-    //     document.querySelectorAll('.tag-item').forEach(el => el.classList.remove('selected'));
-    //     filterByTags();
-    //   });
-    // }
+    })
+  })
 </script>
 
 <style lang="scss">
@@ -132,59 +90,46 @@ const filteredTags = uniqueTags
     padding: 1.5rem 1rem;
     margin-right: 2rem;
     max-height: 80vh;    
-    overflow-y: scroll;
+    overflow-y: auto;
     position: sticky;
     top: 2rem;
-    transition: transform 0.3s, opacity 0.3s;
   }
 
-  // Hide tags panel on mobile, show toggle button
+  .tags-toggle {
+    display: none;
+    cursor: pointer;
+    padding: 0.6rem 0.8rem;
+    font-weight: bold;
+    color: #444;
+  }
+
+  // Closed panels need a control without scripts; retain focus until the viewport handler transfers it.
+  details:not([open]) > .tags-toggle,
+  .tags-toggle:focus {
+    display: list-item;
+  }
+
   @media (max-width: 800px) {
     .tags-panel {
-      position: fixed;
-      left: 0;
-      top: 0;
-      height: 100vh;
+      position: static;
+      width: 100%;
       max-height: none;
-      width: 80vw;
       min-width: 0;
-      max-width: 320px;
+      max-width: none;
       margin-right: 0;
-      transform: translateX(-100%);
-      opacity: 0;
-      pointer-events: none;
-      box-shadow: 2px 0 16px rgba(0,0,0,0.08);
-      transition: transform 0.3s, opacity 0.3s;
+      margin-bottom: 1rem;
+      padding: 0.5rem 1rem;
     }
-    .tags-panel.open {
-      transform: translateX(0);
-      opacity: 1;
-      pointer-events: auto;
+    .tags-header {
+      display: none;
     }
-    .tags-toggle-btn {
-      display: block;
+    .tags-toggle {
+      display: list-item;
     }
-}
-
-// Hide toggle button on desktop
-  .tags-toggle-btn {
-    display: none;
-    position: fixed;
-    left: 1rem;
-    top: 1rem;
-    z-index: 30;
-    background: #3182ce;
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    padding: 0.6rem 1.2rem;
-    font-size: 1rem;
-    cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    transition: background 0.2s;
-  }
-  .tags-toggle-btn:active, .tags-toggle-btn:focus {
-    background: #225ea8;
+    .tags-list {
+      max-height: 50vh;
+      overflow-y: auto;
+    }
   }
   .tags-header {
     font-size: 1.2rem;
@@ -212,7 +157,7 @@ const filteredTags = uniqueTags
     font-size: 1rem;
     cursor: pointer;
     transition: background 0.2s;
-    outline: none;
+    text-decoration: none;
     border: none;
     &:hover, &:focus {
       background: #e3d6ef;
