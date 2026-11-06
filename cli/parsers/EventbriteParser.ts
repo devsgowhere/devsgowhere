@@ -2,6 +2,7 @@ import type { CheerioAPI } from "cheerio"
 import { DateTime } from "luxon"
 import type { ScrapedEventData, ScrapedOrgData } from "../types"
 import { BaseParser } from "./BaseParser"
+import { parseSourceDateTime } from "./sourceDateTime"
 import path from "path"
 
 export class EventbriteParser extends BaseParser {
@@ -35,10 +36,9 @@ export class EventbriteParser extends BaseParser {
     scrapedData.title = eventTitle
 
     console.log(`Extracting event start time...`)
-    const parsedEventDateTime =
-      event.startDate && event.endDate
-        ? this.isoDateTimeParser(event.startDate, event.endDate)
-        : this.dateTimeParser($(".date-info__full-datetime").text().trim() || "")
+    const parsedEventDateTime = event.startDate
+      ? this.isoDateTimeParser(event.startDate, event.endDate)
+      : this.dateTimeParser($(".date-info__full-datetime").text().trim() || "")
     scrapedData.startDate = parsedEventDateTime.startDate
     scrapedData.startTime = parsedEventDateTime.startTime
     scrapedData.endDate = parsedEventDateTime.endDate
@@ -149,22 +149,22 @@ export class EventbriteParser extends BaseParser {
       .get()
   }
 
-  /** Converts schema.org ISO start/end datetimes (e.g. 2025-10-08T09:00:00+08:00) to Singapore date and time. */
+  /** Converts a schema.org ISO start and optional end independently to Singapore date and time. */
   isoDateTimeParser(
     startIso: string,
-    endIso: string,
+    endIso?: string | null,
   ): { startDate?: string; startTime?: string; endDate?: string; endTime?: string } {
-    const start = DateTime.fromISO(startIso).setZone("Asia/Singapore")
-    const end = DateTime.fromISO(endIso).setZone("Asia/Singapore")
-    if (!start.isValid || !end.isValid) {
+    const start = parseSourceDateTime(startIso).setZone("Asia/Singapore")
+    const end = parseSourceDateTime(endIso).setZone("Asia/Singapore")
+    if (!start.isValid) {
       console.warn(`Unable to parse date and time: ${startIso} - ${endIso}`)
       return {}
     }
+    if (endIso && !end.isValid) console.warn(`Unable to parse end date and time: ${endIso}`)
     return {
       startDate: start.toFormat("yyyy-MM-dd"),
       startTime: start.toFormat("HH:mm"),
-      endDate: end.toFormat("yyyy-MM-dd"),
-      endTime: end.toFormat("HH:mm"),
+      ...(end.isValid && { endDate: end.toFormat("yyyy-MM-dd"), endTime: end.toFormat("HH:mm") }),
     }
   }
 
@@ -197,6 +197,7 @@ export class EventbriteParser extends BaseParser {
         const [_, startMonth, startDay, startTime, startPeriod, endMonth, endDay, endTime, endPeriod] = match
         const reference = DateTime.fromJSDate(referenceDate).setZone("Asia/Singapore").startOf("day")
         const startMonthNumber = this.getMonthNumber(startMonth)
+        if (!startMonthNumber) return result
         let year = reference.year
         const startOn = (y: number) => DateTime.fromISO(`${y}-${startMonthNumber}-${startDay.padStart(2, "0")}`)
         if (startOn(year) < reference.minus({ days: 30 })) year += 1
@@ -207,6 +208,7 @@ export class EventbriteParser extends BaseParser {
         // If endMonth and endDay are present, it's a multi-day event
         if (endMonth && endDay) {
           const endMonthNumber = this.getMonthNumber(endMonth)
+          if (!endMonthNumber) return result
           // e.g. December 30 - January 2 ends in the following year
           const endYear = endMonthNumber < startMonthNumber ? year + 1 : year
           result.endDate = `${endYear}-${endMonthNumber}-${endDay.padStart(2, "0")}`
@@ -265,11 +267,28 @@ export class EventbriteParser extends BaseParser {
    * Convert month name (e.g. 'August') to its corresponding two-digit number (e.g. '08')
    */
   private getMonthNumber(monthName: string): string {
-    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-    // Index of string with the first 3 characters matched
-    const monthAbbr = monthName.substring(0, 3)
-    const monthIndex = months.findIndex((m) => m.toLowerCase() === monthAbbr.toLowerCase())
-    return monthIndex !== -1 ? String(monthIndex + 1).padStart(2, "0") : "01"
+    const months = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ]
+    const name = monthName.toLowerCase()
+    const monthIndex = months.findIndex(
+      (month) =>
+        name === month.toLowerCase() ||
+        name === month.substring(0, 3).toLowerCase() ||
+        (month === "September" && name === "sept"),
+    )
+    return monthIndex !== -1 ? String(monthIndex + 1).padStart(2, "0") : ""
   }
 
   /**
