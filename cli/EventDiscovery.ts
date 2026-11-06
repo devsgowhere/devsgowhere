@@ -131,17 +131,13 @@ function readNextData(html: string): any {
 /** Extracts upcoming, active events from a Meetup group's /events/ page. */
 export function extractMeetupEvents(html: string, orgId: string, now: Date): DiscoveredEvent[] {
   const state = readNextData(html).props?.pageProps?.__APOLLO_STATE__
-  if (!state) throw new Error("No Apollo state found on Meetup page")
+  if (!state || typeof state !== "object" || Array.isArray(state))
+    throw new Error("No valid Apollo state found on Meetup page")
 
-  return Object.entries<any>(state)
-    .filter(([key, event]) => key.startsWith("Event:") && event.status === "ACTIVE" && event.eventUrl && event.dateTime)
-    .filter(([, event]) => new Date(event.dateTime) > now)
-    .map(([, event]) => ({
-      orgId,
-      url: event.eventUrl.replace(/\/$/, ""),
-      title: event.title ?? "",
-      startAt: event.dateTime,
-    }))
+  const events = Object.entries<any>(state)
+    .filter(([key]) => key.startsWith("Event:"))
+    .map(([, event]) => event)
+  return meetupApiEvents(events, orgId, now)
 }
 
 /** The Meetup group URL name of a source, e.g. "aws-sg" for https://www.meetup.com/aws-sg/events/. */
@@ -152,11 +148,24 @@ export function meetupUrlname(source: OrgSource): string {
 /** Same as extractMeetupEvents, for events returned by the Meetup API (`MeetupApi.getUpcomingEvents`). */
 export function meetupApiEvents(events: MeetupEvent[], orgId: string, now: Date): DiscoveredEvent[] {
   return events
-    .filter((event) => event.status === "ACTIVE" && event.eventUrl && event.dateTime)
+    .filter((event) => {
+      if (!event || typeof event !== "object" || Array.isArray(event))
+        throw new Error("Invalid event record found in Meetup source")
+      if (event.status !== "ACTIVE") return false
+      if (
+        typeof event.eventUrl !== "string" ||
+        !/^https?:\/\//i.test(event.eventUrl.trim()) ||
+        !URL.canParse(event.eventUrl) ||
+        typeof event.dateTime !== "string" ||
+        !Number.isFinite(Date.parse(event.dateTime))
+      )
+        throw new Error("Invalid URL or date/time in active Meetup event")
+      return true
+    })
     .filter((event) => new Date(event.dateTime) > now)
     .map((event) => ({
       orgId,
-      url: event.eventUrl.replace(/\/$/, ""),
+      url: event.eventUrl.trim().replace(/\/$/, ""),
       title: event.title ?? "",
       startAt: event.dateTime,
     }))
@@ -170,10 +179,21 @@ export function extractLumaEvents(html: string, orgId: string, now: Date): Disco
   const data = readNextData(html).props?.pageProps?.initialData?.data
   if (!data) throw new Error("No calendar data found on Luma page")
 
-  const entries: any[] = data.upcoming?.entries ?? data.featured_items ?? []
-  return entries
-    .map((entry) => entry.event)
-    .filter((event) => event?.url && event.start_at && new Date(event.start_at) > now)
+  const entries: any[] = data.upcoming?.entries ?? data.featured_items
+  if (!Array.isArray(entries)) throw new Error("No valid calendar entries found on Luma page")
+  const events = entries
+    .map((entry) => entry?.event)
+    .filter(
+      (event) =>
+        typeof event?.url === "string" &&
+        event.url.trim() &&
+        typeof event.start_at === "string" &&
+        Number.isFinite(Date.parse(event.start_at)),
+    )
+  if (events.length !== entries.length) throw new Error("Invalid event records found in Luma calendar entries")
+
+  return events
+    .filter((event) => new Date(event.start_at) > now)
     .filter((event) => (event.timezone ?? SUPPORTED_TIMEZONE) === SUPPORTED_TIMEZONE)
     .map((event) => ({
       orgId,

@@ -8,6 +8,7 @@ import {
   extractMeetupEvents,
   getExistingEventKeys,
   getOrgSources,
+  meetupApiEvents,
   selectNewEvents,
   toOrgSource,
 } from "./EventDiscovery"
@@ -99,6 +100,58 @@ describe("extractMeetupEvents", () => {
   test("throws when the page has no embedded data", () => {
     expect(() => extractMeetupEvents("<html></html>", "aws", NOW)).toThrow()
   })
+
+  test.each([[[]], ["provider error"], [42]])("rejects a malformed Apollo state: %j", (state) => {
+    expect(() => extractMeetupEvents(page({ props: { pageProps: { __APOLLO_STATE__: state } } }), "aws", NOW)).toThrow(
+      "Apollo state",
+    )
+  })
+
+  test("accepts genuinely empty page and API listings", () => {
+    expect(extractMeetupEvents(page({ props: { pageProps: { __APOLLO_STATE__: {} } } }), "aws", NOW)).toEqual([])
+    expect(meetupApiEvents([], "aws", NOW)).toEqual([])
+  })
+
+  test.each([
+    [{ dateTime: "bad-date" }],
+    [{ dateTime: undefined }],
+    [{ dateTime: 123 }],
+    [{ eventUrl: "not-a-url" }],
+    [{ eventUrl: "" }],
+    [{ eventUrl: 123 }],
+  ])("reports malformed ACTIVE events in page and API listings: %j", (fields) => {
+    const event = {
+      id: "1",
+      title: "An event",
+      status: "ACTIVE",
+      dateTime: "2026-10-28T19:00:00+08:00",
+      eventUrl: "https://www.meetup.com/aws-sg/events/1/",
+      ...fields,
+    }
+    expect(() =>
+      extractMeetupEvents(page({ props: { pageProps: { __APOLLO_STATE__: { "Event:1": event } } } }), "aws", NOW),
+    ).toThrow("active Meetup event")
+    expect(() => meetupApiEvents([event] as any, "aws", NOW)).toThrow("active Meetup event")
+  })
+
+  test("preserves sparse cancelled records and valid past ACTIVE records as non-upcoming", () => {
+    const events = [
+      { status: "CANCELLED", dateTime: "bad-date" },
+      { status: "ACTIVE", eventUrl: "https://www.meetup.com/aws-sg/events/1/", dateTime: "2020-01-01T10:00:00Z" },
+    ]
+    const state = Object.fromEntries(events.map((event, index) => [`Event:${index}`, event]))
+    expect(extractMeetupEvents(page({ props: { pageProps: { __APOLLO_STATE__: state } } }), "aws", NOW)).toEqual([])
+    expect(meetupApiEvents(events as any, "aws", NOW)).toEqual([])
+  })
+
+  test("normalises surrounding URL whitespace before emitting a validated ACTIVE event", () => {
+    const event = {
+      status: "ACTIVE",
+      eventUrl: " https://www.meetup.com/aws-sg/events/1/ ",
+      dateTime: "2026-10-28T19:00:00+08:00",
+    }
+    expect(meetupApiEvents([event] as any, "aws", NOW)[0].url).toBe("https://www.meetup.com/aws-sg/events/1")
+  })
 })
 
 describe("extractLumaEvents", () => {
@@ -127,6 +180,55 @@ describe("extractLumaEvents", () => {
     expect(extractLumaEvents(html, "lorong", NOW)).toEqual([
       { orgId: "lorong", url: "https://luma.com/sg-event", title: "sg-event", startAt: "2026-10-21T07:00:00.000Z" },
     ])
+  })
+
+  test("accepts an explicitly empty calendar in either supported page shape", () => {
+    for (const data of [{ upcoming: { entries: [] } }, { featured_items: [] }]) {
+      expect(extractLumaEvents(page({ props: { pageProps: { initialData: { data } } } }), "lorong", NOW)).toEqual([])
+    }
+  })
+
+  test.each([{}, { upcoming: {} }, { upcoming: { entries: {} } }])(
+    "reports missing or malformed calendar entries instead of an empty calendar: %j",
+    (data) => {
+      expect(() => extractLumaEvents(page({ props: { pageProps: { initialData: { data } } } }), "lorong", NOW)).toThrow(
+        "calendar entries",
+      )
+    },
+  )
+
+  test.each([
+    [{ renamed_event: { url: "changed", start_at: "2026-10-21T07:00:00.000Z" } }],
+    [{ event: { url: "changed", renamed_start: "2026-10-21T07:00:00.000Z" } }],
+    [{ event: { url: "changed", start_at: "invalid date" } }],
+    [{ event: null }],
+    [null],
+  ])("reports unusable records in a nonempty calendar: %j", (entry) => {
+    const html = page({ props: { pageProps: { initialData: { data: { upcoming: { entries: [entry] } } } } } })
+    expect(() => extractLumaEvents(html, "lorong", NOW)).toThrow("event records")
+  })
+
+  test.each([[null], [{ event: { url: "changed", start_at: "invalid date" } }]])(
+    "reports malformed records even alongside a valid past record: %j",
+    (entry) => {
+      const entries = [event("past", "2026-10-01T07:00:00.000Z"), entry]
+      const html = page({ props: { pageProps: { initialData: { data: { upcoming: { entries } } } } } })
+      expect(() => extractLumaEvents(html, "lorong", NOW)).toThrow("event records")
+    },
+  )
+
+  test("past or non-Singapore records are structurally valid even when none are selected", () => {
+    const entries = [
+      event("past", "2026-10-01T07:00:00.000Z"),
+      event("tokyo", "2026-10-21T07:00:00.000Z", "Asia/Tokyo"),
+    ]
+    expect(
+      extractLumaEvents(
+        page({ props: { pageProps: { initialData: { data: { upcoming: { entries } } } } } }),
+        "lorong",
+        NOW,
+      ),
+    ).toEqual([])
   })
 })
 
