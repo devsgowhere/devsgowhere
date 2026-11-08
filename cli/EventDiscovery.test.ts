@@ -128,6 +128,16 @@ describe("extractLumaEvents", () => {
       { orgId: "lorong", url: "https://luma.com/sg-event", title: "sg-event", startAt: "2026-10-21T07:00:00.000Z" },
     ])
   })
+
+  test("keeps another site's event URL as it is", () => {
+    const url = "https://www.scs.org.sg/events/details/pm-day"
+    const external = page({
+      props: {
+        pageProps: { initialData: { data: { upcoming: { entries: [event(url, "2026-10-21T07:00:00.000Z")] } } } },
+      },
+    })
+    expect(extractLumaEvents(external, "lorong", NOW).map((e) => e.url)).toEqual([url])
+  })
 })
 
 describe("selectNewEvents", () => {

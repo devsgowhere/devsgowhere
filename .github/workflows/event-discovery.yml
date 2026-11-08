@@ -76,13 +76,14 @@ jobs:
           MEETUP_PRIVATE_KEY: ${{ secrets.MEETUP_PRIVATE_KEY }}
           MEETUP_MEMBER_ID: ${{ secrets.MEETUP_MEMBER_ID }}
         run: npm run discover-events -- --platform="$PLATFORM" --days="$DAYS" ${ORG:+--org="$ORG"}
-      # Hand the new event folders and this platform's summary to the publish job, at their paths in the repo
+      # Hand the new and rewritten event files and this platform's summary to the publish job, at their paths in the
+      # repo (discovery rewrites an existing event's folder when it finds it again under another URL)
       - name: Collect new events
         env:
           PLATFORM: ${{ matrix.platform }}
         run: |
           mkdir -p discovered/scraper-output
-          git ls-files --others --exclude-standard -z src/content | xargs -0 -r cp --parents -t discovered
+          git ls-files --others --modified --exclude-standard -z src/content | xargs -0 -r cp --parents -t discovered
           cp scraper-output/discovery-summary.md "discovered/scraper-output/discovery-summary-${PLATFORM}.md"
       - name: Upload new events
         uses: actions/upload-artifact@v7

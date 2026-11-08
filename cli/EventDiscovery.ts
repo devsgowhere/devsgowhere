@@ -177,7 +177,8 @@ export function extractLumaEvents(html: string, orgId: string, now: Date): Disco
     .filter((event) => (event.timezone ?? SUPPORTED_TIMEZONE) === SUPPORTED_TIMEZONE)
     .map((event) => ({
       orgId,
-      url: `https://luma.com/${event.url}`,
+      // a calendar can list another site's event, whose url is a full URL rather than a Luma slug
+      url: /^https?:\/\//.test(event.url) ? event.url : `https://luma.com/${event.url}`,
       title: event.name ?? "",
       startAt: event.start_at,
     }))
