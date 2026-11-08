@@ -29,6 +29,10 @@ on:
         type: boolean
         default: true
 
+# Discovery and the build compare dates in Singapore time
+env:
+  TZ: Asia/Singapore
+
 permissions:
   contents: write
   pull-requests: write
@@ -53,13 +57,10 @@ jobs:
           - platform: other
             name: Other events
     steps:
-      - uses: szenius/set-timezone@v2.0
-        with:
-          timezoneLinux: "Asia/Singapore"
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
       - name: Setup Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm
@@ -100,13 +101,10 @@ jobs:
     outputs:
       merged: ${{ steps.merge.outcome == 'success' }}
     steps:
-      - uses: szenius/set-timezone@v2.0
-        with:
-          timezoneLinux: "Asia/Singapore"
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
       - name: Setup Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm
