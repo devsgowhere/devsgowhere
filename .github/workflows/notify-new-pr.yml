@@ -25,7 +25,7 @@ jobs:
       (github.event.action == 'opened' && !github.event.pull_request.draft || github.event.action == 'ready_for_review')
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           # the base branch (main), which holds the script; never the PR's head
           ref: ${{ github.event.pull_request.base.sha }}
