@@ -4,7 +4,7 @@
  * Discovers upcoming events from each org's Meetup group / Luma calendar and writes the ones not yet in
  * src/content/events. Used by the scheduled event-discovery workflow.
  *
- *   npm run discover-events -- [--dry-run] [--org=<org_id>] [--days=60]
+ *   npm run discover-events -- [--dry-run] [--org=<org_id>] [--platform=luma|meetup|other] [--days=60]
  */
 
 import fs from "fs"
@@ -36,6 +36,10 @@ const argv = yargs(hideBin(process.argv))
     type: "string",
     description: "Only check this org ID",
   })
+  .option("platform", {
+    choices: ["luma", "meetup", "other"] as const,
+    description: "Only check orgs on this platform (the workflow runs one job per platform)",
+  })
   .option("days", {
     type: "number",
     default: 60,
@@ -50,6 +54,9 @@ const argv = yargs(hideBin(process.argv))
   .alias("help", "h")
   .parseSync()
 
+// "other" has no discovery yet (only Meetup and Luma are supported), so it finds nothing
+const PLATFORM_LABELS = { luma: "Luma", meetup: "Meetup.com", other: "other sites" }
+
 const DELAY_MS = 2000
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
@@ -59,7 +66,9 @@ async function main() {
   fs.mkdirSync(outputDir, { recursive: true })
 
   const now = new Date()
-  const sources = getOrgSources(path.join(contentDir, "orgs")).filter((s) => !argv.org || s.orgId === argv.org)
+  const sources = getOrgSources(path.join(contentDir, "orgs")).filter(
+    (s) => (!argv.org || s.orgId === argv.org) && (!argv.platform || s.platform === argv.platform),
+  )
   const existingKeys = getExistingEventKeys(path.join(contentDir, "events"))
   console.log(`Checking ${sources.length} org sources (${existingKeys.size} events already in content)`)
   const meetupApi = MeetupApi.fromEnv()
@@ -120,19 +129,17 @@ async function main() {
   fs.writeFileSync(path.join(outputDir, "discovery-summary.md"), summary(added, eventErrors, sourceErrors), "utf8")
 }
 
+// The workflow puts the PR's intro above the summaries of all platforms; Telegram lists every "### Added" section
 function summary(added: DiscoveredEvent[], eventErrors: string[], sourceErrors: string[]): string {
+  const from = argv.platform ? ` from ${PLATFORM_LABELS[argv.platform]}` : ""
   const lines = [
-    "Events discovered automatically from each org's Meetup group / Luma calendar by the event discovery workflow.",
-    "Scheduled runs merge this PR automatically once the site builds; if it's still open, auto-merge was off or failed.",
-    "Fix any wrong details (venue, description, hero image) on `main`.",
-    "",
-    `### Added (${added.length})`,
+    `### Added${from} (${added.length})`,
     ...added.map((e) => `- \`${e.orgId}\` ${e.startAt.slice(0, 10)} [${e.title}](${e.url})`),
   ]
   if (eventErrors.length)
-    lines.push("", `### Failed to scrape (${eventErrors.length})`, ...eventErrors.map((e) => `- ${e}`))
+    lines.push("", `### Failed to scrape${from} (${eventErrors.length})`, ...eventErrors.map((e) => `- ${e}`))
   if (sourceErrors.length)
-    lines.push("", `### Org pages that failed (${sourceErrors.length})`, ...sourceErrors.map((e) => `- ${e}`))
+    lines.push("", `### Org pages that failed${from} (${sourceErrors.length})`, ...sourceErrors.map((e) => `- ${e}`))
   return lines.join("\n") + "\n"
 }
 
