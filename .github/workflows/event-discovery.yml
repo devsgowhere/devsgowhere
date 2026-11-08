@@ -2,7 +2,9 @@ name: (Scheduled) Event Discovery
 
 # Checks every org's Meetup group / Luma calendar (from the `meetup` and `website` fields of
 # src/content/orgs/<org>/index.md) for upcoming events not yet in src/content/events, scrapes them,
-# and opens (or refreshes) a single PR on a fixed branch. The PR is then merged automatically and production
+# and opens (or refreshes) a single PR on a fixed branch. Each platform (Luma, Meetup.com, others) is discovered
+# by its own job, so one failing or slow platform doesn't hold up the others; a publish job then combines their
+# events into the PR. The PR is then merged automatically and production
 # is redeployed, unless auto-merge is turned off for a manual run (or the merge fails), in which case it
 # waits for review.
 
@@ -37,9 +39,19 @@ concurrency:
 
 jobs:
   discover-events:
+    name: ${{ matrix.name }}
     runs-on: ubuntu-latest
-    outputs:
-      merged: ${{ steps.merge.outcome == 'success' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: luma
+            name: Luma events
+          - platform: meetup
+            name: Meetup.com events
+          # No discovery for other sites (e.g. Eventbrite) yet, so this finds nothing until one is added
+          - platform: other
+            name: Other events
     steps:
       - uses: szenius/set-timezone@v2.0
         with:
@@ -58,11 +70,65 @@ jobs:
         env:
           ORG: ${{ inputs.org }}
           DAYS: ${{ inputs.days || 60 }}
+          PLATFORM: ${{ matrix.platform }}
           MEETUP_CLIENT_ID: ${{ secrets.MEETUP_CLIENT_ID }}
           MEETUP_SIGNING_KEY_ID: ${{ secrets.MEETUP_SIGNING_KEY_ID }}
           MEETUP_PRIVATE_KEY: ${{ secrets.MEETUP_PRIVATE_KEY }}
           MEETUP_MEMBER_ID: ${{ secrets.MEETUP_MEMBER_ID }}
-        run: npm run discover-events -- --days="$DAYS" ${ORG:+--org="$ORG"}
+        run: npm run discover-events -- --platform="$PLATFORM" --days="$DAYS" ${ORG:+--org="$ORG"}
+      # Hand the new event folders and this platform's summary to the publish job, at their paths in the repo
+      - name: Collect new events
+        env:
+          PLATFORM: ${{ matrix.platform }}
+        run: |
+          mkdir -p discovered/scraper-output
+          git ls-files --others --exclude-standard -z src/content | xargs -0 -r cp --parents -t discovered
+          cp scraper-output/discovery-summary.md "discovered/scraper-output/discovery-summary-${PLATFORM}.md"
+      - name: Upload new events
+        uses: actions/upload-artifact@v7
+        with:
+          name: discovered-${{ matrix.platform }}
+          path: discovered/
+          retention-days: 1
+
+  publish:
+    needs: discover-events
+    # Publish what the other platforms found even if one platform's job failed (the failure alert covers that one)
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    outputs:
+      merged: ${{ steps.merge.outcome == 'success' }}
+    steps:
+      - uses: szenius/set-timezone@v2.0
+        with:
+          timezoneLinux: "Asia/Singapore"
+      - name: Checkout repository
+        uses: actions/checkout@v5
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Download new events
+        uses: actions/download-artifact@v8
+        with:
+          pattern: discovered-*
+          merge-multiple: true
+          path: .
+      - name: Write the PR summary
+        run: |
+          {
+            echo "Events discovered automatically from each org's Meetup group / Luma calendar by the event discovery workflow."
+            echo "Scheduled runs merge this PR automatically once the site builds; if it's still open, auto-merge was off or failed."
+            echo 'Fix any wrong details (venue, description, hero image) on `main`.'
+            for f in scraper-output/discovery-summary-*.md; do
+              [ -e "$f" ] || continue
+              echo
+              cat "$f"
+            done
+          } > scraper-output/discovery-summary.md
       # Orgs added by hand don't regenerate the "Submit an event" issue form's dropdown, so sync it here
       # (this PR is merged automatically)
       - name: Sync the issue form's organisation list
@@ -118,8 +184,8 @@ jobs:
 
   # Merges made with GITHUB_TOKEN don't trigger the push-to-main production workflow, so deploy from here
   build:
-    needs: discover-events
-    if: ${{ needs.discover-events.outputs.merged == 'true' }}
+    needs: publish
+    if: ${{ needs.publish.outputs.merged == 'true' }}
     uses: ./.github/workflows/build-template.yml
     with:
       ref: main
