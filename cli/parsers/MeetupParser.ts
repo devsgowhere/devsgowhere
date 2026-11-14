@@ -42,7 +42,7 @@ export class MeetupParser extends BaseParser {
     console.log(`Extracting event end time...`)
     const eventEndTime = event.endTime
     const endDateTime = parseSourceDateTime(eventEndTime).setZone("Asia/Singapore")
-    if (endDateTime.isValid) {
+    if (startDateTime.isValid && endDateTime.isValid && endDateTime >= startDateTime) {
       // Example: 2025-08-23T13:00:00+08:00
       console.log(`Event end time: ${eventEndTime}`)
       scrapedData.endDate = `${endDateTime.toFormat("yyyy-MM-dd")}`

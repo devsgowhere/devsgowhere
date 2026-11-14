@@ -67,7 +67,7 @@ export class LumaParser extends BaseParser {
     }
 
     const endDateTime = parseSourceDateTime(event.end_at).setZone(eventTimeZone)
-    if (endDateTime.isValid) {
+    if (startDateTime.isValid && endDateTime.isValid && endDateTime >= startDateTime) {
       scrapedData.endDate = endDateTime.toFormat("yyyy-MM-dd") // YYYY-MM-DD
       scrapedData.endTime = endDateTime.toFormat("HH:mm") // HH:MM
     }

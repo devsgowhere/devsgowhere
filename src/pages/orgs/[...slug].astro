@@ -3,7 +3,7 @@ import { getEvents } from "../../utils/getEvents"
 import { render } from "astro:content";
 import OrgPage from "../../layouts/OrgPage.astro";
 import { type CollectionEntry, getCollection } from "astro:content";
-import { pastEvents, startOfToday, upcomingEvents } from "../../utils/events";
+import { pastEvents, upcomingEvents } from "../../utils/events";
 export async function getStaticPaths() {
   const orgs = await getCollection("orgs");
 
@@ -19,15 +19,13 @@ const org = Astro.props;
 const events = (await getEvents())
   .filter((event) => org.id === event.data.org.id);
 
-// Share the listings' Singapore day boundary, captured once for both partitions.
-const today = startOfToday();
-const past = pastEvents(events, today);
-const upcoming = upcomingEvents(events, today);
-
+// Partition events to show past and future events separately
+const orgPastEvents = pastEvents(events);
+const orgUpcomingEvents = upcomingEvents(events);
 
 const { Content } = await render(org);
 ---
 
-<OrgPage {...org.data} pastEvents={past} upcomingEvents={upcoming}>
+<OrgPage {...org.data} pastEvents={orgPastEvents} upcomingEvents={orgUpcomingEvents}>
   <Content />
 </OrgPage>

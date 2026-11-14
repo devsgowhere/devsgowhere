@@ -36,9 +36,23 @@ export class EventbriteParser extends BaseParser {
     scrapedData.title = eventTitle
 
     console.log(`Extracting event start time...`)
-    const parsedEventDateTime = event.startDate
-      ? this.isoDateTimeParser(event.startDate, event.endDate)
-      : this.dateTimeParser($(".date-info__full-datetime").text().trim() || "")
+    let parsedEventDateTime = this.isoDateTimeParser(event.startDate, event.endDate)
+    if (!parsedEventDateTime.startDate || !parsedEventDateTime.endDate) {
+      const displayed = this.dateTimeParser($(".date-info__full-datetime").text().trim() || "")
+      if (!parsedEventDateTime.startDate) {
+        parsedEventDateTime = displayed
+      } else if (
+        displayed.startDate === parsedEventDateTime.startDate &&
+        displayed.startTime === parsedEventDateTime.startTime &&
+        displayed.endDate &&
+        displayed.endTime &&
+        DateTime.fromISO(`${displayed.endDate}T${displayed.endTime}`, { zone: "Asia/Singapore" }) >=
+          parseSourceDateTime(event.startDate)
+      ) {
+        parsedEventDateTime.endDate = displayed.endDate
+        parsedEventDateTime.endTime = displayed.endTime
+      }
+    }
     scrapedData.startDate = parsedEventDateTime.startDate
     scrapedData.startTime = parsedEventDateTime.startTime
     scrapedData.endDate = parsedEventDateTime.endDate
@@ -149,23 +163,26 @@ export class EventbriteParser extends BaseParser {
       .get()
   }
 
-  /** Converts a schema.org ISO start and optional end independently to Singapore date and time. */
+  /** Converts schema.org ISO start/end datetimes (e.g. 2025-10-08T09:00:00+08:00) to Singapore date and time. */
   isoDateTimeParser(
-    startIso: string,
-    endIso?: string | null,
+    startIso: unknown,
+    endIso?: unknown,
   ): { startDate?: string; startTime?: string; endDate?: string; endTime?: string } {
     const start = parseSourceDateTime(startIso).setZone("Asia/Singapore")
-    const end = parseSourceDateTime(endIso).setZone("Asia/Singapore")
     if (!start.isValid) {
-      console.warn(`Unable to parse date and time: ${startIso} - ${endIso}`)
+      console.warn(`Unable to parse start date and time: ${startIso}`)
       return {}
     }
-    if (endIso && !end.isValid) console.warn(`Unable to parse end date and time: ${endIso}`)
-    return {
+    const result: { startDate?: string; startTime?: string; endDate?: string; endTime?: string } = {
       startDate: start.toFormat("yyyy-MM-dd"),
       startTime: start.toFormat("HH:mm"),
-      ...(end.isValid && { endDate: end.toFormat("yyyy-MM-dd"), endTime: end.toFormat("HH:mm") }),
     }
+    const end = parseSourceDateTime(endIso).setZone("Asia/Singapore")
+    if (end.isValid && end >= start) {
+      result.endDate = end.toFormat("yyyy-MM-dd")
+      result.endTime = end.toFormat("HH:mm")
+    }
+    return result
   }
 
   override async scrapeOrgDataFromPage($: CheerioAPI, url: string): Promise<ScrapedOrgData> {
@@ -190,33 +207,43 @@ export class EventbriteParser extends BaseParser {
 
     if (dateTimeStr.includes("·")) {
       // Format with '·'
-      const dateTimeRegex =
-        /([\w]*) ([\d]{0,2}) · ([\d]{1,2}[:]*[\d]{0,2})([am|pm]*) - ([\w]*)[ ]?([\d]{0,2})[ · ]*([\d]{1,2}[:]*[\d]{0,2})([am|pm]*)/
-      const match = dateTimeStr.match(dateTimeRegex)
-      if (match) {
-        const [_, startMonth, startDay, startTime, startPeriod, endMonth, endDay, endTime, endPeriod] = match
+      const [startText, endText = ""] = dateTimeStr.split(" - ")
+      const startMatch = startText.match(/^(\w+) (\d{1,2}) · (\d{1,2}(?::\d{2})?)(am|pm)?(?=\s|$)/i)
+      const endMatch = endText.match(/^(?:(\w+) (\d{1,2}) · )?(\d{1,2}(?::\d{2})?)(am|pm)(?=\s|$)/i)
+      if (startMatch) {
+        const [, startMonth, startDay, startTime, startPeriod] = startMatch
+        const [, endMonth, endDay, endTime, endPeriod] = endMatch || []
         const reference = DateTime.fromJSDate(referenceDate).setZone("Asia/Singapore").startOf("day")
         const startMonthNumber = this.getMonthNumber(startMonth)
-        if (!startMonthNumber) return result
+        const parsedStartTime = this.convertTo24HourFormat(startTime, startPeriod || endPeriod || "")
+        if (!startMonthNumber || !parsedStartTime) return result
         let year = reference.year
-        const startOn = (y: number) => DateTime.fromISO(`${y}-${startMonthNumber}-${startDay.padStart(2, "0")}`)
+        const startOn = (year: number) =>
+          DateTime.fromISO(`${year}-${startMonthNumber}-${startDay.padStart(2, "0")}T${parsedStartTime}`, {
+            zone: "Asia/Singapore",
+          })
         if (startOn(year) < reference.minus({ days: 30 })) year += 1
-        result.startDate = startOn(year).toFormat("yyyy-MM-dd")
+        const start = startOn(year)
+        if (!start.isValid) return result
+        result.startDate = start.toFormat("yyyy-MM-dd")
+        result.startTime = parsedStartTime
+        if (!endMatch) return result
 
-        result.startTime = this.convertTo24HourFormat(startTime, startPeriod || endPeriod)
-
+        let endDate = result.startDate
         // If endMonth and endDay are present, it's a multi-day event
         if (endMonth && endDay) {
           const endMonthNumber = this.getMonthNumber(endMonth)
           if (!endMonthNumber) return result
           // e.g. December 30 - January 2 ends in the following year
           const endYear = endMonthNumber < startMonthNumber ? year + 1 : year
-          result.endDate = `${endYear}-${endMonthNumber}-${endDay.padStart(2, "0")}`
-        } else {
-          // Single day event, end date is same as start date
-          result.endDate = result.startDate
+          endDate = `${endYear}-${endMonthNumber}-${endDay.padStart(2, "0")}`
         }
-        result.endTime = this.convertTo24HourFormat(endTime, endPeriod)
+        const parsedEndTime = this.convertTo24HourFormat(endTime, endPeriod)
+        const end = DateTime.fromISO(`${endDate}T${parsedEndTime}`, { zone: "Asia/Singapore" })
+        if (parsedEndTime && end.isValid && end >= start) {
+          result.endDate = end.toFormat("yyyy-MM-dd")
+          result.endTime = parsedEndTime
+        }
       } else {
         console.warn(`Unable to parse date and time from string: ${dateTimeStr}`)
       }
@@ -237,6 +264,7 @@ export class EventbriteParser extends BaseParser {
         result.startTime = startDateTime.toFormat("HH:mm")
       } else {
         console.warn(`Unable to parse start date and time from string: ${startDateTimeStr}`)
+        return result
       }
 
       // Check if endDateTimeStr contains a date (i.e., has a day and month)
@@ -252,7 +280,7 @@ export class EventbriteParser extends BaseParser {
         })
       }
 
-      if (endDateTime.isValid) {
+      if (endDateTime.isValid && endDateTime >= startDateTime) {
         result.endDate = endDateTime.toFormat("yyyy-MM-dd")
         result.endTime = endDateTime.toFormat("HH:mm")
       } else {
@@ -267,27 +295,10 @@ export class EventbriteParser extends BaseParser {
    * Convert month name (e.g. 'August') to its corresponding two-digit number (e.g. '08')
    */
   private getMonthNumber(monthName: string): string {
-    const months = [
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December",
-    ]
-    const name = monthName.toLowerCase()
-    const monthIndex = months.findIndex(
-      (month) =>
-        name === month.toLowerCase() ||
-        name === month.substring(0, 3).toLowerCase() ||
-        (month === "September" && name === "sept"),
-    )
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    // Index of string with the first 3 characters matched
+    const monthAbbr = monthName.substring(0, 3)
+    const monthIndex = months.findIndex((m) => m.toLowerCase() === monthAbbr.toLowerCase())
     return monthIndex !== -1 ? String(monthIndex + 1).padStart(2, "0") : ""
   }
 
@@ -296,6 +307,7 @@ export class EventbriteParser extends BaseParser {
    */
   private convertTo24HourFormat(time: string, period: string): string {
     let [hour, minute] = time.split(":").map(Number)
+    if (!/^(am|pm)$/i.test(period) || hour < 1 || hour > 12 || (minute !== undefined && minute > 59)) return ""
     if (period.toUpperCase() === "PM" && hour < 12) {
       hour += 12
     }

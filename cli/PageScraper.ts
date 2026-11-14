@@ -110,7 +110,6 @@ export class PageScraper {
     if (scrapedData.rsvpButtonUrl) console.log(`RSVP URL: ${scrapedData.rsvpButtonUrl}`)
     if (scrapedData.heroImage) console.log(`Hero Image: ${scrapedData.heroImage}`)
 
-    // Timing must come from the source: defaults would turn a failed scrape into a plausible but incorrect event.
     const { startDate, startTime } = scrapedData
     if (
       !startDate ||
@@ -122,7 +121,6 @@ export class PageScraper {
       throw new Error("❌ Could not extract a valid event start date/time from the URL")
     }
 
-    // Provide defaults only for optional details.
     const eventData: EventData = {
       org: specifiedOrgId,
       title: scrapedData.title || "Untitled Event",
