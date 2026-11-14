@@ -3,7 +3,7 @@ import { getEvents } from "../../utils/getEvents"
 import { render } from "astro:content";
 import OrgPage from "../../layouts/OrgPage.astro";
 import { type CollectionEntry, getCollection } from "astro:content";
-import { compareEventsByStart } from "../../utils/helpers";
+import { pastEvents, upcomingEvents } from "../../utils/events";
 export async function getStaticPaths() {
   const orgs = await getCollection("orgs");
 
@@ -20,19 +20,12 @@ const events = (await getEvents())
   .filter((event) => org.id === event.data.org.id);
 
 // Partition events to show past and future events separately
-const pastEvents = events.filter((event) => {
-  const startDate = new Date(event.data.startDate);
-  return startDate < new Date();
-}).sort((a, b) => compareEventsByStart(b, a));
-const upcomingEvents = events.filter((event) => {
-  const startDate = new Date(event.data.startDate);
-  return startDate >= new Date();
-}).sort(compareEventsByStart);
-
+const orgPastEvents = pastEvents(events);
+const orgUpcomingEvents = upcomingEvents(events);
 
 const { Content } = await render(org);
 ---
 
-<OrgPage {...org.data} pastEvents={pastEvents} upcomingEvents={upcomingEvents}>
+<OrgPage {...org.data} pastEvents={orgPastEvents} upcomingEvents={orgUpcomingEvents}>
   <Content />
 </OrgPage>
