@@ -34,7 +34,7 @@ jobs:
         run: find dist -type f -exec stat -c "%10s %n" {} \;
       - name: Deploy to Cloudflare Pages
         id: deploy # set id, so that we can extract the deployment URL later
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           # if inputs.env_name is 'production' or 'nightly', deploy to production branch
