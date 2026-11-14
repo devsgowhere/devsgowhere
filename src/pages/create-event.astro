@@ -7,6 +7,9 @@ import GoogleTagmanager from "../components/GoogleTagmanager.astro"
 import GoogleTagmanagerNoscript from "../components/GoogleTagmanagerNoscript.astro"
 
 import { SITE_TITLE, SITE_DESCRIPTION, GTM_MEASUREMENT_ID } from "../consts"
+
+const eventFormUrl =
+  "https://docs.google.com/forms/d/e/1FAIpQLSd0RcGSghYsOk7FBiAehH4JBIZ4k_rwbU2XuiNuwUFVrORJDw/viewform"
 ---
 
 <!doctype html>
@@ -23,13 +26,11 @@ import { SITE_TITLE, SITE_DESCRIPTION, GTM_MEASUREMENT_ID } from "../consts"
       <div class="container">
         <section>
           <iframe
-            src="https://docs.google.com/forms/d/e/1FAIpQLSd0RcGSghYsOk7FBiAehH4JBIZ4k_rwbU2XuiNuwUFVrORJDw/viewform?embedded=true"
+            title="Submit an event"
+            src={`${eventFormUrl}?embedded=true`}
             width="640"
-            height="1513"
-            frameborder="0"
-            marginheight="0"
-            marginwidth="0">Loading…</iframe
-          >
+            height="1513">Loading…</iframe>
+          <p><a href={eventFormUrl}>Open the event form directly</a></p>
         </section>
       </div>
     </main>
@@ -40,5 +41,13 @@ import { SITE_TITLE, SITE_DESCRIPTION, GTM_MEASUREMENT_ID } from "../consts"
 <style lang="scss">
   .events-list-page {
     text-align: center;
+  }
+
+  iframe {
+    display: block;
+    width: 100%;
+    max-width: 640px;
+    margin: 0 auto;
+    border: 0;
   }
 </style>
