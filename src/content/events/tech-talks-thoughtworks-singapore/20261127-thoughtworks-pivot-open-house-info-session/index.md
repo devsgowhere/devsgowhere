@@ -9,8 +9,8 @@ startTime: "11:00"
 endDate: "2026-11-27"
 endTime: "12:00"
 heroImage: "highres_537000449.jpeg"
-tags: ["Events in Singapore, SG", "Career", "Career Transition", "Technology", "Women in Engineering"]
-rsvpButtonUrl: "https://www.meetup.com/tech-talks-thoughtworks-singapore/events/xljzbvyjcpbkc"
+tags: ["Events in Singapore, SG"]
+rsvpButtonUrl: "https://www.meetup.com/tech-talks-thoughtworks-singapore/events/317406285"
 rsvpButtonText: "RSVP on Meetup"
 ---
 
