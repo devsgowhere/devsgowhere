@@ -35,12 +35,12 @@ on:
 jobs:
   create-event:
     runs-on: ubuntu-latest
+    env:
+      # inputs (not github.event.inputs) also holds the value when called from another workflow
+      TZ: ${{ inputs.timezone || 'Asia/Singapore' }}
     steps:
-      - uses: szenius/set-timezone@v2.0
-        with:
-          timezoneLinux: ${{ github.event.inputs.timezone }}
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
@@ -50,7 +50,7 @@ jobs:
         run: |
           echo "branch=event-scrapper/${{ github.run_id }}-${{ github.run_attempt }}" >> $GITHUB_OUTPUT
       - name: Setup Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm

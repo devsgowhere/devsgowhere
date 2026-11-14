@@ -1,16 +1,10 @@
 import { getEvents } from "../utils/getEvents"
 import rss from "@astrojs/rss"
-import { compareEventsByStart } from "../utils/helpers"
+import { upcomingEvents } from "../utils/events"
 import { SITE_TITLE, SITE_DESCRIPTION } from "../consts"
 
 export async function GET(context) {
-  const now = new Date()
-  const events = (await getEvents())
-    .filter((event) => {
-      const startDate = new Date(event.data.startDate)
-      return startDate >= now
-    })
-    .sort(compareEventsByStart)
+  const events = upcomingEvents(await getEvents())
 
   return rss({
     title: SITE_TITLE,

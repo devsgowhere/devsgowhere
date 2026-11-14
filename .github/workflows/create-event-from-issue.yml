@@ -39,7 +39,7 @@ jobs:
     steps:
       - name: Read the submission
         id: issue
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         env:
           ISSUE_NUMBER: ${{ github.event.issue.number || inputs.issue_number }}
         with:
@@ -72,9 +72,9 @@ jobs:
             core.setOutput("notes", field("Notes for the team"))
 
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
       - name: Setup Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm
@@ -109,7 +109,7 @@ jobs:
 
       - name: Reply with validation errors
         if: ${{ steps.validate.outputs.ok != 'true' }}
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         env:
           ISSUE_NUMBER: ${{ steps.issue.outputs.number }}
           ERRORS: ${{ steps.validate.outputs.errors }}
@@ -194,7 +194,7 @@ jobs:
 
       - name: Reply with the pull request
         if: ${{ steps.create-pull-request.outputs.pull-request-operation == 'created' || steps.create-pull-request.outputs.pull-request-operation == 'updated' }}
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         env:
           ISSUE_NUMBER: ${{ steps.issue.outputs.number }}
           PR_URL: ${{ steps.create-pull-request.outputs.pull-request-url }}
@@ -222,7 +222,7 @@ jobs:
 
       - name: Reply on failure
         if: ${{ failure() }}
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         env:
           ISSUE_NUMBER: ${{ steps.issue.outputs.number || github.event.issue.number || inputs.issue_number }}
         with:

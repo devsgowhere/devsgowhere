@@ -2,7 +2,10 @@ import { DateTime } from "luxon"
 import { describe, expect, test } from "vitest"
 import { buildSearchIndex, groupByDate, isUpcoming, pastEvents, startOfToday, upcomingEvents } from "./events"
 
-const event = (id: string, startDate: string, startTime = "19:00") => ({ id, data: { startDate, startTime } })
+const event = (id: string, startDate: string, startTime = "19:00", endDate?: string | null) => ({
+  id,
+  data: { startDate, startTime, endDate },
+})
 
 // 00:30 on 21 Oct 2026 in Singapore is still 20 Oct in UTC
 const TODAY = startOfToday(DateTime.fromISO("2026-10-20T16:30:00Z"))
@@ -25,6 +28,15 @@ describe("upcoming and past events", () => {
   test("an event today is upcoming, yesterday's is past", () => {
     expect(isUpcoming(event("a", "2026-10-21"), TODAY)).toBe(true)
     expect(isUpcoming(event("b", "2026-10-20"), TODAY)).toBe(false)
+  })
+
+  test("a multi-day event is upcoming until its last day has passed", () => {
+    const conference = (endDate?: string | null) => event("c", "2026-10-19", "09:00", endDate)
+    expect(isUpcoming(conference("2026-10-23"), TODAY)).toBe(true) // 3rd day of 5
+    expect(isUpcoming(conference("2026-10-21"), TODAY)).toBe(true) // last day is today
+    expect(isUpcoming(conference("2026-10-20"), TODAY)).toBe(false) // ended yesterday
+    expect(isUpcoming(conference("2026-10-19"), TODAY)).toBe(false) // same-day end
+    expect(isUpcoming(conference(null), TODAY)).toBe(false) // no end date: the start date decides
   })
 
   test("upcoming is soonest first, past is most recent first, and together they cover everything", () => {

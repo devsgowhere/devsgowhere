@@ -4,7 +4,7 @@
  * Discovers upcoming events from each org's Meetup group / Luma calendar and writes the ones not yet in
  * src/content/events. Used by the scheduled event-discovery workflow.
  *
- *   npm run discover-events -- [--dry-run] [--org=<org_id>] [--days=60]
+ *   npm run discover-events -- [--dry-run] [--org=<org_id>] [--platform=luma|meetup|other] [--days=60]
  */
 
 import fs from "fs"
@@ -25,7 +25,6 @@ import { applySkipEvents, nonTechTag } from "./EventFilter"
 import { EventWriter } from "./EventWriter"
 import { MeetupApi } from "./MeetupApi"
 import { PageScraper } from "./PageScraper"
-import { discoveryStatus, writeDiscoveryReport, type DiscoveryReport } from "./DiscoveryReport"
 
 const argv = yargs(hideBin(process.argv))
   .option("dry-run", {
@@ -36,6 +35,10 @@ const argv = yargs(hideBin(process.argv))
   .option("org", {
     type: "string",
     description: "Only check this org ID",
+  })
+  .option("platform", {
+    choices: ["luma", "meetup", "other"] as const,
+    description: "Only check orgs on this platform (the workflow runs one job per platform)",
   })
   .option("days", {
     type: "number",
@@ -51,20 +54,21 @@ const argv = yargs(hideBin(process.argv))
   .alias("help", "h")
   .parseSync()
 
+// "other" has no discovery yet (only Meetup and Luma are supported), so it finds nothing
+const PLATFORM_LABELS = { luma: "Luma", meetup: "Meetup.com", other: "other sites" }
+
 const DELAY_MS = 2000
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
-const outputDir = path.join(process.cwd(), argv.outputDir)
-const report: DiscoveryReport = { sourceCount: 0, added: [], sourceErrors: [], eventErrors: [], dryRun: argv.dryRun }
 
 async function main() {
   const contentDir = path.join(process.cwd(), "src", "content")
+  const outputDir = path.join(process.cwd(), argv.outputDir)
   fs.mkdirSync(outputDir, { recursive: true })
 
   const now = new Date()
-  const sources = getOrgSources(path.join(contentDir, "orgs")).filter((s) => !argv.org || s.orgId === argv.org)
-  report.sourceCount = sources.length
-  if (sources.length === 0)
-    throw new Error(`No supported event sources found${argv.org ? ` for organisation: ${argv.org}` : ""}`)
+  const sources = getOrgSources(path.join(contentDir, "orgs")).filter(
+    (s) => (!argv.org || s.orgId === argv.org) && (!argv.platform || s.platform === argv.platform),
+  )
   const existingKeys = getExistingEventKeys(path.join(contentDir, "events"))
   console.log(`Checking ${sources.length} org sources (${existingKeys.size} events already in content)`)
   const meetupApi = MeetupApi.fromEnv()
@@ -79,6 +83,7 @@ async function main() {
   }
 
   const discovered: DiscoveredEvent[] = []
+  const sourceErrors: string[] = []
   for (const source of sources) {
     try {
       const events = await listEvents(source)
@@ -86,7 +91,7 @@ async function main() {
       discovered.push(...events)
     } catch (error: any) {
       console.warn(`[${source.orgId}] ${source.url}: ${error.message}`)
-      report.sourceErrors.push(`\`${source.orgId}\` ${source.url}: ${error.message}`)
+      sourceErrors.push(`\`${source.orgId}\` ${source.url}: ${error.message}`)
     }
     await sleep(DELAY_MS)
   }
@@ -101,6 +106,8 @@ async function main() {
 
   const scraper = new PageScraper(outputDir, meetupApi)
   const writer = new EventWriter()
+  const added: DiscoveredEvent[] = []
+  const eventErrors: string[] = []
   for (const event of newEvents) {
     try {
       const scraped = await scraper.scrapeEventData(event.url)
@@ -111,21 +118,32 @@ async function main() {
       }
       const eventData = await scraper.createEventDataFromScrapedData(scraped, event.url, event.orgId)
       writer.createEventFile(eventData)
-      report.added.push(event)
+      added.push(event)
     } catch (error: any) {
       console.warn(`Failed to add ${event.url}: ${error.message}`)
-      report.eventErrors.push(`\`${event.orgId}\` ${event.url}: ${error.message}`)
+      eventErrors.push(`\`${event.orgId}\` ${event.url}: ${error.message}`)
     }
     await sleep(DELAY_MS)
   }
+
+  fs.writeFileSync(path.join(outputDir, "discovery-summary.md"), summary(added, eventErrors, sourceErrors), "utf8")
 }
 
-main()
-  .catch((error) => {
-    console.error(error)
-    report.fatalError = error instanceof Error ? error.message : String(error)
-  })
-  .finally(() => {
-    writeDiscoveryReport(report, outputDir)
-    if (discoveryStatus(report) === "failed") process.exitCode = 1
-  })
+// The workflow puts the PR's intro above the summaries of all platforms; Telegram lists every "### Added" section
+function summary(added: DiscoveredEvent[], eventErrors: string[], sourceErrors: string[]): string {
+  const from = argv.platform ? ` from ${PLATFORM_LABELS[argv.platform]}` : ""
+  const lines = [
+    `### Added${from} (${added.length})`,
+    ...added.map((e) => `- \`${e.orgId}\` ${e.startAt.slice(0, 10)} [${e.title}](${e.url})`),
+  ]
+  if (eventErrors.length)
+    lines.push("", `### Failed to scrape${from} (${eventErrors.length})`, ...eventErrors.map((e) => `- ${e}`))
+  if (sourceErrors.length)
+    lines.push("", `### Org pages that failed${from} (${sourceErrors.length})`, ...sourceErrors.map((e) => `- ${e}`))
+  return lines.join("\n") + "\n"
+}
+
+main().catch((error) => {
+  console.error(error)
+  process.exit(1)
+})

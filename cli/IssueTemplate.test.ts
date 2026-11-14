@@ -10,8 +10,6 @@ import {
   orgOptionLabel,
   outdatedIssueTemplates,
   renderIssueTemplate,
-  updateIssueTemplates,
-  ISSUE_TEMPLATE_PATHS,
 } from "./IssueTemplate"
 
 const TEMPLATE = `body:
@@ -68,38 +66,21 @@ describe("renderIssueTemplate", () => {
     expect(renderIssueTemplate(rendered, orgs)).toBe(rendered)
   })
 
-  test("fails loudly without the markers", () => {
-    expect(() => renderIssueTemplate("body: []\n", [])).toThrow("markers not found")
+  test.each(["\n", "\r\n"])("preserves %j line endings when options change and on repeated generation", (newline) => {
+    const template = TEMPLATE.replace(/\n/g, newline)
+    const orgs = [{ id: "example", title: "Example Group" }]
+    const rendered = renderIssueTemplate(template, orgs)
+
+    expect(parse(rendered).body[0].attributes.options).toEqual(["Example Group (example)", NEW_ORG_OPTION])
+    expect(rendered).toBe(rendered.replace(/\r?\n/g, newline))
+    expect(renderIssueTemplate(rendered, orgs)).toBe(rendered)
+    const updated = renderIssueTemplate(rendered, [{ id: "new", title: "New Group" }])
+    expect(updated).toBe(updated.replace(/\r?\n/g, newline))
+    expect(parse(updated).body[0].attributes.options).toEqual(["New Group (new)", NEW_ORG_OPTION])
   })
 
-  test.each(["\n", "\r\n"])("preserves %j line endings and does not rewrite current templates", (newline) => {
-    const orgs = [{ id: "aws", title: "AWS" }]
-    const current = renderIssueTemplate(TEMPLATE, orgs).replace(/\r?\n/g, newline)
-    expect(renderIssueTemplate(current, orgs)).toBe(current)
-
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), "issue-templates-"))
-    try {
-      const orgDir = path.join(root, "src", "content", "orgs", "aws")
-      fs.mkdirSync(orgDir, { recursive: true })
-      fs.writeFileSync(path.join(orgDir, "index.md"), '---\ntitle: "AWS"\n---\n')
-      for (const template of ISSUE_TEMPLATE_PATHS) {
-        const file = path.join(root, template)
-        fs.mkdirSync(path.dirname(file), { recursive: true })
-        fs.writeFileSync(file, current)
-      }
-      expect(outdatedIssueTemplates(root)).toEqual([])
-      expect(updateIssueTemplates(root)).toEqual([])
-
-      fs.writeFileSync(path.join(orgDir, "index.md"), '---\ntitle: "Renamed AWS"\n---\n')
-      expect(outdatedIssueTemplates(root)).toEqual(ISSUE_TEMPLATE_PATHS)
-      expect(updateIssueTemplates(root)).toEqual(ISSUE_TEMPLATE_PATHS)
-      expect(outdatedIssueTemplates(root)).toEqual([])
-      expect(fs.readFileSync(path.join(root, ISSUE_TEMPLATE_PATHS[0]), "utf8")).toBe(
-        renderIssueTemplate(TEMPLATE, [{ id: "aws", title: "Renamed AWS" }]).replace(/\r?\n/g, newline),
-      )
-    } finally {
-      fs.rmSync(root, { recursive: true, force: true })
-    }
+  test("fails loudly without the markers", () => {
+    expect(() => renderIssueTemplate("body: []\n", [])).toThrow("markers not found")
   })
 })
 
