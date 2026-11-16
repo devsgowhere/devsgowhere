@@ -1,4 +1,5 @@
 ---
+hidden: true
 org: "juniordevsg"
 title: "Developer's Gym: Coding Dojo (Nov-Dec 2026)"
 description: "Developer's Gym: Coding Dojo (Nov-Dec 2026)"
