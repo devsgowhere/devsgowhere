@@ -17,7 +17,7 @@ import { parseIssueForm, validateEventDetails } from "./EventDetails"
 import { EventWriter } from "./EventWriter"
 import { OrgWriter } from "./OrgWriter"
 import { downloadIssueImage } from "./IssueImage"
-import { PLACEHOLDER_IMAGE } from "./utils"
+import { EVENT_PLACEHOLDER_IMAGE, ORG_PLACEHOLDER_IMAGE } from "./utils"
 
 const argv = yargs(hideBin(process.argv))
   .option("body-file", { type: "string", demandOption: true, description: "File with the issue body" })
@@ -39,7 +39,7 @@ async function main() {
   const result = validateEventDetails(fields, { orgIds, existingKeys, now: new Date() })
   if (!result.ok) return result
 
-  let heroImage = PLACEHOLDER_IMAGE
+  let heroImage = EVENT_PLACEHOLDER_IMAGE
   if (result.imageUrl) {
     try {
       heroImage = await downloadIssueImage(result.imageUrl, argv.outputDir, "event image")
@@ -56,8 +56,8 @@ async function main() {
       title: result.newOrgTitle,
       description: "",
       tags: [],
-      heroImage: PLACEHOLDER_IMAGE,
-      logoImage: PLACEHOLDER_IMAGE,
+      heroImage: ORG_PLACEHOLDER_IMAGE,
+      logoImage: ORG_PLACEHOLDER_IMAGE,
     })
   }
   new EventWriter().createEventFile({ ...result.event, heroImage })
