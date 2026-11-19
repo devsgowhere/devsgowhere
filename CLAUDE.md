@@ -38,7 +38,7 @@ Defined in `src/content.config.ts` (two collections, glob-loaded):
 - **orgs**: `src/content/orgs/<org_id>/index.md`. The folder name is the org ID.
 - **events**: `src/content/events/<org_id>/<YYYYMMDD-slug>/index.md`. `org` frontmatter is a `reference("orgs")` and must match an existing org folder name; the event's parent folder uses the same org ID.
 - `startDate` must be `YYYY-MM-DD`, `startTime` `HH:MM` (24h), strings not dates. `timezone` defaults to `Asia/Singapore`.
-- `heroImage` is required and goes through Astro's `image()` — use a file colocated in the event/org folder, or `../../../../public/org-placeholder.png`.
+- `heroImage` is required and goes through Astro's `image()` — use a file colocated in the event/org folder, or the placeholder `public/org-placeholder.png` (`../../../../public/…` from an org, one more `../` from an event, which is a folder deeper; the CLI's `ORG_PLACEHOLDER_IMAGE` and `EVENT_PLACEHOLDER_IMAGE`).
 - Templates: `docs/event_template.md`, `docs/org_template.md`.
 
 An event with `hidden: true` is not built or listed anywhere (use `getEvents()` from `src/utils/getEvents.ts`, never `getCollection("events")`). Keep the file rather than deleting it, so discovery still sees its `rsvpButtonUrl` and does not add it again.

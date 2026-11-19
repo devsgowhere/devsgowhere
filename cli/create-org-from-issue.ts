@@ -15,7 +15,7 @@ import { parseIssueForm } from "./EventDetails"
 import { downloadIssueImage } from "./IssueImage"
 import { validateOrgDetails } from "./OrgDetails"
 import { OrgWriter } from "./OrgWriter"
-import { PLACEHOLDER_IMAGE } from "./utils"
+import { ORG_PLACEHOLDER_IMAGE } from "./utils"
 
 const argv = yargs(hideBin(process.argv))
   .option("body-file", { type: "string", demandOption: true, description: "File with the issue body" })
@@ -34,8 +34,8 @@ async function main() {
   const result = validateOrgDetails(parseIssueForm(fs.readFileSync(argv.bodyFile, "utf8")), { orgIds })
   if (!result.ok) return result
 
-  let logoImage = PLACEHOLDER_IMAGE
-  let heroImage = PLACEHOLDER_IMAGE
+  let logoImage = ORG_PLACEHOLDER_IMAGE
+  let heroImage = ORG_PLACEHOLDER_IMAGE
   try {
     if (result.logoUrl) logoImage = await downloadIssueImage(result.logoUrl, argv.outputDir, "logo")
     if (result.coverUrl) heroImage = await downloadIssueImage(result.coverUrl, argv.outputDir, "cover image")

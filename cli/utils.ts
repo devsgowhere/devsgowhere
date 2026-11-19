@@ -4,22 +4,26 @@ import path from "path"
 
 const DEFAULT_OUTPUT_DIR = "scraper-output"
 
-// Shared placeholder, referenced from content files at src/content/<collection>/<...>/index.md
-export const PLACEHOLDER_IMAGE = "../../../../public/org-placeholder.png"
+// Shared placeholder, referenced relative to the content file: orgs are at src/content/orgs/<org>/index.md and
+// events one folder deeper, at src/content/events/<org>/<event>/index.md
+export const ORG_PLACEHOLDER_IMAGE = "../../../../public/org-placeholder.png"
+export const EVENT_PLACEHOLDER_IMAGE = "../../../../../public/org-placeholder.png"
 
 /** A YAML double-quoted scalar; JSON string escaping is valid YAML, so quotes and backslashes can't break it. */
 export function quote(value: string | undefined | null): string {
   return JSON.stringify(value ?? "")
 }
 
+const isPlaceholder = (image: string) => image === ORG_PLACEHOLDER_IMAGE || image === EVENT_PLACEHOLDER_IMAGE
+
 /** Value to write in frontmatter: URLs and the placeholder as-is, local files by name (they're copied alongside). */
 export function imageFrontmatterValue(image: string): string {
-  return image.startsWith("http") || image === PLACEHOLDER_IMAGE ? image : path.basename(image)
+  return image.startsWith("http") || isPlaceholder(image) ? image : path.basename(image)
 }
 
 /** Whether the image is a downloaded local file that must be copied next to the content file. */
 export function isLocalImageToCopy(image: string | undefined | null): image is string {
-  return !!image && !image.startsWith("http") && image !== PLACEHOLDER_IMAGE
+  return !!image && !image.startsWith("http") && !isPlaceholder(image)
 }
 
 export function saveAsHtml(api: cheerio.CheerioAPI, url: string, outputDir = DEFAULT_OUTPUT_DIR) {
