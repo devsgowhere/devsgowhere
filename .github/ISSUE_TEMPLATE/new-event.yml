@@ -83,6 +83,7 @@ body:
         - "Vue JS Singapore (vue-js-singapore)"
         - "Women Devs SG (women_devs_sg)"
         - "WordPress Singapore (wordpress_singapore)"
+        - "YAI Singapore (organised by YCESS) (yai_singapore_organised_by_ycess)"
         - "My organisation isn't listed (new organisation)"
         # END org options
     validations:
