@@ -66,6 +66,19 @@ describe("renderIssueTemplate", () => {
     expect(renderIssueTemplate(rendered, orgs)).toBe(rendered)
   })
 
+  test.each(["\n", "\r\n"])("preserves %j line endings when options change and on repeated generation", (newline) => {
+    const template = TEMPLATE.replace(/\n/g, newline)
+    const orgs = [{ id: "example", title: "Example Group" }]
+    const rendered = renderIssueTemplate(template, orgs)
+
+    expect(parse(rendered).body[0].attributes.options).toEqual(["Example Group (example)", NEW_ORG_OPTION])
+    expect(rendered).toBe(rendered.replace(/\r?\n/g, newline))
+    expect(renderIssueTemplate(rendered, orgs)).toBe(rendered)
+    const updated = renderIssueTemplate(rendered, [{ id: "new", title: "New Group" }])
+    expect(updated).toBe(updated.replace(/\r?\n/g, newline))
+    expect(parse(updated).body[0].attributes.options).toEqual(["New Group (new)", NEW_ORG_OPTION])
+  })
+
   test("fails loudly without the markers", () => {
     expect(() => renderIssueTemplate("body: []\n", [])).toThrow("markers not found")
   })
