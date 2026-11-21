@@ -8,7 +8,7 @@ startDate: "2027-01-31"
 startTime: "09:00"
 endDate: "2027-01-31"
 endTime: "18:00"
-heroImage: "../../../../../public/org-placeholder.png"
+heroImage: "yai-singapore-2026-27.png"
 tags: ["ai", "hackathon", "students", "youth", "competition"]
 rsvpButtonUrl: "https://yai.sg/register/?utm_source=list-devsgowhere&utm_medium=listing"
 rsvpButtonText: "Register"
